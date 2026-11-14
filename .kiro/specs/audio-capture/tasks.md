@@ -53,14 +53,14 @@ Each task is small and test-first where the code is pure: write the test, see it
   - [x] 7.5 Create `e2e/audio-capture.spec.ts` with the microphone test (constraints, shapes, spacing, stop) and the keyboard test, using `test.use({ launchOptions: { args } })` with both fake-device flags. Run `bun run e2e` and confirm they pass.
     - _Requirements: 9.1, 9.3-9.5, 9.12-9.14_
 
-- [ ] 8. Clip path and the remaining browser tests
-  - [ ] 8.1 Create `src/audio/clips.ts` (manifest loading, `listClips`, fetch, `decodeAudioData`, `AudioBufferSourceNode`, flush-and-`flushed` end sequence) and connect it in `capture.ts` with `clip-not-found` and `clip-load-failed`.
+- [x] 8. Clip path and the remaining browser tests
+  - [x] 8.1 Create `src/audio/clips.ts` (manifest loading, `listClips`, fetch, `decodeAudioData`, `AudioBufferSourceNode`, flush-and-`flushed` end sequence) and connect it in `capture.ts` with `clip-not-found` and `clip-load-failed`.
     - _Requirements: 3.1-3.10_
-  - [ ] 8.2 Add the clip test to `e2e/audio-capture.spec.ts`: no `getUserMedia` call, mono and stereo frames arrive, frame count within one of the expected count, RMS above 0.001 on one frame, state reaches `ended`.
+  - [x] 8.2 Add the clip test to `e2e/audio-capture.spec.ts`: no `getUserMedia` call, mono and stereo frames arrive, frame count within one of the expected count, RMS above 0.001 on one frame, state reaches `ended`.
     - _Requirements: 9.6-9.8_
-  - [ ] 8.3 Add the parity test (same key sets and lengths for clip and microphone frames), the error stub tests (`NotAllowedError`, `NotFoundError`, `NotReadableError`, then a working clip start), and the network allow-list test.
+  - [x] 8.3 Add the parity test (same key sets and lengths for clip and microphone frames), the error stub tests (`NotAllowedError`, `NotFoundError`, `NotReadableError`, then a working clip start), and the network allow-list test.
     - _Requirements: 9.9-9.11, 2.5-2.7, 2.12_
-  - [ ] 8.4 Run `bun run e2e` and confirm all audio-capture tests pass. If a test is flaky, fix the cause (wait on state, not on time) and do not add retries.
+  - [x] 8.4 Run `bun run e2e` and confirm all audio-capture tests pass. If a test is flaky, fix the cause (wait on state, not on time) and do not add retries.
 
 - [ ] 9. Final checks
   - Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`, and confirm all pass. Confirm the build output has the worklet file and no `capture-harness.html`.

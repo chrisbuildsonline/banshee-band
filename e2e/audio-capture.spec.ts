@@ -104,6 +104,135 @@ test('microphone path delivers stereo and mono frames with raw constraints, and 
   expect(later.monoCount).toBe(after.monoCount);
 });
 
+const CLIP_WAIT = { timeout: 20_000 };
+
+async function startClip(page: Page, id = 'doorbell-01'): Promise<void> {
+  await page.getByLabel('Clip id').fill(id);
+  await page.getByRole('button', { name: 'Start clip' }).click();
+}
+
+test('clip path delivers the same frames with no microphone request, then ends', async ({ page }) => {
+  await recordGetUserMedia(page);
+  await page.goto(HARNESS);
+  const manifest = await page.evaluate(async () => (await fetch('/clips/manifest.json')).json());
+  const durationSec = (manifest as { file: string; durationSec: number }[]).find((c) => c.file === 'doorbell-01.wav')!.durationSec;
+
+  await startClip(page);
+  await expect.poll(() => status(page), WAIT).toBe('listening');
+  const listening = (await state(page)) as Extract<CaptureState, { status: 'listening' }>;
+  expect(listening.source).toEqual({ kind: 'clip', id: 'doorbell-01' });
+  expect(listening.rawProcessing).toBe(true);
+  expect([1, 2]).toContain(listening.channels);
+
+  await expect.poll(() => status(page), CLIP_WAIT).toBe('ended');
+  const states = await page.evaluate(() => window.__states.map((s) => s.status));
+  expect(states).toEqual(['starting', 'listening', 'ended']);
+
+  const calls = await page.evaluate(() => (window as unknown as { __gum: { calls: unknown[] } }).__gum.calls);
+  expect(calls).toEqual([]);
+
+  const f = await frames(page);
+  expect(f.stereoCount).toBe(f.stereo.length); // all kept, so every step can be checked
+  checkStereo(f.stereo);
+  expect(f.stereo[0].startSample).toBe(0);
+  expect(f.stereo.every((s) => s.sampleRate === listening.sampleRate)).toBe(true);
+  // `ended` came after the whole clip: the stereo stream covers at least its duration.
+  const last = f.stereo.at(-1)!;
+  expect((last.startSample + last.leftLength) / last.sampleRate).toBeGreaterThanOrEqual(durationSec - 0.01);
+  checkMono(f.mono);
+
+  const expected = Math.floor(Math.floor(durationSec * 16000 - 15600) / 7800) + 1;
+  expect(Math.abs(f.monoCount - expected), `mono frames ${f.monoCount}, expected ${expected}`).toBeLessThanOrEqual(1);
+  expect(Math.max(...f.mono.map((m) => m.rms))).toBeGreaterThan(0.001);
+
+  // Released: nothing more arrives after `ended`.
+  await page.waitForTimeout(500); // a negative check: nothing may arrive in this time
+  const later = await frames(page);
+  expect(later.monoCount).toBe(f.monoCount);
+  expect(later.stereoCount).toBe(f.stereoCount);
+});
+
+test('clip and microphone frames have the same shape', async ({ page }) => {
+  await recordGetUserMedia(page);
+  await page.goto(HARNESS);
+
+  await page.getByRole('button', { name: 'Start microphone' }).click();
+  await waitForFrames(page, 1, 2);
+  const mic = await frames(page);
+  await page.getByRole('button', { name: 'Stop' }).click();
+  await expect.poll(() => status(page), WAIT).toBe('idle');
+
+  await startClip(page);
+  await waitForFrames(page, 1, 2);
+  const clip = await frames(page);
+  await page.getByRole('button', { name: 'Stop' }).click();
+
+  expect(clip.mono[0].fields).toBe(mic.mono[0].fields);
+  expect(clip.mono[0].fields).toBe('index,sampleRate,samples,startSec');
+  expect(clip.stereo[0].fields).toBe(mic.stereo[0].fields);
+  expect(clip.stereo[0].fields).toBe('left,right,sampleRate,startSample,startSec');
+  expect(clip.mono[0].length).toBe(mic.mono[0].length);
+  expect(clip.mono[0].sampleRate).toBe(mic.mono[0].sampleRate);
+  expect(clip.stereo[0].leftLength).toBe(mic.stereo[0].leftLength);
+  expect(clip.stereo[0].leftLength).toBe(1024);
+});
+
+for (const [name, code] of [
+  ['NotAllowedError', 'permission-denied'],
+  ['NotFoundError', 'no-device'],
+  ['NotReadableError', 'device-busy'],
+] as const) {
+  test(`${name} from getUserMedia gives ${code}, and a clip still starts after it`, async ({ page }) => {
+    await page.addInitScript((errorName) => {
+      navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('stubbed failure', errorName));
+    }, name);
+    await page.goto(HARNESS);
+    await page.getByRole('button', { name: 'Start microphone' }).click();
+    await expect.poll(() => status(page), WAIT).toBe('error');
+    const failed = (await state(page)) as Extract<CaptureState, { status: 'error' }>;
+    expect(failed.error.code).toBe(code);
+    expect(failed.error.message.length).toBeGreaterThan(0);
+    expect(failed.error.message).not.toContain('stubbed failure');
+    await expect(page.locator('#status')).toContainText(code);
+
+    await startClip(page);
+    await expect.poll(() => status(page), WAIT).toBe('listening');
+    await waitForFrames(page, 0, 2);
+    await page.getByRole('button', { name: 'Stop' }).click();
+    await expect.poll(() => status(page), WAIT).toBe('idle');
+  });
+}
+
+test('makes no request outside the page, its modules and the clips', async ({ page, baseURL }) => {
+  const origin = new URL(baseURL!).origin;
+  const requests: string[] = [];
+  page.on('request', (request) => requests.push(request.url()));
+  const allowed = (url: URL) =>
+    url.pathname === HARNESS ||
+    url.pathname === '/favicon.svg' ||
+    url.pathname === '/clips/manifest.json' ||
+    /^\/clips\/[\w-]+(?:\.[\w-]+)*\.wav$/.test(url.pathname) ||
+    ['/src/', '/@vite/', '/@id/', '/node_modules/'].some((prefix) => url.pathname.startsWith(prefix));
+
+  await recordGetUserMedia(page);
+  await page.goto(HARNESS);
+  await page.getByRole('button', { name: 'Start microphone' }).click();
+  await waitForFrames(page, 2, 40);
+  await page.getByRole('button', { name: 'Stop' }).click();
+  await expect.poll(() => status(page), WAIT).toBe('idle');
+  await startClip(page);
+  await expect.poll(() => status(page), CLIP_WAIT).toBe('ended');
+
+  expect(requests.length).toBeGreaterThan(0);
+  const unexpected = requests.filter((raw) => {
+    const url = new URL(raw);
+    if (url.protocol === 'data:' || url.protocol === 'blob:') return false;
+    return url.origin !== origin || !allowed(url);
+  });
+  expect(unexpected, unexpected.join('\n')).toEqual([]);
+  expect(requests.filter((r) => r.includes('/clips/'))).toEqual([`${origin}/clips/manifest.json`, `${origin}/clips/doorbell-01.wav`]);
+});
+
 test('harness controls are reachable by keyboard with visible focus and labels', async ({ page }) => {
   await recordGetUserMedia(page);
   await page.goto(HARNESS);
