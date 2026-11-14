@@ -59,7 +59,7 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
   - [x] 7.2 Prove the tests can fail. Change the code one way at a time and confirm at least one test fails each time, then restore: `max` to `sum`; `>=` to `>`; reverse `CLASS_PRIORITY`; count unmapped scores into a specific class; remove one Rule name; change a shard's bytes; skip `tidy` disposal in `classify`; add an `import '../ui/...'` to a classify file. Do not commit the broken versions. Put the outcome in the commit message.
     - _Requirements: 9.4_
 
-- [ ] 8. Final checks
+- [x] 8. Final checks
   - Run `bun run typecheck`, `bun run test` and `bun run build`, then `bun run e2e` (no e2e change expected), and confirm they pass.
   - Check that the build has a separate TF.js chunk, that `dist/models/yamnet/` has the files unchanged (compare `SHA256SUMS`), and that `grep -rn "tfhub.dev\|kaggle.com\|storage.googleapis.com" dist src/classify` finds nothing.
   - Check `grep -rn "console\." src/classify` finds no logging of samples, scores or URLs.
