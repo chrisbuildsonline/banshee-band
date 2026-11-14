@@ -1,0 +1,46 @@
+YAMNet model files for Banshee Band
+===================================
+
+Retrieved: 2026-11-14
+Files are unmodified. They are byte-for-byte as downloaded (see SHA256SUMS).
+
+Files and origin
+----------------
+
+model.json, group1-shard1of4.bin, group1-shard2of4.bin,
+group1-shard3of4.bin, group1-shard4of4.bin
+  Model:     YAMNet, TensorFlow.js graph model, variant "tfjs", version 1
+  Publisher: Google
+  Source:    https://www.kaggle.com/models/google/yamnet/tfJs/tfjs/1
+             (download: https://www.kaggle.com/api/v1/models/google/yamnet/tfJs/tfjs/1/download,
+             archive yamnet-tfjs-tfjs-v1.tar.gz; the same files are served for
+             https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1)
+  Licence:   Apache License, Version 2.0 (as stated on the Kaggle Models listing)
+
+yamnet_class_map.csv
+  Source:    https://github.com/tensorflow/models/blob/master/research/audioset/yamnet/yamnet_class_map.csv
+             (raw: https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv)
+  Licence:   Apache License, Version 2.0 (the tensorflow/models repository licence)
+  The class names (display_name) and machine ids (mid) come from the AudioSet
+  ontology by Google, https://github.com/audioset/ontology and
+  https://research.google.com/audioset/. As published there, the ontology is
+  made available by Google Inc. under a Creative Commons Attribution-ShareAlike
+  4.0 International (CC BY-SA 4.0) licence,
+  https://creativecommons.org/licenses/by-sa/4.0/.
+
+Apache License notice
+---------------------
+
+Copyright Google LLC.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use these files except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

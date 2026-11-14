@@ -2,14 +2,14 @@
 
 Each task is small. Where the code is pure, write the test first, see it fail, then write the code. Run `bun run typecheck` and `bun run test` after each task. Requirement numbers refer to `requirements.md`. The spike in task 1 comes first because the rest depends on the model running in Node.
 
-- [ ] 1. Spike: get the real model and run it in Node
-  - [ ] 1.1 Download the YAMNet TF.js graph model and `yamnet_class_map.csv` into `public/models/yamnet/`, unchanged. Record the exact source URLs, version and retrieval date. Check the licence of the model and of the AudioSet ontology as published by their sources. If the total size is over 50 MB, stop and ask.
+- [x] 1. Spike: get the real model and run it in Node
+  - [x] 1.1 Download the YAMNet TF.js graph model and `yamnet_class_map.csv` into `public/models/yamnet/`, unchanged. Record the exact source URLs, version and retrieval date. Check the licence of the model and of the AudioSet ontology as published by their sources. If the total size is over 50 MB, stop and ask.
     - _Requirements: 1.1, 1.2, 1.7_
-  - [ ] 1.2 Write `public/models/yamnet/LICENSE.txt` (Apache 2.0 notice, per-file origin table, retrieval date, "unmodified") and `SHA256SUMS`.
+  - [x] 1.2 Write `public/models/yamnet/LICENSE.txt` (Apache 2.0 notice, per-file origin table, retrieval date, "unmodified") and `SHA256SUMS`.
     - _Requirements: 1.3, 1.4_
-  - [ ] 1.3 Add `@tensorflow/tfjs` to `dependencies` at an exact version (no `^`). Write a throwaway script outside `src/` that serves `public/models` through a `fetchFunc` (the first draft of `tests/classify/fs-fetch.ts`), loads the model with `tf.loadGraphModel` on the `cpu` backend, runs one 15600-sample frame of zeros and one clip frame, and prints `model.inputs`, the output shapes and order, the load time and the time per frame.
+  - [x] 1.3 Add `@tensorflow/tfjs` to `dependencies` at an exact version (no `^`). Write a throwaway script outside `src/` that serves `public/models` through a `fetchFunc` (the first draft of `tests/classify/fs-fetch.ts`), loads the model with `tf.loadGraphModel` on the `cpu` backend, runs one 15600-sample frame of zeros and one clip frame, and prints `model.inputs`, the output shapes and order, the load time and the time per frame.
     - _Requirements: 1.5, 5.3, 5.12, 11.3_
-  - [ ] 1.4 Write the findings in the "Measured values" table in `design.md`. If an op is missing on `cpu`, the model input shape differs from 1-D, or a frame takes more than 10 s, stop and tell the user before going on. Delete the throwaway script.
+  - [x] 1.4 Write the findings in the "Measured values" table in `design.md`. If an op is missing on `cpu`, the model input shape differs from 1-D, or a frame takes more than 10 s, stop and tell the user before going on. Delete the throwaway script.
 
 - [ ] 2. Class map parser, test first
   - [ ] 2.1 Create `src/classify/constants.ts`, `src/classify/types.ts` and `src/classify/vite-env.d.ts`.
