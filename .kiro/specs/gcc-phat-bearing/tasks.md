@@ -12,10 +12,10 @@ Each task is small and ends in a test gate. For pure code, write the test first,
     - _Requirements: 1.2-1.4, 1.7, 13.2_
   - **Gate:** `typecheck` and `test` pass.
 
-- [ ] 2. FFT
-  - [ ] 2.1 Write `tests/bearing/fft.test.ts`: naive DFT comparison for sizes 2 to 256, `ifft(fft(x))` round trip, Parseval, impulse and single-bin inputs, `RangeError` for 0, 1, 3, 6, 100. Add a stub and confirm failure.
+- [x] 2. FFT
+  - [x] 2.1 Write `tests/bearing/fft.test.ts`: naive DFT comparison for sizes 2 to 256, `ifft(fft(x))` round trip, Parseval, impulse and single-bin inputs, `RangeError` for 0, 1, 3, 6, 100. Add a stub and confirm failure.
     - _Requirements: 3.1, 3.2_
-  - [ ] 2.2 Implement `src/bearing/fft.ts` (`createFftPlan`, `fft`, `ifft`, in place, tables built once).
+  - [x] 2.2 Implement `src/bearing/fft.ts` (`createFftPlan`, `fft`, `ifft`, in place, tables built once).
   - **Gate:** `fft.test.ts` passes, no new import in `boundaries.test.ts` fails.
 
 - [ ] 3. GCC-PHAT core and interpolation
