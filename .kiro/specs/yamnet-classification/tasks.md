@@ -19,12 +19,12 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
   - [x] 2.3 Implement `parseClassMap` until the tests pass. Also run it on the real CSV.
     - _Requirements: 2.1-2.5_
 
-- [ ] 3. Label map, test first
-  - [ ] 3.1 Read the real `yamnet_class_map.csv` and write down, for each of the six specific classes, every display name that fits by its meaning. Decide the placement of overlapping names (sirens, `Beep, bleep`, `Child speech`, `Door`, `Thump, thud`). Do not look at the clip results yet.
+- [x] 3. Label map, test first
+  - [x] 3.1 Read the real `yamnet_class_map.csv` and write down, for each of the six specific classes, every display name that fits by its meaning. Decide the placement of overlapping names (sirens, `Beep, bleep`, `Child speech`, `Door`, `Thump, thud`). Do not look at the clip results yet.
     - _Requirements: 3.8_
-  - [ ] 3.2 Write `tests/classify/labelmap.test.ts` (Requirement 8.2 to 8.8): real CSV, rule names exist, coverage of 521, named examples, `classForIndex`, `buildLabelMap` failures from modified copies. Add a stub `buildLabelMap`, and confirm failure.
+  - [x] 3.2 Write `tests/classify/labelmap.test.ts` (Requirement 8.2 to 8.8): real CSV, rule names exist, coverage of 521, named examples, `classForIndex`, `buildLabelMap` failures from modified copies. Add a stub `buildLabelMap`, and confirm failure.
     - _Requirements: 8.2-8.8, 8.11_
-  - [ ] 3.3 Create `src/classify/rules.ts` and `src/classify/labelmap.ts` until the tests pass. Copy the final Rule lists into the "Measured values" table in `design.md`, and note any name from Requirement 3.8 or 8.6 that is not in the real CSV, with its replacement.
+  - [x] 3.3 Create `src/classify/rules.ts` and `src/classify/labelmap.ts` until the tests pass. Copy the final Rule lists into the "Measured values" table in `design.md`, and note any name from Requirement 3.8 or 8.6 that is not in the real CSV, with its replacement.
     - _Requirements: 3.1-3.10_
 
 - [ ] 4. Aggregation, test first
