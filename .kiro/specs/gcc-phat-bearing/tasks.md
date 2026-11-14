@@ -2,13 +2,13 @@
 
 Each task is small and ends in a test gate. For pure code, write the test first, see it fail for the right reason (a stub that throws `not implemented`), then implement. Run `bun run typecheck` and `bun run test` at every gate. Requirement numbers refer to `requirements.md`. Do not add dependencies.
 
-- [ ] 1. Contract, constants and geometry
-  - [ ] 1.1 Create `src/bearing/constants.ts`, `types.ts` and `index.ts` (types and constants only; add the sign-convention and left/right-only comment to `index.ts`).
+- [x] 1. Contract, constants and geometry
+  - [x] 1.1 Create `src/bearing/constants.ts`, `types.ts` and `index.ts` (types and constants only; add the sign-convention and left/right-only comment to `index.ts`).
     - _Requirements: 1.1, 13.3_
-  - [ ] 1.2 Write `tests/bearing/geometry.test.ts` (defaults, `RangeError` per bad field, `maxLagSamples` at 16000/44100/48000 Hz, asin mapping, clamping, oddness, round trip). Add a stub `src/bearing/geometry.ts` and confirm failure.
+  - [x] 1.2 Write `tests/bearing/geometry.test.ts` (defaults, `RangeError` per bad field, `maxLagSamples` at 16000/44100/48000 Hz, asin mapping, clamping, oddness, round trip). Add a stub `src/bearing/geometry.ts` and confirm failure.
     - _Requirements: 2.1-2.6_
-  - [ ] 1.3 Implement `geometry.ts` until the tests pass.
-  - [ ] 1.4 Write `tests/bearing/boundaries.test.ts`: scan `src/bearing/*.ts` for imports other than `../audio/types` (type only), `../events` and `./*`, and for the forbidden identifiers (`fetch`, `XMLHttpRequest`, `WebSocket`, `navigator`, `window`, `document`, `console`, `Date`, `Math.random`).
+  - [x] 1.3 Implement `geometry.ts` until the tests pass.
+  - [x] 1.4 Write `tests/bearing/boundaries.test.ts`: scan `src/bearing/*.ts` for imports other than `../audio/types` (type only), `../events` and `./*`, and for the forbidden identifiers (`fetch`, `XMLHttpRequest`, `WebSocket`, `navigator`, `window`, `document`, `console`, `Date`, `Math.random`).
     - _Requirements: 1.2-1.4, 1.7, 13.2_
   - **Gate:** `typecheck` and `test` pass.
 
