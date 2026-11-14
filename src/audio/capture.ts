@@ -15,6 +15,8 @@ interface Session {
   ctx?: AudioContext;
   graph?: Graph;
   node?: AudioNode;
+  /** The clip's source node, kept separately so release() needs no Web Audio global. */
+  clipNode?: AudioBufferSourceNode;
   pipeline?: MonoPipeline;
   nextStart: number;
   released: boolean;
@@ -43,10 +45,10 @@ async function release(s: Session): Promise<void> {
     track.onended = null;
     track.stop();
   }
-  if (s.node instanceof AudioBufferSourceNode) {
-    s.node.onended = null;
+  if (s.clipNode) {
+    s.clipNode.onended = null;
     try {
-      s.node.stop();
+      s.clipNode.stop();
     } catch {
       // never started
     }
@@ -199,6 +201,7 @@ export function createCapture(options: CaptureOptions = {}): Capture {
         node.connect(s.graph.input);
         node.start();
         s.node = node;
+        s.clipNode = node;
       }
       session = s;
       setState({ status: 'listening', source, sampleRate: s.ctx.sampleRate, channels, rawProcessing });

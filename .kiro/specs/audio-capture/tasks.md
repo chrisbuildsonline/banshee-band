@@ -62,7 +62,7 @@ Each task is small and test-first where the code is pure: write the test, see it
     - _Requirements: 9.9-9.11, 2.5-2.7, 2.12_
   - [x] 8.4 Run `bun run e2e` and confirm all audio-capture tests pass. If a test is flaky, fix the cause (wait on state, not on time) and do not add retries.
 
-- [ ] 9. Final checks
+- [x] 9. Final checks
   - Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`, and confirm all pass. Confirm the build output has the worklet file and no `capture-harness.html`.
   - Check that `src/audio/` imports nothing from other `src/` modules: `grep -rn "from '\.\./" src/audio`.
   - Check there is no `console.log` of samples or device labels: `grep -rn "console\." src/audio`.
