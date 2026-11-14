@@ -1,0 +1,134 @@
+{
+  "generatedBy": "classify:report",
+  "tfjsVersion": "4.22.0",
+  "backend": "cpu",
+  "modelSha256": "552a4e59884a7fad25dbdbc1bbe75af2a416bca44de12523081d4b55606d59d3",
+  "threshold": 0.15,
+  "overall": {
+    "clips": 6,
+    "passed": 6,
+    "meanFrameAccuracy": 0.7778
+  },
+  "clips": [
+    {
+      "id": "doorbell-01",
+      "file": "doorbell-01.wav",
+      "expected": "doorbell",
+      "clipClass": "doorbell",
+      "pass": true,
+      "frames": 6,
+      "frameAccuracy": 1,
+      "classCounts": {
+        "knock": 0,
+        "doorbell": 6,
+        "alarm": 0,
+        "baby": 0,
+        "vehicle": 0,
+        "voice": 0,
+        "other": 0
+      },
+      "meanConfidence": 0.795,
+      "topLabel": "Doorbell"
+    },
+    {
+      "id": "knock-01",
+      "file": "knock-01.wav",
+      "expected": "knock",
+      "clipClass": "knock",
+      "pass": true,
+      "frames": 11,
+      "frameAccuracy": 0.5455,
+      "classCounts": {
+        "knock": 6,
+        "doorbell": 0,
+        "alarm": 0,
+        "baby": 0,
+        "vehicle": 0,
+        "voice": 0,
+        "other": 5
+      },
+      "meanConfidence": 0.6698,
+      "topLabel": "Knock"
+    },
+    {
+      "id": "alarm-smoke-01",
+      "file": "alarm-smoke-01.wav",
+      "expected": "alarm",
+      "clipClass": "alarm",
+      "pass": true,
+      "frames": 11,
+      "frameAccuracy": 0.4545,
+      "classCounts": {
+        "knock": 0,
+        "doorbell": 0,
+        "alarm": 5,
+        "baby": 0,
+        "vehicle": 0,
+        "voice": 4,
+        "other": 2
+      },
+      "meanConfidence": 0.8708,
+      "topLabel": "Smoke detector, smoke alarm"
+    },
+    {
+      "id": "baby-cry-01",
+      "file": "baby-cry-01.wav",
+      "expected": "baby",
+      "clipClass": "baby",
+      "pass": true,
+      "frames": 18,
+      "frameAccuracy": 1,
+      "classCounts": {
+        "knock": 0,
+        "doorbell": 0,
+        "alarm": 0,
+        "baby": 18,
+        "vehicle": 0,
+        "voice": 0,
+        "other": 0
+      },
+      "meanConfidence": 0.7988,
+      "topLabel": "Crying, sobbing"
+    },
+    {
+      "id": "vehicle-horn-01",
+      "file": "vehicle-horn-01.wav",
+      "expected": "vehicle",
+      "clipClass": "vehicle",
+      "pass": true,
+      "frames": 6,
+      "frameAccuracy": 0.6667,
+      "classCounts": {
+        "knock": 0,
+        "doorbell": 0,
+        "alarm": 0,
+        "baby": 0,
+        "vehicle": 4,
+        "voice": 1,
+        "other": 1
+      },
+      "meanConfidence": 0.8775,
+      "topLabel": "Vehicle horn, car horn, honking"
+    },
+    {
+      "id": "voice-speech-01",
+      "file": "voice-speech-01.wav",
+      "expected": "voice",
+      "clipClass": "voice",
+      "pass": true,
+      "frames": 18,
+      "frameAccuracy": 1,
+      "classCounts": {
+        "knock": 0,
+        "doorbell": 0,
+        "alarm": 0,
+        "baby": 0,
+        "vehicle": 0,
+        "voice": 18,
+        "other": 0
+      },
+      "meanConfidence": 0.9977,
+      "topLabel": "Speech"
+    }
+  ]
+}

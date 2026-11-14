@@ -43,15 +43,15 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
   - [x] 5.4 Create `src/classify/classifier.ts` and `src/classify/index.ts`: dynamic TF.js import, class map and label map load, `loadGraphModel` with `fetchFunc`, warm-up, validation, `tf.tidy`, queue, `dispose`. Only this file imports `@tensorflow/tfjs`. Run the test until it passes.
     - _Requirements: 5.1-5.13, 6.1, 6.4-6.6, 11.4, 11.5_
 
-- [ ] 6. Real clips, threshold and Results file
-  - [ ] 6.1 Create `tests/classify/clip-run.ts` and the clip tests in the integration file (Requirement 7.1 to 7.5, 7.12, 10.4). Create `tests/classify/report.ts` and the `classify:report` script in `package.json`.
+- [x] 6. Real clips, threshold and Results file
+  - [x] 6.1 Create `tests/classify/clip-run.ts` and the clip tests in the integration file (Requirement 7.1 to 7.5, 7.12, 10.4). Create `tests/classify/report.ts` and the `classify:report` script in `package.json`.
     - _Requirements: 7.1-7.8, 7.12, 10.4_
-  - [ ] 6.2 Run `bun run classify:report` once to a scratch location and look at the per-clip output: class counts and top labels for every clip. Write down what each clip's real top AudioSet labels are.
-  - [ ] 6.3 If a clip fails, fix it only in the ways allowed by Requirement 7.11 (Rules by the meaning of the names, the one global `DEFAULT_THRESHOLD`, or the aggregation method with a recorded reason). Do not edit a clip, the manifest or an Expected class. After every change, re-run the unit and property tests, since a Rule change can break a named example. Record each change and its reason in `design.md`.
+  - [x] 6.2 Run `bun run classify:report` once to a scratch location and look at the per-clip output: class counts and top labels for every clip. Write down what each clip's real top AudioSet labels are.
+  - [x] 6.3 If a clip fails, fix it only in the ways allowed by Requirement 7.11 (Rules by the meaning of the names, the one global `DEFAULT_THRESHOLD`, or the aggregation method with a recorded reason). Do not edit a clip, the manifest or an Expected class. After every change, re-run the unit and property tests, since a Rule change can break a named example. Record each change and its reason in `design.md`.
     - _Requirements: 7.11, 4.9_
-  - [ ] 6.4 When all 6 clips pass, run `bun run classify:report` to write `tests/classify/clip-results.json`, and review it. Add the comparison with the committed file to the integration test (Requirement 7.9). Commit the Results file. Write the final threshold, the reason, the per-clip accuracy and the one-sentence caveat from Requirement 7.10 into `design.md`.
+  - [x] 6.4 When all 6 clips pass, run `bun run classify:report` to write `tests/classify/clip-results.json`, and review it. Add the comparison with the committed file to the integration test (Requirement 7.9). Commit the Results file. Write the final threshold, the reason, the per-clip accuracy and the one-sentence caveat from Requirement 7.10 into `design.md`.
     - _Requirements: 4.9, 7.5-7.10_
-  - [ ] 6.5 If a clip cannot pass with a fair change, do not mark this task done. Record the Results file with the failure, describe the cause, and tell the user.
+  - [x] 6.5 If a clip cannot pass with a fair change, do not mark this task done. Record the Results file with the failure, describe the cause, and tell the user.
 
 - [ ] 7. Model file checks, boundary check and mutation check
   - [ ] 7.1 Create `tests/classify/model-files.test.ts` (Requirement 10.11) and `tests/classify/imports.test.ts` (Requirement 10.12). Also assert `FRAME_SIZE === WINDOW_SIZE` from `src/audio`.

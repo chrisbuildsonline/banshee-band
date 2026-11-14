@@ -4,8 +4,9 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { WINDOW_SIZE } from '../../src/audio';
 import { createFramer } from '../../src/audio/framer';
-import { ClassifyError, createClassifier, type Classification, type Classifier } from '../../src/classify';
+import { ClassifyError, createClassifier, DEFAULT_THRESHOLD, type Classification, type Classifier } from '../../src/classify';
 import { FRAME_SIZE } from '../../src/classify/constants';
+import { RESULTS_FILE, runClips, type ClipReport } from './clip-run';
 import { createFsFetch, PUBLIC_DIR, TEST_ORIGIN, type FsFetch } from './fs-fetch';
 import { readPcm16k } from './wav';
 
@@ -123,6 +124,37 @@ describe('classifier with the real YAMNet model', { timeout: 120_000 }, () => {
     const after1 = tf.memory().numTensors;
     for (let i = 2; i <= 50; i++) await classifier.classify(frame);
     expect(tf.memory().numTensors).toBe(after1);
+  });
+
+  it('classifies every clip in the manifest to its expected class', async () => {
+    const { report, meanMs } = await runClips(classifier, {
+      tfjsVersion: tf.version.tfjs,
+      backend: tf.getBackend(),
+      threshold: DEFAULT_THRESHOLD,
+    });
+    for (const c of report.clips) {
+      console.log(`clip ${c.id}: ${c.clipClass} (expected ${c.expected}), ${c.frames} frames, mean classify ${meanMs[c.id].toFixed(1)} ms`);
+    }
+    for (const c of report.clips) {
+      expect(c.clipClass, `${c.id}: ${JSON.stringify(c.classCounts)}`).toBe(c.expected);
+    }
+
+    // The fresh run must match the committed Results file. Never written here.
+    const committed = JSON.parse(readFileSync(RESULTS_FILE, 'utf8')) as ClipReport;
+    const hint = 'differs from tests/classify/clip-results.json: run `bun run classify:report` and review the diff';
+    expect(report.threshold, `threshold ${hint}`).toBe(committed.threshold);
+    expect(report.clips.map((c) => c.id), `clip list ${hint}`).toEqual(committed.clips.map((c) => c.id));
+    report.clips.forEach((c, i) => {
+      const old = committed.clips[i];
+      const exact = ['id', 'file', 'expected', 'clipClass', 'pass', 'frames', 'classCounts', 'topLabel'] as const;
+      for (const key of exact) expect(c[key], `${c.id}.${key} ${hint}`).toEqual(old[key]);
+      expect(Math.abs(c.frameAccuracy - old.frameAccuracy), `${c.id}.frameAccuracy ${hint}`).toBeLessThanOrEqual(0.01);
+      if (c.meanConfidence === null || old.meanConfidence === null) {
+        expect(c.meanConfidence, `${c.id}.meanConfidence ${hint}`).toBe(old.meanConfidence);
+      } else {
+        expect(Math.abs(c.meanConfidence - old.meanConfidence), `${c.id}.meanConfidence ${hint}`).toBeLessThanOrEqual(0.01);
+      }
+    });
   });
 
   it('rejects classify after dispose with code disposed', async () => {
