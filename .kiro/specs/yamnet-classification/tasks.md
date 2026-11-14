@@ -11,12 +11,12 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
     - _Requirements: 1.5, 5.3, 5.12, 11.3_
   - [x] 1.4 Write the findings in the "Measured values" table in `design.md`. If an op is missing on `cpu`, the model input shape differs from 1-D, or a frame takes more than 10 s, stop and tell the user before going on. Delete the throwaway script.
 
-- [ ] 2. Class map parser, test first
-  - [ ] 2.1 Create `src/classify/constants.ts`, `src/classify/types.ts` and `src/classify/vite-env.d.ts`.
+- [x] 2. Class map parser, test first
+  - [x] 2.1 Create `src/classify/constants.ts`, `src/classify/types.ts` and `src/classify/vite-env.d.ts`.
     - _Requirements: 11.4_
-  - [ ] 2.2 Write `tests/classify/classmap.test.ts` (Requirement 8.1) and the parser round-trip property in `tests/classify/aggregate.property.test.ts` (Requirement 9.3). Add a stub `src/classify/classmap.ts` that throws `not implemented`, and confirm the tests fail for that reason.
+  - [x] 2.2 Write `tests/classify/classmap.test.ts` (Requirement 8.1) and the parser round-trip property in `tests/classify/aggregate.property.test.ts` (Requirement 9.3). Add a stub `src/classify/classmap.ts` that throws `not implemented`, and confirm the tests fail for that reason.
     - _Requirements: 8.1, 9.3_
-  - [ ] 2.3 Implement `parseClassMap` until the tests pass. Also run it on the real CSV.
+  - [x] 2.3 Implement `parseClassMap` until the tests pass. Also run it on the real CSV.
     - _Requirements: 2.1-2.5_
 
 - [ ] 3. Label map, test first
