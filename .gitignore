@@ -9,3 +9,7 @@ CLAUDE.md
 .claude/
 design/refs/
 # never ignore .kiro/: the hackathon requires it in the repo
+.claude/settings.local.json
+e2e/screenshots/*.png
+test-results/
+playwright-report/
