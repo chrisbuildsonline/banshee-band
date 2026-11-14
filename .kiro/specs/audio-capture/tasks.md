@@ -2,12 +2,12 @@
 
 Each task is small and test-first where the code is pure: write the test, see it fail, then write the code. Run `bun run typecheck` and `bun run test` after each task. Run `bun run e2e` after tasks 7 and 8. Requirement numbers refer to `requirements.md`.
 
-- [ ] 1. Constants, types, error mapping and test helper
-  - [ ] 1.1 Create `src/audio/constants.ts` (`YAMNET_RATE`, `WINDOW_SIZE`, `HOP_SIZE`, `STEREO_BLOCK`, rate limits) and `src/audio/types.ts` (all types from design.md).
+- [x] 1. Constants, types, error mapping and test helper
+  - [x] 1.1 Create `src/audio/constants.ts` (`YAMNET_RATE`, `WINDOW_SIZE`, `HOP_SIZE`, `STEREO_BLOCK`, rate limits) and `src/audio/types.ts` (all types from design.md).
     - _Requirements: 1.1-1.6, 4.6, 6.2, 7.4_
-  - [ ] 1.2 Write `tests/audio/errors.test.ts` (table of error names to codes, non-Error values, no unsafe words in messages), then create `src/audio/errors.ts` with `toCaptureError` until it passes.
+  - [x] 1.2 Write `tests/audio/errors.test.ts` (table of error names to codes, non-Error values, no unsafe words in messages), then create `src/audio/errors.ts` with `toCaptureError` until it passes.
     - _Requirements: 1.6, 1.7, 2.5-2.10, 8.10_
-  - [ ] 1.3 Create `tests/audio/spectrum.ts` (`sine`, `toneAmplitude`, `dominantFrequency`) with `tests/audio/spectrum.test.ts` (known sine gives known amplitude within 1%, a tone 500 Hz away reads near zero).
+  - [x] 1.3 Create `tests/audio/spectrum.ts` (`sine`, `toneAmplitude`, `dominantFrequency`) with `tests/audio/spectrum.test.ts` (known sine gives known amplitude within 1%, a tone 500 Hz away reads near zero).
     - _Requirements: 8.2_
 
 - [ ] 2. Write the resampler tests (they fail first)
