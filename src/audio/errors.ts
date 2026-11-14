@@ -29,8 +29,23 @@ const NAME_TO_CODE: Record<string, CaptureErrorCode> = {
   TrackStartError: 'device-busy',
 };
 
+/** Used when the microphone stops by itself while listening (unplugged, permission revoked). */
+export const MIC_STOPPED_MESSAGE = 'The microphone stopped. Check that it is connected and allowed, then start again.';
+/** Used when a stereo block is missing, so the stream time would be wrong. */
+export const LOST_AUDIO_MESSAGE = 'Some audio was lost, so listening stopped. Start again.';
+
 export function captureError(code: CaptureErrorCode, message = CAPTURE_MESSAGES[code]): CaptureError {
   return { code, message };
+}
+
+/** Carries an expected capture failure from the Web Audio code to the Capture state machine. */
+export class CaptureFailure extends Error {
+  readonly error: CaptureError;
+  constructor(error: CaptureError) {
+    super(error.code);
+    this.name = 'CaptureFailure';
+    this.error = error;
+  }
 }
 
 function errorName(thrown: unknown): string | undefined {

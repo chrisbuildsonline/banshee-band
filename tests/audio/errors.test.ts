@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAPTURE_MESSAGES, toCaptureError } from '../../src/audio/errors';
+import { CAPTURE_MESSAGES, LOST_AUDIO_MESSAGE, MIC_STOPPED_MESSAGE, toCaptureError } from '../../src/audio/errors';
 
 const OK_ENV = { hasMediaDevices: true, isSecureContext: true };
 const UNSAFE_WORDS = /protect|safe|guarantee/i;
@@ -67,6 +67,13 @@ describe('toCaptureError', () => {
     expect(Object.keys(CAPTURE_MESSAGES).sort()).toEqual(
       ['clip-load-failed', 'clip-not-found', 'device-busy', 'insecure-context', 'no-device', 'permission-denied', 'unknown', 'unsupported', 'worklet-failed'],
     );
+  });
+
+  it('keeps the extra messages plain and free of safety claims', () => {
+    for (const message of [MIC_STOPPED_MESSAGE, LOST_AUDIO_MESSAGE]) {
+      expect(message.length).toBeGreaterThan(20);
+      expect(message).not.toMatch(UNSAFE_WORDS);
+    }
   });
 
   it('returns the message that belongs to the code', () => {

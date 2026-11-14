@@ -41,16 +41,16 @@ Each task is small and test-first where the code is pure: write the test, see it
   - Restore after each change, then run `bun run test` and confirm everything passes. Do not commit the broken versions. Note the result in the commit message.
   - _Requirements: 8.12_
 
-- [ ] 7. Web Audio graph, microphone path and capture API
-  - [ ] 7.1 Add `src/audio/worklet-globals.d.ts` and `src/audio/tap.worklet.ts` (block size option, zero fill for missing input, transferred blocks, `flush` message). Confirm `bun run typecheck` and `bun run build` accept the worklet. Record in a comment which import form works for the worklet URL (`?worker&url` or `new URL`).
+- [x] 7. Web Audio graph, microphone path and capture API
+  - [x] 7.1 Add `src/audio/worklet-globals.d.ts` and `src/audio/tap.worklet.ts` (block size option, zero fill for missing input, transferred blocks, `flush` message). Confirm `bun run typecheck` and `bun run build` accept the worklet. Record in a comment which import form works for the worklet URL (`?worker&url` or `new URL`).
     - _Requirements: 4.3-4.8, 10.7_
-  - [ ] 7.2 Create `src/audio/graph.ts` (context, stereo input stage, Tap, muted output) and `src/audio/mic.ts` (constraints, settings, `rawProcessing`, track `onended`).
+  - [x] 7.2 Create `src/audio/graph.ts` (context, stereo input stage, Tap, muted output) and `src/audio/mic.ts` (constraints, settings, `rawProcessing`, track `onended`).
     - _Requirements: 2.1-2.4, 2.11, 4.1, 4.2, 4.9_
-  - [ ] 7.3 Create `src/audio/capture.ts` and `src/audio/index.ts`: state machine, listeners with `try/catch`, `generation` guard, idempotent `release()`, check that blocks are contiguous, retry `resume()` once. Nothing runs at import time.
+  - [x] 7.3 Create `src/audio/capture.ts` and `src/audio/index.ts`: state machine, listeners with `try/catch`, `generation` guard, idempotent `release()`, check that blocks are contiguous, retry `resume()` once. Nothing runs at import time.
     - _Requirements: 1.1-1.13, 2.12, 2.13, 4.7, 10.2, 10.4_
-  - [ ] 7.4 Create `capture-harness.html` and `src/audio/harness.ts` (buttons `Start microphone`, `Start clip`, `Stop`, clip id field, status and log, `window.__frames` metadata only). Do not add it to `vite.config.ts` inputs.
+  - [x] 7.4 Create `capture-harness.html` and `src/audio/harness.ts` (buttons `Start microphone`, `Start clip`, `Stop`, clip id field, status and log, `window.__frames` metadata only). Do not add it to `vite.config.ts` inputs.
     - _Requirements: 9.2, 9.14_
-  - [ ] 7.5 Create `e2e/audio-capture.spec.ts` with the microphone test (constraints, shapes, spacing, stop) and the keyboard test, using `test.use({ launchOptions: { args } })` with both fake-device flags. Run `bun run e2e` and confirm they pass.
+  - [x] 7.5 Create `e2e/audio-capture.spec.ts` with the microphone test (constraints, shapes, spacing, stop) and the keyboard test, using `test.use({ launchOptions: { args } })` with both fake-device flags. Run `bun run e2e` and confirm they pass.
     - _Requirements: 9.1, 9.3-9.5, 9.12-9.14_
 
 - [ ] 8. Clip path and the remaining browser tests

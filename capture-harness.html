@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Audio capture test harness</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/ui/tokens.css" />
+    <link rel="stylesheet" href="/src/ui/styleguide.css" />
+    <style>
+      .harness-field {
+        display: grid;
+        gap: var(--bb-space-1);
+      }
+      .harness-field input {
+        min-height: var(--bb-target-min);
+        padding: 0 var(--bb-space-3);
+        border: 1px solid var(--bb-color-border);
+        border-radius: var(--bb-radius-control);
+        background-color: var(--bb-color-surface);
+        color: var(--bb-color-text);
+        font: inherit;
+      }
+      .harness-out {
+        margin: 0;
+        padding: var(--bb-space-3);
+        border-radius: var(--bb-radius-control);
+        background-color: var(--bb-color-surface-raised);
+        font-size: var(--bb-type-caption-size);
+        line-height: var(--bb-type-caption-line);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body class="bb-page">
+    <main class="bb-shell">
+      <header class="bb-hero">
+        <p class="bb-eyebrow">Test harness</p>
+        <h1 class="bb-title">Audio capture</h1>
+        <p class="bb-muted">A page for automated tests of the audio input. It records frame sizes and timing only, never sound.</p>
+      </header>
+      <section class="bb-card" aria-labelledby="controls-heading">
+        <h2 id="controls-heading" class="bb-heading">Controls</h2>
+        <div class="bb-row">
+          <button id="start-mic" type="button" class="bb-pill bb-pill--primary">Start microphone</button>
+          <div class="harness-field">
+            <label for="clip-id" class="bb-label">Clip id</label>
+            <input id="clip-id" type="text" value="doorbell-01" autocomplete="off" spellcheck="false" />
+          </div>
+          <button id="start-clip" type="button" class="bb-pill bb-pill--secondary">Start clip</button>
+          <button id="stop" type="button" class="bb-pill bb-pill--secondary">Stop</button>
+        </div>
+      </section>
+      <section class="bb-card" aria-labelledby="status-heading">
+        <h2 id="status-heading" class="bb-heading">State</h2>
+        <pre id="status" class="harness-out" aria-live="polite">{"status":"idle"}</pre>
+        <h2 class="bb-heading">Frames</h2>
+        <pre id="log" class="harness-out">mono 0, stereo 0</pre>
+      </section>
+    </main>
+    <script type="module" src="/src/audio/harness.ts"></script>
+  </body>
+</html>
