@@ -17,7 +17,7 @@ Important household and street sounds go unnoticed. Existing aids are single-pur
 ## Core flows
 
 1. **Listen**: capture stereo microphone audio in the browser. If there is no microphone, play recorded CC0 clips from `public/clips`.
-2. **Classify**: YAMNet (TensorFlow.js) labels the sound. Labels map to the supported classes: knock, alarm, voice, vehicle, baby.
+2. **Classify**: YAMNet (TensorFlow.js) labels the sound. Labels map to the seven sound classes: knock, doorbell, alarm, baby, vehicle, voice, other.
 3. **Bearing**: the GCC-PHAT module estimates which side the sound came from using the stereo channels.
 4. **Haptic alert**: the haptic priority engine picks a vibration pattern for the class and a stronger buzz on the matching side. Output goes to the ESP32 band over Web Bluetooth, the software band simulator, or `navigator.vibrate` as the phone fallback.
 5. **Ghost**: the canvas renderer shows each sound as a ghost. Shape = sound class, position = bearing, glow = urgency.

@@ -5,6 +5,7 @@ inclusion: always
 # Structure
 
 ```
+src/events/     SoundEvent contract: type, class constants, validator
 src/audio/      microphone and clip input, stereo capture, framing
 src/classify/   YAMNet loading and inference, label-to-class mapping
 src/bearing/    GCC-PHAT bearing estimation
@@ -22,6 +23,7 @@ design/DESIGN.md  UI source of truth
 
 ## Rules
 
+- `src/events/` is a leaf. It imports nothing from the project, and every module (and `mcp/`) may import it.
 - Dependencies flow one way: audio -> classify and bearing -> haptics -> band and ghosts -> ui. Lower modules must not import from `ui`.
 - `src/band` exposes one output interface. The Bluetooth band, simulator and vibrate fallback implement it, so `haptics` never knows which is active.
 - Modules take plain data in and return plain data out where possible, so they can be tested without a browser.
