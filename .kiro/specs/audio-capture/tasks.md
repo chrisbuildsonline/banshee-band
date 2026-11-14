@@ -10,15 +10,15 @@ Each task is small and test-first where the code is pure: write the test, see it
   - [x] 1.3 Create `tests/audio/spectrum.ts` (`sine`, `toneAmplitude`, `dominantFrequency`) with `tests/audio/spectrum.test.ts` (known sine gives known amplitude within 1%, a tone 500 Hz away reads near zero).
     - _Requirements: 8.2_
 
-- [ ] 2. Write the resampler tests (they fail first)
-  - [ ] 2.1 Create `tests/audio/resampler.test.ts` with the groups from design.md: length, pass band, stop band (9 kHz at 48000, 12 kHz at 44100, 7.9 kHz at both), DC, passthrough, invalid rates, streaming equals one-shot. State the edge length that the measurements skip.
+- [x] 2. Write the resampler tests (they fail first)
+  - [x] 2.1 Create `tests/audio/resampler.test.ts` with the groups from design.md: length, pass band, stop band (9 kHz at 48000, 12 kHz at 44100, 7.9 kHz at both), DC, passthrough, invalid rates, streaming equals one-shot. State the edge length that the measurements skip.
     - _Requirements: 8.1, 8.3, 5.3-5.5, 5.9-5.12_
-  - [ ] 2.2 Create `tests/audio/resampler.property.test.ts` with properties R1 to R7. No fixed seed.
+  - [x] 2.2 Create `tests/audio/resampler.property.test.ts` with properties R1 to R7. No fixed seed.
     - _Requirements: 8.4-8.6, 8.11, 5.5, 5.6, 5.13, 5.14_
-  - [ ] 2.3 Add a stub `src/audio/resampler.ts` that throws `not implemented`. Run the tests and confirm they fail for that reason.
+  - [x] 2.3 Add a stub `src/audio/resampler.ts` that throws `not implemented`. Run the tests and confirm they fail for that reason.
     - _Requirements: 8.12_
 
-- [ ] 3. Implement the resampler
+- [x] 3. Implement the resampler
   - Implement `resample` and `createResampler` as described in design.md: integer ratio reduction, Kaiser windowed-sinc polyphase table (cap 512 rows with linear interpolation), per-row normalisation, streaming history, `flush`, passthrough, `RangeError` for bad rates.
   - Run the tests from task 2 until they pass. Measure the actual attenuation at 7.9 kHz, 9 kHz and 12 kHz and the pass-band ripple, and write the numbers in a comment above the filter design code. If a threshold fails, adjust attenuation target or transition width, and note the change in `design.md`.
   - _Requirements: 5.1-5.15_
