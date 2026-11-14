@@ -33,14 +33,14 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
   - [x] 4.2 Create `src/classify/aggregate.ts` until the tests pass. Use `DEFAULT_THRESHOLD = 0.3` for now.
     - _Requirements: 4.1-4.10_
 
-- [ ] 5. Classifier, loader and error type
-  - [ ] 5.1 Create `src/classify/errors.ts` (`ClassifyError`, fixed plain-language messages, no URLs, no safety promises).
+- [x] 5. Classifier, loader and error type
+  - [x] 5.1 Create `src/classify/errors.ts` (`ClassifyError`, fixed plain-language messages, no URLs, no safety promises).
     - _Requirements: 5.10, 5.11_
-  - [ ] 5.2 Create `tests/classify/fs-fetch.ts` (fake origin, path under `public/`, `..` refused, 404 for a missing file, records URLs) and `tests/classify/wav.ts` (16 kHz mono 16-bit PCM only, a clear error otherwise).
+  - [x] 5.2 Create `tests/classify/fs-fetch.ts` (fake origin, path under `public/`, `..` refused, 404 for a missing file, records URLs) and `tests/classify/wav.ts` (16 kHz mono 16-bit PCM only, a clear error otherwise).
     - _Requirements: 7.2, 10.1_
-  - [ ] 5.3 Write `tests/classify/classifier.integration.test.ts` for Requirements 6.2, 6.3 and 10.5 to 10.10 (loading requests, input handling, purity, order, tensor count, dispose, failure paths), with a 120 s file timeout. Add a stub `createClassifier` and confirm failure.
+  - [x] 5.3 Write `tests/classify/classifier.integration.test.ts` for Requirements 6.2, 6.3 and 10.5 to 10.10 (loading requests, input handling, purity, order, tensor count, dispose, failure paths), with a 120 s file timeout. Add a stub `createClassifier` and confirm failure.
     - _Requirements: 6.2, 6.3, 10.1-10.3, 10.5-10.10_
-  - [ ] 5.4 Create `src/classify/classifier.ts` and `src/classify/index.ts`: dynamic TF.js import, class map and label map load, `loadGraphModel` with `fetchFunc`, warm-up, validation, `tf.tidy`, queue, `dispose`. Only this file imports `@tensorflow/tfjs`. Run the test until it passes.
+  - [x] 5.4 Create `src/classify/classifier.ts` and `src/classify/index.ts`: dynamic TF.js import, class map and label map load, `loadGraphModel` with `fetchFunc`, warm-up, validation, `tf.tidy`, queue, `dispose`. Only this file imports `@tensorflow/tfjs`. Run the test until it passes.
     - _Requirements: 5.1-5.13, 6.1, 6.4-6.6, 11.4, 11.5_
 
 - [ ] 6. Real clips, threshold and Results file
