@@ -2,24 +2,24 @@
 
 Each task is small and test-first: write the test, see it fail, then write the code. Run `bun run typecheck` and `bun run test` after each task. No e2e run is needed, since this feature has no UI. Requirement numbers refer to `requirements.md`.
 
-- [ ] 1. Create the constants and types
+- [x] 1. Create the constants and types
   - Create `src/events/constants.ts` (`SOUND_CLASSES`, `BEARING_SOURCES`, `URGENCY_LEVELS`, bearing range) and `src/events/types.ts` (`SoundEvent` and union types derived from the constants).
   - Create `src/events/index.ts` that re-exports them.
   - Confirm `src/events/` has no imports outside itself.
   - Write a type-level check in `tests/events/types.test.ts`: a sample event of type `SoundEvent` compiles, and `// @ts-expect-error` lines show that a wrong class, a wrong urgency and a missing field fail to compile.
   - _Requirements: 1.1-1.14, 7.2_
 
-- [ ] 2. Write the validator unit tests (they fail first)
-  - [ ] 2.1 Create `tests/events/validate.test.ts` with the `validEvent()` helper and the accept cases and boundary cases from design.md.
+- [x] 2. Write the validator unit tests (they fail first)
+  - [x] 2.1 Create `tests/events/validate.test.ts` with the `validEvent()` helper and the accept cases and boundary cases from design.md.
     - _Requirements: 5.1, 5.2_
-  - [ ] 2.2 Add reject cases: wrong type per field, out of range, `NaN`/`Infinity`, coupling, empty id, blank label, whole-input cases (`null`, primitives, array, function).
+  - [x] 2.2 Add reject cases: wrong type per field, out of range, `NaN`/`Infinity`, coupling, empty id, blank label, whole-input cases (`null`, primitives, array, function).
     - _Requirements: 2.5-2.10, 5.1_
-  - [ ] 2.3 Add hostile-input cases (throwing getter, revoked proxy, null prototype, circular, 1 MB strings) and shape cases (extra fields dropped, new object, input not mutated, all errors reported, no input value in error text).
+  - [x] 2.3 Add hostile-input cases (throwing getter, revoked proxy, null prototype, circular, 1 MB strings) and shape cases (extra fields dropped, new object, input not mutated, all errors reported, no input value in error text).
     - _Requirements: 2.3, 2.4, 2.11-2.14_
-  - [ ] 2.4 Add a stub `src/events/validate.ts` that returns `{ ok: false, errors: ['not implemented'] }`. Run the tests and confirm the accept cases fail.
+  - [x] 2.4 Add a stub `src/events/validate.ts` that returns `{ ok: false, errors: ['not implemented'] }`. Run the tests and confirm the accept cases fail.
     - _Requirements: 5.9_
 
-- [ ] 3. Implement the validator
+- [x] 3. Implement the validator
   - Implement `validateSoundEvent` as described in design.md: outer `try/catch`, read each field once, per-field checks, cross-field check, new object on success, field names only in errors.
   - Export `ValidationResult` and `validateSoundEvent` from `src/events/index.ts`.
   - Run the tests from task 2 until they pass.
