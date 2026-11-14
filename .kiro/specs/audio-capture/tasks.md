@@ -23,10 +23,10 @@ Each task is small and test-first where the code is pure: write the test, see it
   - Run the tests from task 2 until they pass. Measure the actual attenuation at 7.9 kHz, 9 kHz and 12 kHz and the pass-band ripple, and write the numbers in a comment above the filter design code. If a threshold fails, adjust attenuation target or transition width, and note the change in `design.md`.
   - _Requirements: 5.1-5.15_
 
-- [ ] 4. Framer, test first
-  - [ ] 4.1 Create `tests/audio/framer.test.ts` with the examples in Requirement 8.7 and `tests/audio/framer.property.test.ts` with F1 to F6.
+- [x] 4. Framer, test first
+  - [x] 4.1 Create `tests/audio/framer.test.ts` with the examples in Requirement 8.7 and `tests/audio/framer.property.test.ts` with F1 to F6.
     - _Requirements: 8.7, 8.8, 8.11, 6.2-6.12_
-  - [ ] 4.2 Create `src/audio/framer.ts` (`createFramer`, `push`, `reset`, read-only `buffered`) until the tests pass.
+  - [x] 4.2 Create `src/audio/framer.ts` (`createFramer`, `push`, `reset`, read-only `buffered`) until the tests pass.
     - _Requirements: 6.1-6.12_
 
 - [ ] 5. Mono pipeline, test first
