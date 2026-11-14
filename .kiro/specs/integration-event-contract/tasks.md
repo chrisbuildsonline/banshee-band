@@ -51,13 +51,13 @@ Each task is small and test-first: write the test, see it fail, then write the c
   - [x] 6.4 Create `tests/clips/licence.test.ts` (valid block, missing author, missing source, two blocks, blank lines, extra key) and then `tests/clips/licence.ts` with `parseLicence`.
     - _Requirements: 6.7_
 
-- [ ] 7. Write the manifest test (it fails first)
+- [x] 7. Write the manifest test (it fails first)
   - Create `tests/clips/manifest.test.ts` with steps 1 to 7 from design.md. Collect all problems and fail once with the full list.
   - Run it with an empty `manifest.json` (`[]`) and confirm it fails because the manifest is empty. This shows 6.1 does not pass vacuously.
   - Then run it with the current `public/clips` (only `.gitkeep`) and confirm it fails and lists the missing classes.
   - _Requirements: 6.1-6.8, 6.10_
 
-- [ ] 8. Source the clips (manual, one class at a time)
+- [x] 8. Source the clips (manual, one class at a time)
   - For each of `doorbell`, `knock`, `alarm`, `baby`, `vehicle`, `voice`, follow the sourcing procedure in design.md: find a candidate, open the source page and read the licence on it, listen to it, then download.
   - Trim to at most 10 s and convert to 16-bit PCM WAV (16 kHz mono preferred). Save as `public/clips/<name>-01.wav`.
   - Add the entry to `public/clips/LICENSE.txt` (file, source URL, author, licence, licence URL, changes, retrieved date) and to `public/clips/manifest.json` (file, class, label, durationSec, source) in the same step.
@@ -67,7 +67,7 @@ Each task is small and test-first: write the test, see it fail, then write the c
   - Delete `public/clips/.gitkeep` once real files are present.
   - _Requirements: 3.1-3.9, 4.1-4.9_
 
-- [ ] 9. Final checks
+- [x] 9. Final checks
   - Run `bun run typecheck` and `bun run test`, and confirm both pass.
   - Check that `src/events/` has no imports from other `src/` modules or from the DOM, for example with `grep -rn "from '" src/events`.
   - Check that `public/clips` is under 8 MB and holds only `.wav`, `manifest.json` and `LICENSE.txt`.

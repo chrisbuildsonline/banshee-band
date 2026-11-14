@@ -1,0 +1,44 @@
+[
+  {
+    "file": "doorbell-01.wav",
+    "class": "doorbell",
+    "label": "Doorbell",
+    "durationSec": 3.7,
+    "source": "https://commons.wikimedia.org/wiki/File:Sound_Effect_-_Door_Bell.ogg"
+  },
+  {
+    "file": "knock-01.wav",
+    "class": "knock",
+    "label": "Knock at the door",
+    "durationSec": 6.28,
+    "source": "https://freesound.org/people/SamuelGremaud/sounds/426736/"
+  },
+  {
+    "file": "alarm-smoke-01.wav",
+    "class": "alarm",
+    "label": "Smoke alarm",
+    "durationSec": 6,
+    "source": "https://freesound.org/people/erihamster/sounds/136482/"
+  },
+  {
+    "file": "baby-cry-01.wav",
+    "class": "baby",
+    "label": "Baby crying",
+    "durationSec": 9.5,
+    "source": "https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg"
+  },
+  {
+    "file": "vehicle-horn-01.wav",
+    "class": "vehicle",
+    "label": "Car horn",
+    "durationSec": 3.51,
+    "source": "https://commons.wikimedia.org/wiki/File:Car_Horn.wav"
+  },
+  {
+    "file": "voice-speech-01.wav",
+    "class": "voice",
+    "label": "Speech",
+    "durationSec": 9.3,
+    "source": "https://librivox.org/us-historical-documents/"
+  }
+]

@@ -1,0 +1,60 @@
+Banshee Band fallback sound clips
+
+Every clip below is a real recording released under CC0 1.0 Universal or marked Public Domain by its source.
+Each entry records the source page, author and licence as checked on the Retrieved date, when the clip was added.
+All clips were decoded and written as 16 kHz mono 16-bit PCM WAV (stereo sources mixed down to mono).
+
+File: doorbell-01.wav
+Source: https://commons.wikimedia.org/wiki/File:Sound_Effect_-_Door_Bell.ogg
+Download: https://upload.wikimedia.org/wikipedia/commons/3/34/Sound_Effect_-_Door_Bell.ogg
+Author: Amada44
+Licence: CC0 1.0 Universal
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Changes: converted from Ogg Vorbis to 16 kHz mono 16-bit PCM WAV; full length (3.7 s), not trimmed
+Retrieved: 2026-11-14
+
+File: knock-01.wav
+Source: https://freesound.org/people/SamuelGremaud/sounds/426736/
+Download: https://cdn.freesound.org/previews/426/426736_8031303-hq.mp3 (Freesound HQ preview)
+Author: SamuelGremaud
+Licence: CC0 1.0 Universal
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Changes: converted from the stereo MP3 preview to 16 kHz mono 16-bit PCM WAV; full length (6.28 s), not trimmed
+Retrieved: 2026-11-14
+
+File: alarm-smoke-01.wav
+Source: https://freesound.org/people/erihamster/sounds/136482/
+Download: https://cdn.freesound.org/previews/136/136482_2240820-hq.mp3 (Freesound HQ preview)
+Author: erihamster
+Licence: CC0 1.0 Universal
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Changes: converted from the MP3 preview to 16 kHz mono 16-bit PCM WAV; full length (6.0 s), not trimmed
+Retrieved: 2026-11-14
+
+File: baby-cry-01.wav
+Source: https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg
+Download: https://upload.wikimedia.org/wikipedia/commons/2/2b/Crying_newborn_baby.ogg
+Author: the_yura
+Licence: CC0 1.0 Universal
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Changes: trimmed to 8.0 s - 17.5 s of the 23.1 s original (9.5 s), stereo mixed to mono, converted to 16 kHz 16-bit PCM WAV
+Retrieved: 2026-11-14
+
+File: vehicle-horn-01.wav
+Source: https://commons.wikimedia.org/wiki/File:Car_Horn.wav
+Download: https://upload.wikimedia.org/wikipedia/commons/8/8c/Car_Horn.wav
+Author: 15HPanska_Ruttner_Jan
+Licence: CC0 1.0 Universal
+Licence URL: https://creativecommons.org/publicdomain/zero/1.0/
+Changes: stereo mixed to mono and resampled to 16 kHz 16-bit PCM WAV; full length (3.51 s), not trimmed
+Retrieved: 2026-11-14
+
+File: voice-speech-01.wav
+Source: https://librivox.org/us-historical-documents/
+Download: https://archive.org/download/united_states_documents/Gettysburg_64kb.mp3
+Author: Michael Scherer (LibriVox volunteer reader); text: Gettysburg Address by Abraham Lincoln
+Licence: Public Domain
+Licence URL: http://creativecommons.org/licenses/publicdomain/ (as listed on the Internet Archive item https://archive.org/details/united_states_documents)
+Licence note: the LibriVox page states "LibriVox recordings are Public Domain in the USA"
+Changes: trimmed to 22.8 s - 32.1 s of the 2:13 recording (9.3 s, the opening words of the address; the LibriVox introduction is not included), converted from 64 kbps MP3 to 16 kHz mono 16-bit PCM WAV
+Retrieved: 2026-11-14
