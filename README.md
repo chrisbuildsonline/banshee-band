@@ -12,6 +12,20 @@ Banshee Band listens through the device microphones, classifies the sound in the
 
 TypeScript, Vite, Web Audio API, TensorFlow.js with YAMNet, custom GCC-PHAT DSP module, Web Bluetooth, ESP32 firmware (Arduino C++) with two vibration motors, canvas/WebGL for ghosts, Node.js MCP server, Vitest, static hosting. Open-source license (MIT) with the .kiro folder at the repo root.
 
+## Development
+
+Needs [bun](https://bun.sh). Install with `bun install`, then:
+
+| Command | What it does |
+|---|---|
+| `bun run dev` | Vite dev server on http://localhost:5173 |
+| `bun run build` | Type check, then static build to `dist/` |
+| `bun run test` | Vitest unit and property tests, once |
+| `bun run e2e` | Playwright tests (starts the dev server itself; screenshots go to `e2e/screenshots/`) |
+| `bun run typecheck` | `tsc --noEmit` (strict) |
+
+The design system lives in `design/DESIGN.md` and `src/ui/tokens.css`. See it at http://localhost:5173/styleguide.html.
+
 ## License
 
 MIT, see LICENSE.
