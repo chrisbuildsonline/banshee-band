@@ -27,10 +27,10 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
   - [x] 3.3 Create `src/classify/rules.ts` and `src/classify/labelmap.ts` until the tests pass. Copy the final Rule lists into the "Measured values" table in `design.md`, and note any name from Requirement 3.8 or 8.6 that is not in the real CSV, with its replacement.
     - _Requirements: 3.1-3.10_
 
-- [ ] 4. Aggregation, test first
-  - [ ] 4.1 Add the `aggregateScores` unit cases (Requirement 8.9 and 8.10) to `tests/classify/labelmap.test.ts`, and the properties 9.2.1 to 9.2.11 to `tests/classify/aggregate.property.test.ts`, with the independent oracle from `design.md`. Add a stub and confirm failure.
+- [x] 4. Aggregation, test first
+  - [x] 4.1 Add the `aggregateScores` unit cases (Requirement 8.9 and 8.10) to `tests/classify/labelmap.test.ts`, and the properties 9.2.1 to 9.2.11 to `tests/classify/aggregate.property.test.ts`, with the independent oracle from `design.md`. Add a stub and confirm failure.
     - _Requirements: 8.9, 8.10, 9.1, 9.2, 9.5_
-  - [ ] 4.2 Create `src/classify/aggregate.ts` until the tests pass. Use `DEFAULT_THRESHOLD = 0.3` for now.
+  - [x] 4.2 Create `src/classify/aggregate.ts` until the tests pass. Use `DEFAULT_THRESHOLD = 0.3` for now.
     - _Requirements: 4.1-4.10_
 
 - [ ] 5. Classifier, loader and error type

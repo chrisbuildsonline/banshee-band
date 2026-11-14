@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { SOUND_CLASSES } from '../../src/events';
+import { aggregateScores } from '../../src/classify/aggregate';
 import { parseClassMap } from '../../src/classify/classmap';
+import { DEFAULT_THRESHOLD } from '../../src/classify/constants';
 import { buildLabelMap } from '../../src/classify/labelmap';
 import { RULES } from '../../src/classify/rules';
 
@@ -74,6 +76,70 @@ describe('buildLabelMap on the real class map', () => {
     expect(Object.isFrozen(map.names)).toBe(true);
     expect(Object.isFrozen(map.members)).toBe(true);
     for (const c of SOUND_CLASSES) expect(Object.isFrozen(map.members[c])).toBe(true);
+  });
+});
+
+describe('aggregateScores', () => {
+  /** A 521-score array, zero except for the named classes. */
+  const scores = (set: Record<string, number> = {}) => {
+    const s = new Array<number>(521).fill(0);
+    for (const [name, v] of Object.entries(set)) s[indexOf(name)] = v;
+    return s;
+  };
+  const firstOther = map.members.other[0];
+
+  it('gives other for all zeros', () => {
+    expect(aggregateScores(scores(), map)).toEqual({ class: 'other', label: map.names[firstOther], confidence: 0 });
+  });
+
+  it('gives doorbell for one doorbell Member at 0.9', () => {
+    expect(aggregateScores(scores({ Doorbell: 0.9 }), map)).toEqual({ class: 'doorbell', label: 'Doorbell', confidence: 0.9 });
+  });
+
+  it('takes the max of two alarm Members, not the sum', () => {
+    const r = aggregateScores(scores({ Buzzer: 0.4, 'Smoke detector, smoke alarm': 0.6 }), map);
+    expect(r).toEqual({ class: 'alarm', label: 'Smoke detector, smoke alarm', confidence: 0.6 });
+  });
+
+  it('accepts an Aggregate equal to the Threshold and refuses one just under it', () => {
+    expect(aggregateScores(scores({ Doorbell: DEFAULT_THRESHOLD }), map).class).toBe('doorbell');
+    expect(aggregateScores(scores({ Doorbell: DEFAULT_THRESHOLD - 1e-9 }), map).class).toBe('other');
+    expect(aggregateScores(scores({ Doorbell: 0.5 }), map, { threshold: 0.5 }).class).toBe('doorbell');
+  });
+
+  it('breaks ties by priority: alarm over voice, knock over vehicle', () => {
+    expect(aggregateScores(scores({ Speech: 0.7, Alarm: 0.7 }), map).class).toBe('alarm');
+    expect(aggregateScores(scores({ Car: 0.5, Knock: 0.5 }), map).class).toBe('knock');
+  });
+
+  it('gives other the label and confidence of the best other Index', () => {
+    expect(aggregateScores(scores({ Music: 0.8, Silence: 0.6, Doorbell: 0.1 }), map)).toEqual({
+      class: 'other',
+      label: 'Music',
+      confidence: 0.8,
+    });
+  });
+
+  it('does not let a high unmapped score raise a specific class', () => {
+    const s = scores({ Music: 1, Doorbell: 0.3 });
+    expect(aggregateScores(s, map, { threshold: 0.5 })).toEqual({ class: 'other', label: 'Music', confidence: 1 });
+    expect(aggregateScores(s, map, { threshold: 0.2 })).toEqual({ class: 'doorbell', label: 'Doorbell', confidence: 0.3 });
+  });
+
+  it('throws a RangeError naming the argument for invalid input', () => {
+    expect(() => aggregateScores(new Array(520).fill(0), map)).toThrow(RangeError);
+    expect(() => aggregateScores(new Array(520).fill(0), map)).toThrow(/scores/);
+    expect(() => aggregateScores(new Array(522).fill(0), map)).toThrow(/scores/);
+    for (const bad of [NaN, Infinity, -Infinity, -0.01, 1.01]) {
+      const s = scores();
+      s[100] = bad;
+      expect(() => aggregateScores(s, map), String(bad)).toThrow(RangeError);
+      expect(() => aggregateScores(s, map), String(bad)).toThrow(/scores/);
+    }
+    for (const bad of [NaN, Infinity, -0.01, 1.01]) {
+      expect(() => aggregateScores(scores(), map, { threshold: bad }), String(bad)).toThrow(RangeError);
+      expect(() => aggregateScores(scores(), map, { threshold: bad }), String(bad)).toThrow(/threshold/);
+    }
   });
 });
 
