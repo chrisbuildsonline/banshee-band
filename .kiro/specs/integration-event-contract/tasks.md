@@ -25,17 +25,17 @@ Each task is small and test-first: write the test, see it fail, then write the c
   - Run the tests from task 2 until they pass.
   - _Requirements: 2.1-2.15_
 
-- [ ] 4. Write and run the validator property tests
-  - [ ] 4.1 Create `tests/events/arbitraries.ts` with `validEvent` and the per-field invalid-value generators from design.md.
+- [x] 4. Write and run the validator property tests
+  - [x] 4.1 Create `tests/events/arbitraries.ts` with `validEvent` and the per-field invalid-value generators from design.md.
     - _Requirements: 5.4, 5.5_
-  - [ ] 4.2 Create `tests/events/validate.property.test.ts` with properties P1 to P8. Use `numRuns: 500` for P1 to P3. Do not set a fixed seed.
+  - [x] 4.2 Create `tests/events/validate.property.test.ts` with properties P1 to P8. Use `numRuns: 500` for P1 to P3. Do not set a fixed seed.
     - _Requirements: 5.3-5.8_
-  - [ ] 4.3 Check P4 builds exactly one changed field: assert the other eight fields equal the original before validating.
+  - [x] 4.3 Check P4 builds exactly one changed field: assert the other eight fields equal the original before validating.
     - _Requirements: 5.5_
-  - [ ] 4.4 If a property fails, read the shrunk counterexample, and decide whether the validator or the generator is wrong before changing either.
+  - [x] 4.4 If a property fails, read the shrunk counterexample, and decide whether the validator or the generator is wrong before changing either.
     - _Requirements: 5.8_
 
-- [ ] 5. Prove the tests can fail
+- [x] 5. Prove the tests can fail
   - Weaken the validator one way at a time and confirm a unit test and a property test each fail: remove the `<= 0` check on `loudnessDb`, remove the coupling check, accept `NaN` for `confidence`, copy extra fields into `event`, return the input object itself.
   - Restore the validator after each change. Run `bun run test` and confirm all pass.
   - Do not commit the weakened versions. Note the result in the commit message.
