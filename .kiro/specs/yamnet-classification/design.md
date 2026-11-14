@@ -66,7 +66,7 @@ tests/classify/report.ts             `bun run classify:report`
 // constants.ts
 export const FRAME_SIZE = 15600;     // equals WINDOW_SIZE in src/audio, kept local so there is no runtime import
 export const SCORE_COUNT = 521;
-export const DEFAULT_THRESHOLD = 0.3;  // initial; final value set in task 6 and recorded below
+export const DEFAULT_THRESHOLD = 0.15;  // started at 0.3; reason for the change in "Measured values"
 export const CLASS_PRIORITY = ['alarm', 'baby', 'doorbell', 'knock', 'vehicle', 'voice'] as const;
 
 // types.ts
@@ -109,17 +109,31 @@ The real file has 521 rows, and names such as `"Male speech, man speaking"` with
 
 ```ts
 export const RULES: Readonly<Record<Exclude<SoundClass, 'other'>, readonly string[]>> = {
-  knock:    ['Knock', 'Tap', /* confirmed in task 3 */],
-  doorbell: ['Doorbell', 'Ding-dong', /* ... */],
-  alarm:    ['Smoke detector, smoke alarm', 'Fire alarm', 'Alarm', 'Buzzer', 'Alarm clock', 'Siren', 'Beep, bleep', /* ... */],
-  baby:     ['Baby cry, infant cry', 'Crying, sobbing', 'Whimper', /* ... */],
-  vehicle:  ['Vehicle horn, car horn, honking', 'Car', 'Truck', 'Bus', 'Motorcycle', 'Emergency vehicle', /* ... */],
-  voice:    ['Speech', 'Male speech, man speaking', 'Female speech, woman speaking', 'Child speech, kid speaking',
-             'Conversation', 'Narration, monologue', 'Shout', 'Yell', /* ... */],
+  knock:    ['Knock', 'Tap'],
+  doorbell: ['Doorbell', 'Ding-dong'],
+  alarm:    ['Alarm', 'Car alarm', 'Alarm clock', 'Siren', 'Civil defense siren', 'Buzzer',
+             'Smoke detector, smoke alarm', 'Fire alarm', 'Beep, bleep'],
+  baby:     ['Baby laughter', 'Crying, sobbing', 'Baby cry, infant cry', 'Whimper', 'Babbling'],
+  vehicle:  ['Vehicle', 'Motor vehicle (road)', 'Car', 'Vehicle horn, car horn, honking', 'Toot', 'Skidding',
+             'Tire squeal', 'Car passing by', 'Race car, auto racing', 'Truck', 'Air brake',
+             'Air horn, truck horn', 'Reversing beeps', 'Ice cream truck, ice cream van', 'Bus',
+             'Emergency vehicle', 'Police car (siren)', 'Ambulance (siren)', 'Fire engine, fire truck (siren)',
+             'Motorcycle', 'Traffic noise, roadway noise', 'Bicycle', 'Accelerating, revving, vroom'],
+  voice:    ['Speech', 'Child speech, kid speaking', 'Conversation', 'Narration, monologue', 'Speech synthesizer',
+             'Shout', 'Bellow', 'Whoop', 'Yell', 'Children shouting', 'Screaming', 'Whispering', 'Chatter',
+             'Hubbub, speech noise, speech babble'],
 };
 ```
 
-The names above are what I expect from the AudioSet ontology, from memory. They are **candidates**. Task 3 checks each against the real CSV and writes the final table here and in `rules.ts`. A name that is not in the CSV fails `buildLabelMap`, so a wrong guess cannot ship.
+These are the final lists, as in `src/classify/rules.ts`. They were set from the real class map by the meaning of each name, before any clip was run. Every other Index is `other` (521 Indexes in total). `Male speech, man speaking` and `Female speech, woman speaking` are not in YAMNet's 521 classes, so they are not listed. `Speech` covers them. A name that is not in the CSV fails `buildLabelMap`, so a wrong name cannot ship.
+
+Final placements of the overlapping names:
+
+- **Sirens.** `Siren` and `Civil defense siren` are warnings heard at home, so alarm. `Police car (siren)`, `Ambulance (siren)`, `Fire engine, fire truck (siren)` and `Emergency vehicle` name a vehicle on the road, so vehicle.
+- **Beeps.** `Beep, bleep` is alarm. `Reversing beeps` names a vehicle, so vehicle. `Car alarm` is an alarm, not traffic, so alarm.
+- **Child sounds.** `Child speech, kid speaking` is speech, so voice. `Babbling` (an infant's pre-speech sounds) and `Baby laughter` are baby.
+- **Knock.** `Door` (any door sound, also opening and closing), `Slam` and `Thump, thud` do not mean a knock, so they stay other. `Tap` (a light knock; in the AudioSet ontology it sits under `Door` next to `Knock`) is knock.
+- **Engines.** `Engine`, `Idling` and `Engine starting` can be any machine (generator, mower), so other. Rail, air and water vehicles are not road vehicles, so other.
 
 Choices that need care, because they decide whether the six clips pass:
 
@@ -226,7 +240,7 @@ The classifier object has no knowledge of workers or the main thread. The pipeli
 | Files | Origin | Licence |
 |---|---|---|
 | `model.json`, `group1-shard*.bin` | YAMNet, Google, TF.js conversion published on TF Hub / Kaggle Models (exact URL and version recorded in task 1) | Apache License 2.0 |
-| `yamnet_class_map.csv` | YAMNet repository, `tensorflow/models` (`research/audioset/yamnet`) | Apache License 2.0 (file in an Apache 2.0 repository); the AudioSet ontology labels it lists come from the AudioSet ontology, licence as stated by its publisher (checked and written in task 1) |
+| `yamnet_class_map.csv` | YAMNet repository, `tensorflow/models` (`research/audioset/yamnet`) | The file is Apache License 2.0 (Apache 2.0 repository). The AudioSet ontology names and ids it lists are CC BY-SA 4.0, as stated on research.google.com/audioset and in the `audioset/ontology` README. The model is Apache 2.0, so `LICENSE.txt` must give the attribution and the CC BY-SA 4.0 notice for the names. |
 
 The file also holds the full Apache 2.0 text or the standard header with a pointer to `https://www.apache.org/licenses/LICENSE-2.0`, the retrieval date, and "Files are unmodified."
 
@@ -290,7 +304,7 @@ for entry of manifest:                       // read from public/clips/manifest.
   frameAccuracy = count(class === expected) / frames.length
 ```
 
-Each of the 6 clips has 3 to 11 Frames (3.51 s gives 3, 9.5 s gives 11), about 35 Frames in total. At a few hundred ms to a few seconds per Frame on CPU this is one to two minutes at worst. Measured in task 1.
+The 6 clips give 70 Frames in total, 6 to 18 per clip (6, 11, 11, 18, 6, 18). At about 150 to 170 ms per Frame on the Node `cpu` backend this is roughly 10 to 12 s of inference.
 
 `report.ts` calls the same function and writes `tests/classify/clip-results.json` with `JSON.stringify(x, null, 2)` and a trailing newline. It is run with `bun run tests/classify/report.ts`, and `package.json` gets `"classify:report": "bun run tests/classify/report.ts"`. `bun` runs TS directly. The script sets the same `cpu` backend.
 
@@ -302,7 +316,7 @@ Results file shape:
   "tfjsVersion": "x.y.z",
   "backend": "cpu",
   "modelSha256": "…",
-  "threshold": 0.3,
+  "threshold": 0.15,
   "overall": { "clips": 6, "passed": 6, "meanFrameAccuracy": 0.0 },
   "clips": [
     { "id": "doorbell-01", "file": "doorbell-01.wav", "expected": "doorbell", "clipClass": "doorbell", "pass": true,
@@ -361,14 +375,72 @@ The record is a regression check on six clips. It says nothing about other recor
 - **Browser backend differences** (WebGL float precision on mobile GPUs) can move a score by a few thousandths. The comparison tolerance and the threshold margin are the guard, and the e2e feature repeats the clip check in Chromium.
 - **`import.meta.env` in Node tests.** `BASE_URL` is only a default. Node tests always pass full URLs, so `createClassifier` must not read `import.meta.env` when both URLs are given. Under Vitest, Vite defines `import.meta.env.BASE_URL` as `/`, so this is only a risk under `bun run` for the report script. The report script passes full URLs too.
 
-## Measured values (filled in during the tasks)
+## Measured values
+
+Source: `docs/yamnet.md` and `tests/classify/clip-results.json`.
 
 | Item | Value |
 |---|---|
-| Model source URL, version, retrieval date | task 1 |
-| Model input and output shapes | task 1 |
-| Node `cpu` load time, time per Frame | task 1 |
-| Final Rule lists | task 3 |
-| Final `DEFAULT_THRESHOLD` and why | task 6 |
-| Results: clips passed / frame accuracy per clip | task 6 |
-| Mutation check results | task 7 |
+| Model source | YAMNet TF.js graph model, Google, Kaggle Models `google/yamnet/tfJs/tfjs/1` (https://www.kaggle.com/models/google/yamnet/tfJs/tfjs/1). `https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1` redirects to the same files. |
+| Class map source | `tensorflow/models`, `research/audioset/yamnet/yamnet_class_map.csv` (master branch) |
+| Retrieval date | 2026-11-14 |
+| Model format | `graph-model`, TensorFlow.js Converter v2.1.0. No FFT op (the spectrogram uses `MatMul`), so every op runs on the `cpu` backend. |
+| Model file sizes | `model.json` 100759 B; `group1-shard1of4.bin` to `group1-shard3of4.bin` 4194304 B each; `group1-shard4of4.bin` 3455404 B; `yamnet_class_map.csv` 14096 B (CRLF line endings). About 16.2 MB with `LICENSE.txt` and `SHA256SUMS`. |
+| Model SHA-256 (as in the Results file) | `552a4e59884a7fad25dbdbc1bbe75af2a416bca44de12523081d4b55606d59d3` |
+| Licences | Model Apache 2.0. Class map file Apache 2.0. AudioSet names and ids in the CSV CC BY-SA 4.0. |
+| Input | `waveform`, float32, shape `[-1]` (1-D, no batch dimension), as assumed above |
+| Outputs, in order | `Identity` scores `[1, 521]`, `Identity_1` embeddings `[1, 1024]`, `Identity_2` log-mel spectrogram `[96, 64]`, for a 15600-sample input |
+| TF.js version, backend | `@tensorflow/tfjs` 4.22.0, `cpu` in Node (bun and Vitest) |
+| Node `cpu` load time | about 30 ms for `loadGraphModel` from local files through `fetchFunc` |
+| Node `cpu` time per Frame | about 150 to 170 ms in the spike (105 to 170 ms across runs). WebGL in a browser is not measured. |
+| Spike check | zeros: top index 494 (`Silence`) at 1.0. First Frame of `doorbell-01.wav`: index 349 (`Doorbell`) 0.92, index 350 (`Ding-dong`) 0.88. |
+| Final Rule lists | in "Rules" above |
+| Final `DEFAULT_THRESHOLD` | 0.15, one global value (started at 0.3). Reason below. |
+
+### Threshold reason
+
+The first run at 0.3 passed 5 of 6 clips. `knock-01` failed (4 knock Frames, 7 other). A per-Frame look at all six clips (level, top-5 AudioSet labels, Aggregate per class) showed:
+
+- 0.3 cut through Frames that contain the target sound, judged by their own top labels: `knock-01` Frame 1 (Door 0.267, Tap 0.208, Knock 0.128; knock Aggregate 0.208), `knock-01` Frame 3 (top label Knock 0.282) and `doorbell-01` Frame 1 (Doorbell 0.299, after Mallet percussion and Glockenspiel).
+- The highest target-class score on Frames without those sounds was 0.074 (knock, on an `alarm-smoke-01` Frame topped by Sliding door, Door, Glass), then 0.053 (voice, on a Frame topped by Wood).
+
+0.15 sits between 0.074 and 0.208, with a margin of about 0.06 to 0.08 on each side. It was chosen from the Aggregates of all 70 Frames, not per clip. No Rule, clip, manifest entry or Expected class changed, and the aggregation (max) is unchanged. A threshold only moves a Frame between `other` and its best specific class. The three Frames above moved to knock, knock and doorbell, all correct. No Frame moved to a wrong class.
+
+### Clip results
+
+Node, `@tensorflow/tfjs` 4.22.0, `cpu`, threshold 0.15. 6 of 6 clips pass, mean frame accuracy 0.7778, 70 Frames in total.
+
+| Clip | Expected | Got | Frames | Frame accuracy | Class counts | Mean confidence | Top label |
+|---|---|---|---|---|---|---|---|
+| doorbell-01 | doorbell | doorbell | 6 | 1.0 | doorbell 6 | 0.795 | Doorbell |
+| knock-01 | knock | knock | 11 | 0.5455 | knock 6, other 5 | 0.6698 | Knock |
+| alarm-smoke-01 | alarm | alarm | 11 | 0.4545 | alarm 5, voice 4, other 2 | 0.8708 | Smoke detector, smoke alarm |
+| baby-cry-01 | baby | baby | 18 | 1.0 | baby 18 | 0.7988 | Crying, sobbing |
+| vehicle-horn-01 | vehicle | vehicle | 6 | 0.6667 | vehicle 4, voice 1, other 1 | 0.8775 | Vehicle horn, car horn, honking |
+| voice-speech-01 | voice | voice | 18 | 1.0 | voice 18 | 0.9977 | Speech |
+
+What the model hears in the Frames that do not match the expected class:
+
+- `knock-01`: the 5 `other` Frames are gaps between knocks (RMS -42 to -66 dBFS) that the model calls `Silence` at 1.0, which is correct. The clip passes 6 to 5, a narrow margin.
+- `alarm-smoke-01`: after the alarm stops (first 2.4 s) the recording holds quiet speech in a room (about -46 dBFS, Speech 0.38 to 0.92), so 4 Frames are voice, which is what they are. The clip passes 5 to 4.
+- `vehicle-horn-01`: one Frame between honks is topped by Speech 0.58 (voice), and the last Frame is `Silence`.
+- `doorbell-01`: one Frame is topped by Mallet percussion and Glockenspiel, with Doorbell 0.299, and is doorbell at 0.15.
+
+No clip was re-cut.
+
+The Results file is a regression check on these six clips, and not a measure of how well the classifier works on other recordings.
+
+### Mutation check
+
+Each change was made by hand, one at a time, the tests were run and the file was restored (not committed). All 8 were caught:
+
+| Change | Caught by |
+|---|---|
+| `max` to `sum` in the Aggregate | 8 tests, e.g. properties 9.2.1, 9.2.3, 9.2.5, 9.2.6 |
+| `>=` to `>` at the Threshold | unit "equal to the Threshold", properties 9.2.6, 9.2.11 |
+| `CLASS_PRIORITY` reversed | unit "ties by priority", property 9.2.6 |
+| unmapped scores counted in a specific class | unit "best other Index", properties 9.2.3, 9.2.6, 9.2.9 |
+| one Rule name removed (`Doorbell`) | 6 unit tests, e.g. "maps the named examples" |
+| one byte of `group1-shard4of4.bin` flipped | `model-files.test.ts` SHA256SUMS check |
+| `tf.tidy` removed in `classify` | integration "same number of tensors after the 1st and the 50th call" |
+| `import '../ui/index'` added to `labelmap.ts` | `imports.test.ts` boundary check |
