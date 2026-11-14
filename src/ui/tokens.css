@@ -1,0 +1,164 @@
+/*
+ * Banshee Band design tokens.
+ * Source of truth: design/DESIGN.md, section "Token reference".
+ * Change a value there and here in the same commit; tests/ui/tokens.test.ts checks both.
+ */
+
+/* Day theme (default) */
+:root {
+  /* Colour */
+  --bb-color-canvas: #EEF0F4;
+  --bb-color-surface: #FFFFFF;
+  --bb-color-surface-raised: #F4F5F8;
+  --bb-color-border: #7C8291;
+  --bb-color-text: #111318;
+  --bb-color-text-muted: #5A606C;
+  --bb-color-accent: #6236E0;
+  --bb-color-accent-tint: #ECE6FF;
+  --bb-color-accent-strong: #4A22B5;
+  --bb-color-on-accent: #FFFFFF;
+  --bb-color-focus: #6236E0;
+  --bb-color-pill-bg: #111318;
+  --bb-color-pill-text: #FFFFFF;
+  --bb-color-pill-outline: transparent;
+  --bb-color-status-neutral-bg: #EBEDF2;
+  --bb-color-status-neutral-text: #3D424D;
+  --bb-color-status-accent-bg: #ECE6FF;
+  --bb-color-status-accent-text: #4A22B5;
+  --bb-color-status-strong-bg: #111318;
+  --bb-color-status-strong-text: #FFFFFF;
+
+  /* Ghost */
+  --bb-ghost-fill: #8B6CF2;
+  --bb-ghost-outline: #4A22B5;
+  --bb-ghost-glow-1: #9478F3;
+  --bb-ghost-glow-2: #6E47EA;
+  --bb-ghost-glow-3: #4A22B5;
+
+  /* Shape */
+  --bb-radius-card: 20px;
+  --bb-radius-control: 12px;
+  --bb-radius-pill: 999px;
+  --bb-shadow-soft: 0 1px 2px rgba(17, 19, 24, 0.04), 0 12px 32px rgba(17, 19, 24, 0.07);
+
+  /* Space */
+  --bb-space-1: 4px;
+  --bb-space-2: 8px;
+  --bb-space-3: 12px;
+  --bb-space-4: 16px;
+  --bb-space-5: 24px;
+  --bb-space-6: 32px;
+  --bb-space-7: 48px;
+  --bb-space-8: 64px;
+
+  /* Type */
+  --bb-font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bb-type-display-size: clamp(2.5rem, 1.75rem + 3vw, 4rem);
+  --bb-type-display-line: 1.05;
+  --bb-type-display-weight: 700;
+  --bb-type-title-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+  --bb-type-title-line: 1.15;
+  --bb-type-title-weight: 700;
+  --bb-type-heading-size: 1.25rem;
+  --bb-type-heading-line: 1.3;
+  --bb-type-heading-weight: 600;
+  --bb-type-body-size: 1rem;
+  --bb-type-body-line: 1.5;
+  --bb-type-body-weight: 400;
+  --bb-type-label-size: 0.875rem;
+  --bb-type-label-line: 1.3;
+  --bb-type-label-weight: 500;
+  --bb-type-caption-size: 0.8125rem;
+  --bb-type-caption-line: 1.4;
+  --bb-type-caption-weight: 400;
+
+  /* Layout */
+  --bb-target-min: 44px;
+  --bb-content-max: 1200px;
+
+  /* Motion */
+  --bb-motion-fast: 150ms;
+  --bb-motion-slow: 400ms;
+  --bb-motion-ghost-drift: 6s;
+}
+
+/* Night theme from the OS setting, unless the user chose Day. Keep identical to the block below. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="day"]) {
+    /* Colour */
+    --bb-color-canvas: #0E0B14;
+    --bb-color-surface: #1A1622;
+    --bb-color-surface-raised: #241F2E;
+    --bb-color-border: #736C82;
+    --bb-color-text: #F2EEF8;
+    --bb-color-text-muted: #A9A1B8;
+    --bb-color-accent: #B49CFF;
+    --bb-color-accent-tint: #2D2348;
+    --bb-color-accent-strong: #D9CCFF;
+    --bb-color-on-accent: #120E18;
+    --bb-color-focus: #B49CFF;
+    --bb-color-pill-bg: #07060A;
+    --bb-color-pill-text: #F2EEF8;
+    --bb-color-pill-outline: #CCC5DB;
+    --bb-color-status-neutral-bg: #2A2533;
+    --bb-color-status-neutral-text: #DDD7E8;
+    --bb-color-status-accent-bg: #2D2348;
+    --bb-color-status-accent-text: #D9CCFF;
+    --bb-color-status-strong-bg: #F2EEF8;
+    --bb-color-status-strong-text: #15111C;
+
+    /* Ghost */
+    --bb-ghost-fill: #E6DEFF;
+    --bb-ghost-outline: #B49CFF;
+    --bb-ghost-glow-1: #8C74E0;
+    --bb-ghost-glow-2: #B49CFF;
+    --bb-ghost-glow-3: #E0D6FF;
+
+    /* Shape */
+    --bb-shadow-soft: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 16px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Night theme chosen by the user. */
+:root[data-theme="night"] {
+  /* Colour */
+  --bb-color-canvas: #0E0B14;
+  --bb-color-surface: #1A1622;
+  --bb-color-surface-raised: #241F2E;
+  --bb-color-border: #736C82;
+  --bb-color-text: #F2EEF8;
+  --bb-color-text-muted: #A9A1B8;
+  --bb-color-accent: #B49CFF;
+  --bb-color-accent-tint: #2D2348;
+  --bb-color-accent-strong: #D9CCFF;
+  --bb-color-on-accent: #120E18;
+  --bb-color-focus: #B49CFF;
+  --bb-color-pill-bg: #07060A;
+  --bb-color-pill-text: #F2EEF8;
+  --bb-color-pill-outline: #CCC5DB;
+  --bb-color-status-neutral-bg: #2A2533;
+  --bb-color-status-neutral-text: #DDD7E8;
+  --bb-color-status-accent-bg: #2D2348;
+  --bb-color-status-accent-text: #D9CCFF;
+  --bb-color-status-strong-bg: #F2EEF8;
+  --bb-color-status-strong-text: #15111C;
+
+  /* Ghost */
+  --bb-ghost-fill: #E6DEFF;
+  --bb-ghost-outline: #B49CFF;
+  --bb-ghost-glow-1: #8C74E0;
+  --bb-ghost-glow-2: #B49CFF;
+  --bb-ghost-glow-3: #E0D6FF;
+
+  /* Shape */
+  --bb-shadow-soft: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Reduced motion: every motion token becomes zero, so no transition or loop runs. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --bb-motion-fast: 0s;
+    --bb-motion-slow: 0s;
+    --bb-motion-ghost-drift: 0s;
+  }
+}
