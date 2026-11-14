@@ -41,14 +41,14 @@ Each task is small and test-first: write the test, see it fail, then write the c
   - Do not commit the weakened versions. Note the result in the commit message.
   - _Requirements: 5.9_
 
-- [ ] 6. Write the WAV reader and licence parser, test first
-  - [ ] 6.1 Create `tests/clips/wav.test.ts` with a `makeWav(frames, { sampleRate, channels, bits, format })` helper and cases: valid file, extra `LIST` chunk before `data`, truncated file, wrong `RIFF` header, non-PCM format, 8-bit samples, zero-length data, all-zero samples (`peak` is 0).
+- [x] 6. Write the WAV reader and licence parser, test first
+  - [x] 6.1 Create `tests/clips/wav.test.ts` with a `makeWav(frames, { sampleRate, channels, bits, format })` helper and cases: valid file, extra `LIST` chunk before `data`, truncated file, wrong `RIFF` header, non-PCM format, 8-bit samples, zero-length data, all-zero samples (`peak` is 0).
     - _Requirements: 6.4, 6.5, 6.9_
-  - [ ] 6.2 Add the property test: for any frames 1..2000 and sample rate 8000..48000, `durationSec` equals `frames / sampleRate`.
+  - [x] 6.2 Add the property test: for any frames 1..2000 and sample rate 8000..48000, `durationSec` equals `frames / sampleRate`.
     - _Requirements: 6.4, 6.9_
-  - [ ] 6.3 Create `tests/clips/wav.ts` with `readWav` until the tests pass.
+  - [x] 6.3 Create `tests/clips/wav.ts` with `readWav` until the tests pass.
     - _Requirements: 6.4, 6.5, 6.9_
-  - [ ] 6.4 Create `tests/clips/licence.test.ts` (valid block, missing author, missing source, two blocks, blank lines, extra key) and then `tests/clips/licence.ts` with `parseLicence`.
+  - [x] 6.4 Create `tests/clips/licence.test.ts` (valid block, missing author, missing source, two blocks, blank lines, extra key) and then `tests/clips/licence.ts` with `parseLicence`.
     - _Requirements: 6.7_
 
 - [ ] 7. Write the manifest test (it fails first)
