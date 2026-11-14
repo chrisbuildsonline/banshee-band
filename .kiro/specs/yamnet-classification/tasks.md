@@ -53,10 +53,10 @@ Each task is small. Where the code is pure, write the test first, see it fail, t
     - _Requirements: 4.9, 7.5-7.10_
   - [x] 6.5 If a clip cannot pass with a fair change, do not mark this task done. Record the Results file with the failure, describe the cause, and tell the user.
 
-- [ ] 7. Model file checks, boundary check and mutation check
-  - [ ] 7.1 Create `tests/classify/model-files.test.ts` (Requirement 10.11) and `tests/classify/imports.test.ts` (Requirement 10.12). Also assert `FRAME_SIZE === WINDOW_SIZE` from `src/audio`.
+- [x] 7. Model file checks, boundary check and mutation check
+  - [x] 7.1 Create `tests/classify/model-files.test.ts` (Requirement 10.11) and `tests/classify/imports.test.ts` (Requirement 10.12). Also assert `FRAME_SIZE === WINDOW_SIZE` from `src/audio`.
     - _Requirements: 10.11, 10.12, 1.3, 1.4, 1.6, 6.5_
-  - [ ] 7.2 Prove the tests can fail. Change the code one way at a time and confirm at least one test fails each time, then restore: `max` to `sum`; `>=` to `>`; reverse `CLASS_PRIORITY`; count unmapped scores into a specific class; remove one Rule name; change a shard's bytes; skip `tidy` disposal in `classify`; add an `import '../ui/...'` to a classify file. Do not commit the broken versions. Put the outcome in the commit message.
+  - [x] 7.2 Prove the tests can fail. Change the code one way at a time and confirm at least one test fails each time, then restore: `max` to `sum`; `>=` to `>`; reverse `CLASS_PRIORITY`; count unmapped scores into a specific class; remove one Rule name; change a shard's bytes; skip `tidy` disposal in `classify`; add an `import '../ui/...'` to a classify file. Do not commit the broken versions. Put the outcome in the commit message.
     - _Requirements: 9.4_
 
 - [ ] 8. Final checks

@@ -81,6 +81,21 @@ No clip was re-cut. `voice-speech-01` and `baby-cry-01` reach frame accuracy 1.0
 
 The Results file is a regression check on these six clips, and not a measure of how well the classifier works on other recordings.
 
+## Mutation check
+
+Each change made by hand, one at a time, tests run, file restored (not committed). All 8 were caught:
+
+| Change | Caught by |
+|---|---|
+| `max` to `sum` in the Aggregate | 8 tests, e.g. properties 9.2.1, 9.2.3, 9.2.5, 9.2.6 |
+| `>=` to `>` at the Threshold | unit "equal to the Threshold", properties 9.2.6, 9.2.11 |
+| `CLASS_PRIORITY` reversed | unit "ties by priority", property 9.2.6 |
+| unmapped scores counted in a specific class | unit "best other Index", properties 9.2.3, 9.2.6, 9.2.9 |
+| one Rule name removed (`Doorbell`) | 6 unit tests, e.g. "maps the named examples" |
+| one byte of `group1-shard4of4.bin` flipped | `model-files.test.ts` SHA256SUMS check |
+| `tf.tidy` removed in `classify` | integration "same number of tensors after the 1st and the 50th call" |
+| `import '../ui/index'` added to `labelmap.ts` | `imports.test.ts` boundary check |
+
 ## Timing
 
 Node (bun and Vitest), `cpu` backend, on the development machine: model load about 30 ms from local files (no network); `classify` about 105 to 170 ms per Frame (the integration test prints about 150 ms per clip). Browser (WebGL) speed is not measured here.
