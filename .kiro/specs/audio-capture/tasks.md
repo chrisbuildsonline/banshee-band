@@ -29,10 +29,10 @@ Each task is small and test-first where the code is pure: write the test, see it
   - [x] 4.2 Create `src/audio/framer.ts` (`createFramer`, `push`, `reset`, read-only `buffered`) until the tests pass.
     - _Requirements: 6.1-6.12_
 
-- [ ] 5. Mono pipeline, test first
-  - [ ] 5.1 Create `tests/audio/pipeline.test.ts`: mono source equals identical left and right, different Stereo frame lengths give the same Mono frames, a 3 s stream at 48000 Hz gives 5 frames with `startSec` 0, 0.4875, 0.975, 1.4625, 1.95, a 1 kHz stereo sine keeps 1 kHz, context rate 16000 skips filtering.
+- [x] 5. Mono pipeline, test first
+  - [x] 5.1 Create `tests/audio/pipeline.test.ts`: mono source equals identical left and right, different Stereo frame lengths give the same Mono frames, a 3 s stream at 48000 Hz gives 5 frames with `startSec` 0, 0.4875, 0.975, 1.4625, 1.95, a 1 kHz stereo sine keeps 1 kHz, context rate 16000 skips filtering.
     - _Requirements: 8.9, 7.1-7.8_
-  - [ ] 5.2 Create `src/audio/pipeline.ts` with `createMonoPipeline` until the tests pass.
+  - [x] 5.2 Create `src/audio/pipeline.ts` with `createMonoPipeline` until the tests pass.
     - _Requirements: 7.1-7.8_
 
 - [ ] 6. Prove the pure tests can fail
