@@ -35,7 +35,7 @@ Each task is small and test-first where the code is pure: write the test, see it
   - [x] 5.2 Create `src/audio/pipeline.ts` with `createMonoPipeline` until the tests pass.
     - _Requirements: 7.1-7.8_
 
-- [ ] 6. Prove the pure tests can fail
+- [x] 6. Prove the pure tests can fail
   - Break the resampler one way at a time and confirm a unit test and a property test each fail: cutoff at 0.9 of Nyquist, off-by-one in the length rule, history dropped at chunk boundaries.
   - Break the framer one way at a time: use `windowSize` as the hop, shift a frame by one sample.
   - Restore after each change, then run `bun run test` and confirm everything passes. Do not commit the broken versions. Note the result in the commit message.
