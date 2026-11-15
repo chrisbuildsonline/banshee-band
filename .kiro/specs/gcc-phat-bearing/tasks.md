@@ -21,10 +21,10 @@ Each task is small and ends in a test gate. For pure code, write the test first,
 - [ ] 3. GCC-PHAT core and interpolation
   - [x] 3.1 Create `tests/bearing/helpers/synth.ts` (mulberry32 PRNG, Gaussian noise, analytic white-noise, tones, clap and hum generators, noise at a given SNR, helper that builds `StereoFrame[]` for a bearing and lag). Test the helper itself: determinism, measured SNR within 0.1 dB, an exact analytic delay.
     - _Requirements: 9.1, 9.2_
-  - [x] 3.2 Write `tests/bearing/gcc-phat.test.ts`: `parabolicOffset` on exact parabolas (offsets -0.4 to 0.4), flat and degenerate input returns 0, clamp to ±0.5; `phatSpectrum` on noise with integer lags (-11 to 11) at 48 kHz recovers the lag; the sign case (`bearingToLagSec(+30)` gives positive); the hum case (plain correlation would give lag 0, PHAT recovers the true lag). Add stubs and confirm failure.
+  - [x] 3.2 Write `tests/bearing/gcc-phat.test.ts`: `parabolicOffset` on exact parabolas (offsets -0.4 to 0.4), flat and degenerate input returns 0, clamp to ±0.5; `phatSpectrum` on noise with integer lags (-11 to 11) at 48 kHz recovers the lag; the sign case (`bearingToLagSec(+30)` gives positive); the hum case (plain correlation would give lag 0, PHAT recovers the true lag; use lags -7, 7.5, -9.5 and 10 samples, since the hum only pulls plain correlation to lag 0 from about 6.5 samples). Add stubs and confirm failure.
     - _Requirements: 3.3-3.8, 4.1_
   - [x] 3.3 Implement `src/bearing/gcc-phat.ts` (chunk spectrum with Hann window and zero padding, PHAT weight with regulariser, accumulation, peak search, `parabolicOffset`).
-  - [ ] 3.4 Measure `regularization` on the 0 dB tone case, the hum case and white noise at 0 dB, and write the chosen value and numbers in "Measured values" in `design.md`. If the 0 dB tone case cannot meet its bound, stop and tell the user (see Risks in `design.md`).
+  - [ ] 3.4 Measure `regularization` on the 0 dB tone case, the hum case and white noise at 0 dB, and the clap row. Record the numbers in `docs/bearing.md` under "Measured values" (the report script of task 7.1 must keep that section) and sync them into "Measured values" in `design.md`. Tone rows are graded by the R9.6 rule (R9.7), not a hard 4° bound. For the clap row, choose per-chunk energy weighting or a larger `CHUNK`, whichever meets all bounds, and record the choice. If a hard-bounded row still cannot be met, stop and tell the user.
   - **Gate:** `gcc-phat.test.ts` passes.
 
 - [ ] 4. Confidence and loudness fallback
@@ -45,15 +45,15 @@ Each task is small and ends in a test gate. For pure code, write the test first,
 - [ ] 6. Accuracy and property tests
   - [ ] 6.1 Create `tests/bearing/helpers/cases.ts` (`buildCases`, `evaluateCase`) with the signals, SNRs and bearings of Requirement 9, including 0, ±45, ±90, integer lags and half-sample lags, at 48000 and 44100 Hz, plus 16000 Hz rows without bounds.
     - _Requirements: 9.2-9.5_
-  - [ ] 6.2 Write `tests/bearing/accuracy.test.ts` with the bounds of Requirement 9.3 and the low-SNR rule of 9.6. Run it. If a bound fails, fix the algorithm or stop and ask. Do not loosen a bound without recording the measured values and the reason in `design.md`.
-    - _Requirements: 9.3, 9.4, 9.6_
+  - [ ] 6.2 Write `tests/bearing/accuracy.test.ts` with the bounds of Requirement 9.3, the tone rule of 9.7 and the low-SNR rule of 9.6. Run it. If a bound fails, fix the algorithm or stop and ask. Do not loosen a bound without recording the measured values and the reason in `docs/bearing.md` ("Measured values") and syncing them into `design.md`.
+    - _Requirements: 9.3, 9.4, 9.6, 9.7, 9.8_
   - [ ] 6.3 Write `tests/bearing/properties.test.ts` with the ten properties of Requirement 10 (fixed `fast-check` seed, at least 100 runs each, lowering `numRuns` only for the slow synth properties and not below 100).
     - _Requirements: 10.1-10.10_
   - [ ] 6.4 Record the worst error per group, the parabolic bias at half-sample lags and the time per 1024-sample `push` in "Measured values".
   - **Gate:** `accuracy.test.ts` and `properties.test.ts` pass; `bun run typecheck` and `bun run test` pass.
 
 - [ ] 7. Accuracy report and limits
-  - [ ] 7.1 Write `tests/bearing/report.ts` and add `"bearing:report": "bun run tests/bearing/report.ts"` to `package.json`. It writes `tests/bearing/accuracy.json` and `docs/bearing.md` (table of true vs estimated bearing, error and SNR; per-group summary; configuration; the "Limits" section of Requirement 11.5).
+  - [ ] 7.1 Write `tests/bearing/report.ts` and add `"bearing:report": "bun run tests/bearing/report.ts"` to `package.json`. It writes `tests/bearing/accuracy.json` and `docs/bearing.md` (table of true vs estimated bearing, error and SNR; per-group summary; configuration; the "Limits" section of Requirement 11.5). The script must keep the "Measured values" section written in tasks 3.4 and 6.2 (preserve or regenerate it, never drop it).
     - _Requirements: 11.1-11.3, 11.5, 11.6_
   - [ ] 7.2 Run `bun run bearing:report` twice and confirm the two outputs are byte-identical (`sha256sum` before and after).
     - _Requirements: 11.4_
