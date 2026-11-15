@@ -47,7 +47,7 @@ Each task is small and ends in a test gate. For pure code, write the test first,
     - _Requirements: 9.2-9.5_
   - [x] 6.2 Write `tests/bearing/accuracy.test.ts` with the bounds of Requirement 9.3, the tone rule of 9.7 and the low-SNR rule of 9.6. The clap row is graded by the R9.8 statistical rule (at least 99.5% of at least 1000 seeded Windows within 4°, none over 6°), not per case. Run it. If a bound fails, fix the algorithm or stop and ask. Do not loosen a bound without recording the measured values and the reason in `docs/bearing.md` ("Measured values") and syncing them into `design.md`.
     - _Requirements: 9.3, 9.4, 9.6, 9.7, 9.8_
-  - [ ] 6.3 Write `tests/bearing/properties.test.ts` with the ten properties of Requirement 10 (fixed `fast-check` seed, at least 100 runs each, lowering `numRuns` only for the slow synth properties and not below 100).
+  - [x] 6.3 Write `tests/bearing/properties.test.ts` with the ten properties of Requirement 10 (fixed `fast-check` seed, at least 100 runs each, lowering `numRuns` only for the slow synth properties and not below 100).
     - _Requirements: 10.1-10.10_
   - [ ] 6.4 Record the worst error per group, the parabolic bias at half-sample lags and the time per 1024-sample `push` in "Measured values".
   - **Gate:** `accuracy.test.ts` and `properties.test.ts` pass; `bun run typecheck` and `bun run test` pass.
