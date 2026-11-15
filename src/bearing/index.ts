@@ -11,3 +11,6 @@
  */
 export * from './constants';
 export type { BearingConfig, BearingResult, BearingWindow } from './types';
+export { createBearingWindow, estimateBearing } from './estimate';
+export { bearingToLagSec, lagToBearingDeg, maxLagSamples, resolveBearingConfig } from './geometry';
+export { parabolicOffset } from './gcc-phat';

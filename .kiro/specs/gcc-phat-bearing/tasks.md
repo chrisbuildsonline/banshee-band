@@ -27,18 +27,18 @@ Each task is small and ends in a test gate. For pure code, write the test first,
   - [x] 3.4 Measure `regularization` on the 0 dB tone case, the hum case and white noise at 0 dB, and the clap row. Record the numbers in `docs/bearing.md` under "Measured values" (the report script of task 7.1 must keep that section) and sync them into "Measured values" in `design.md`. Tone rows are graded by the R9.6 rule (R9.7), not a hard 4° bound. For the clap row, choose per-chunk energy weighting or a larger `CHUNK`, whichever meets all bounds, and record the choice. If a hard-bounded row still cannot be met, stop and tell the user.
   - **Gate:** `gcc-phat.test.ts` passes.
 
-- [ ] 4. Confidence and loudness fallback
+- [x] 4. Confidence and loudness fallback
   - [x] 4.1 Write the confidence tests in `gcc-phat.test.ts` (clean delay at 20 dB over at least 4 chunks: at least 0.8; independent noise on both channels over 200 seeded trials: confidence below `minConfidence` in at least 95%; range and NaN-free for peak 0 and sidelobe 0) and `tests/bearing/loudness.test.ts` (dead zone, saturation, sign, confidence cap 0.5, level difference as a difference of logarithms without overflow). Add stubs and confirm failure.
     - _Requirements: 5.1-5.5, 6.1, 6.2, 6.4_
   - [x] 4.2 Implement `peakConfidence` and `src/bearing/loudness.ts`.
   - [x] 4.3 Measure the noise-only false-`gcc-phat` rate and the confidence of the clean cases. Adjust `Q_LOW`, `Q_HIGH` and `minConfidence` only if the 95% target fails, and record the values in "Measured values".
   - **Gate:** `gcc-phat.test.ts` and `loudness.test.ts` pass.
 
-- [ ] 5. Windowed estimator and degenerate input
-  - [ ] 5.1 Write `tests/bearing/estimate.test.ts`: empty window, silence, one silent channel (`none`), identical channels (0°, `loudness`, confidence 0), hard-panned level difference with uncorrelated channels (`loudness` with the right sign), NaN and Infinity frames skipped and counted, mismatched lengths, bad and changing sample rate, huge values (up to `Number.MAX_VALUE`) without a non-finite result, `bearingDeg === null` iff `source === 'none'`, `result()` repeatable, `reset()`, streaming equals batch, frame lengths 1, 2, 1023, 1025 and 5000. Add a stub and confirm failure.
+- [x] 5. Windowed estimator and degenerate input
+  - [x] 5.1 Write `tests/bearing/estimate.test.ts`: empty window, silence, one silent channel (`none`), identical channels (0°, `loudness`, confidence 0), hard-panned level difference with uncorrelated channels (`loudness` with the right sign), NaN and Infinity frames skipped and counted, mismatched lengths, bad and changing sample rate, huge values (up to `Number.MAX_VALUE`) without a non-finite result, `bearingDeg === null` iff `source === 'none'`, `result()` repeatable, `reset()`, streaming equals batch, frame lengths 1, 2, 1023, 1025 and 5000. Add a stub and confirm failure.
     - _Requirements: 6.3-6.6, 7.1-7.7, 8.1-8.4_
-  - [ ] 5.2 Implement `src/bearing/estimate.ts` (`createBearingWindow`, `estimateBearing`) with buffers allocated once, and export from `index.ts`.
-  - [ ] 5.3 Review that `push` allocates nothing proportional to the frame length and that no Frame array is kept. Write the result in a one-line comment on `push`.
+  - [x] 5.2 Implement `src/bearing/estimate.ts` (`createBearingWindow`, `estimateBearing`) with buffers allocated once, and export from `index.ts`.
+  - [x] 5.3 Review that `push` allocates nothing proportional to the frame length and that no Frame array is kept. Write the result in a one-line comment on `push`.
     - _Requirements: 1.5, 8.4_
   - **Gate:** `estimate.test.ts` passes, then `typecheck` and the whole `test` run.
 

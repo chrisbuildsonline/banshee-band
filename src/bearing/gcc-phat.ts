@@ -109,7 +109,7 @@ export function phatSpectrum(
   if (!(maxBin > 0) || !Number.isFinite(maxBin)) return false;
   const floor = regularization * maxBin;
   // Chunk weight: a chunk that holds the sound counts more than the noise-only chunks around it.
-  const energy = Math.sqrt(energyL * energyR);
+  const energy = Math.sqrt(energyL) * Math.sqrt(energyR); // sqrt(E_L · E_R) without overflow
   for (let k = 0; k < n; k++) {
     const w = 1 / (gMag[k] + floor);
     accRe[k] += gRe[k] * w * energy;
