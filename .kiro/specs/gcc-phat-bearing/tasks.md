@@ -28,7 +28,7 @@ Each task is small and ends in a test gate. For pure code, write the test first,
   - **Gate:** `gcc-phat.test.ts` passes.
 
 - [ ] 4. Confidence and loudness fallback
-  - [x] 4.1 Write the confidence tests in `gcc-phat.test.ts` (clean delay at 20 dB over at least 4 chunks: at least 0.8; independent noise on both channels over 200 seeded trials: confidence below `minConfidence` in at least 95%; range and NaN-free for peak 0 and sidelobe 0) and `tests/bearing/loudness.test.ts` (dead zone, saturation, sign, confidence cap 0.5, overflow-safe RMS). Add stubs and confirm failure.
+  - [x] 4.1 Write the confidence tests in `gcc-phat.test.ts` (clean delay at 20 dB over at least 4 chunks: at least 0.8; independent noise on both channels over 200 seeded trials: confidence below `minConfidence` in at least 95%; range and NaN-free for peak 0 and sidelobe 0) and `tests/bearing/loudness.test.ts` (dead zone, saturation, sign, confidence cap 0.5, level difference as a difference of logarithms without overflow). Add stubs and confirm failure.
     - _Requirements: 5.1-5.5, 6.1, 6.2, 6.4_
   - [x] 4.2 Implement `peakConfidence` and `src/bearing/loudness.ts`.
   - [x] 4.3 Measure the noise-only false-`gcc-phat` rate and the confidence of the clean cases. Adjust `Q_LOW`, `Q_HIGH` and `minConfidence` only if the 95% target fails, and record the values in "Measured values".
