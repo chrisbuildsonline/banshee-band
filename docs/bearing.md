@@ -75,7 +75,7 @@ The accuracy case list (`tests/bearing/helpers/cases.ts`, seed `1000 + 7919 · i
 | 0.05 | 0 of 540 / 3.47 / 2.70; 0 of 1008 / 3.25 / 2.32 | 0 of 216 / 1.36 / 0.349 | 3.97 | 1.29 | 23 of 500 |
 | 0.07 | 0 of 1008 / 2.89 / 1.92 | 6 of 216 / 60.01 / 0.328 | | | |
 
-Chosen: **`regularization` 0.05** (hum breaks from about 0.07). With it the fixed case 44100 Hz / -60° still gives -55.60° (error 4.40°), the only clap result over 4° among 1548 seeded clap Windows measured. This is an outlier of the noise, not a systematic error (0.4 sample at 44.1 kHz and 60°), and it is unresolved: see the report.
+Chosen: **`regularization` 0.05** (hum breaks from about 0.07). With it the fixed case 44100 Hz / -60° still gives -55.60° (error 4.40°), the only clap result over 4° among 1548 seeded clap Windows measured. This is an outlier of the noise, not a systematic error (0.4 sample at 44.1 kHz and 60°). The clap row is therefore graded statistically (R9.8) over a seeded set; see "Accuracy, bias and speed (task 6.4)".
 
 ### Confidence thresholds (task 4.3)
 
@@ -96,3 +96,37 @@ Chosen: **`regularization` 0.05** (hum breaks from about 0.07). With it the fixe
 With the first values (`Q_LOW` 3, `Q_HIGH` 10, `minConfidence` 0.3, threshold q 5.1) only 188 of 200 noise-only trials of the unit test stayed below `minConfidence` (94%, target 95%). Changed: **`Q_HIGH` 12** (`Q_LOW` 3 and `minConfidence` 0.3 unchanged). The threshold is now q = 5.7 and Confidence 0.8 is q = 10.2. Noise-only false `gcc-phat` rate: **21 of 1000 (2.1%)**; the 200-trial unit test passes.
 
 **Unresolved conflict: tones (R9.7) against hum (hard 4°).** The hum row's q (6.46 to about 6.8) lies inside the range of the bad tone results (up to 6.83 at 10 dB and 8.75 at 0 dB). Both are narrowband: the common hum and the three tones put large values at every lag of the correlation, so the sidelobe RMS is high. A threshold above 8.75 would flag every bad tone result but send every hum result to `'loudness'` (about 0°, error up to 60°); a threshold below 6.46 keeps the hum but labels the bad tone results `'gcc-phat'`. The second half of R9.7 (error at most 4° when Confidence is at least 0.8) holds with `Q_HIGH` 12, because every tone result has q below 10.2. Other settings do not separate them either (lowest hum q / highest bad-tone q): chunk 1024 reg 0.003: 10.49 / 9.34 (clap fails, 6.71°); reg 0.01: 7.53 / 9.11 (clap 5.50°); chunk 2048 reg 0.03: 7.03 / 8.07 (clap 5.15°); chunk 4096 reg 0.01: 8.08 / 7.44 (clap 4.78°); chunk 4096 reg 0.03: 6.93 / 7.69; chunk 8192 reg 0.03: 6.89 / 7.88 (clap 4.49°). With 5 seeds: chunk 4096 reg 0.015: 7.57 / 7.47 (clap 4.54°); reg 0.02: 7.28 / 7.62 (clap 4.35°); chunk 8192 reg 0.01: 8.03 / 7.52 (clap 5.79°); reg 0.015: 7.53 / 7.60 (clap 5.37°); reg 0.02: 7.24 / 7.80 (clap 5.03°); chunk 2048 reg 0.02: 7.42 / 8.10 (clap 5.68°). Wherever the q ranges separate, the clap misses its 4° bound.
+
+### Accuracy, bias and speed (task 6.4)
+
+Final configuration: per-chunk energy weighting, CHUNK 1024 (NFFT 2048), `regularization` 0.05, `Q_LOW` 3, `Q_HIGH` 12, `minConfidence` 0.3.
+
+Worst absolute error per group of the accuracy case list (`tests/bearing/helpers/cases.ts`, 48000 and 44100 Hz together, the Result as returned, including fallbacks):
+
+| Group | Rule | Worst | Mean |
+|---|---|---|---|
+| white 20 dB, -60 to 60° | 1.5° | 0.95 | 0.24 |
+| white 20 dB, 65 to 85° | 5° | 3.92 | 1.76 |
+| white 40 dB | 1.5° | 0.70 | 0.31 |
+| white 0 dB | 4° | 1.03 | 0.44 |
+| white -5 dB | R9.6 (10° or low Confidence) | 0.80 | 0.30 |
+| white -10 dB | R9.6 | 1.78 | 0.64 |
+| hum 20 dB | 4° | 1.30 | 0.36 |
+| clap 10 dB (fixed cases) | R9.8 (none over 6°) | 4.40 (44100 Hz, -60°) | 0.52 |
+| tones 10 dB | R9.7 (4° at Confidence >= 0.8) | 7.64 | 2.81 |
+| tones 0 dB | R9.7 | 24.47 | 11.13 |
+
+No tone result reaches Confidence 0.8, so R9.7 holds.
+
+Clap set (R9.8, `buildClapSet`: 504 Windows at each of 48000 and 44100 Hz, 10 dB, bearings evenly spaced over -60 to 60°, seeds `5000011 + 7919 · index`, fixed before the first run): **1007 of 1008 within 4° (99.90%, rule 99.5%), worst 4.47° (44100 Hz, -50.70°, rule 6°)**, p99 2.11°, mean 0.37°. Every result is `'gcc-phat'`. The test takes about 2 s.
+
+Parabolic bias (estimated minus true lag, in samples; white noise, 5 seeds per lag, lags up to ±9.5 within Max lag):
+
+| Lags | 48000 Hz, no noise | 44100 Hz, no noise | 48000 Hz, 20 dB | 44100 Hz, 20 dB |
+|---|---|---|---|---|
+| half-sample (±0.5, ±4.5, ±6.5, ±9.5) | worst 0.0004, mean 0.0001 | worst 0.0003, mean 0.0001 | worst 0.0069, mean 0.0029 | worst 0.0096, mean 0.0034 |
+| quarter-sample (±0.25, ±0.75, ±3.25, ±6.75, ±9.25) | worst 0.086, mean 0.085 | worst 0.086, mean 0.085 | worst 0.088, mean 0.085 | worst 0.087, mean 0.085 |
+
+At a half-sample lag the two neighbours of the Peak are equal, so the parabola is symmetric and has no bias. The largest bias is near a quarter sample, about 0.085 sample toward the nearer integer (about 0.45° near the centre at 48 kHz). No bias correction is needed for the bounds.
+
+Speed (Bun 1.4.2, this machine, white noise at 48 kHz, 20000 pushes after a warm-up): **29.6 µs per `push` of 1024 samples** (each push completes one chunk: one packed 2048-point FFT for both channels plus the PHAT weight), 21 µs per `result()`. One 1024-sample Frame lasts 21.3 ms at 48 kHz, so the estimator uses about 0.14% of real time.
