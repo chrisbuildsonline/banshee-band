@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CHUNK, DEFAULT_REGULARIZATION, NFFT } from '../../src/bearing/constants';
-import { correlationPeak, createPhatWorkspace, parabolicOffset, phatSpectrum } from '../../src/bearing/gcc-phat';
+import { CHUNK, DEFAULT_REGULARIZATION, MIN_CONFIDENCE, NFFT, Q_HIGH, Q_LOW } from '../../src/bearing/constants';
+import { correlationPeak, createPhatWorkspace, parabolicOffset, peakConfidence, phatSpectrum } from '../../src/bearing/gcc-phat';
 import { bearingToLagSec, lagToBearingDeg, maxLagSamples, resolveBearingConfig } from '../../src/bearing/geometry';
-import { makeStereo, type SignalKind } from './helpers/synth';
+import { makeStereo, mulberry32, noise, type SignalKind } from './helpers/synth';
 
 const cfg = resolveBearingConfig();
 
@@ -50,6 +50,65 @@ describe('parabolicOffset', () => {
     expect(parabolicOffset(0, 0, 0)).toBe(0);
     expect(parabolicOffset(NaN, 1, 0)).toBe(0);
     expect(parabolicOffset(-Infinity, 1, 0)).toBe(0);
+  });
+});
+
+describe('peakConfidence', () => {
+  it('is clamp01((peak / sidelobeRms - Q_LOW) / (Q_HIGH - Q_LOW)), excluding the peak ± 2 lags (circularly)', () => {
+    for (const idx of [5, 0, 1, NFFT - 1]) {
+      const corr = new Float64Array(NFFT).fill(1);
+      for (let d = -2; d <= 2; d++) corr[(idx + d + NFFT) % NFFT] = 50;
+      const q = Q_LOW + 0.5 * (Q_HIGH - Q_LOW);
+      corr[idx] = q;
+      expect(peakConfidence(corr, idx, q), `index ${idx}`).toBeCloseTo(0.5, 12);
+      expect(peakConfidence(corr, idx, 100)).toBe(1);
+      expect(peakConfidence(corr, idx, Q_LOW)).toBe(0);
+      expect(peakConfidence(corr, idx, 1)).toBe(0);
+    }
+  });
+
+  it('is 0 for a non-positive peak, a zero or non-finite sidelobe RMS, and never NaN', () => {
+    const zeros = new Float64Array(NFFT);
+    expect(peakConfidence(zeros, 0, 0)).toBe(0);
+    const delta = new Float64Array(NFFT);
+    delta[3] = 1;
+    expect(peakConfidence(delta, 3, 1)).toBe(0);
+    const ones = new Float64Array(NFFT).fill(1);
+    expect(peakConfidence(ones, 0, -20)).toBe(0);
+    const bad = new Float64Array(NFFT).fill(1);
+    bad[100] = NaN;
+    expect(peakConfidence(bad, 0, 20)).toBe(0);
+    bad[100] = Infinity;
+    expect(peakConfidence(bad, 0, 20)).toBe(0);
+    expect(peakConfidence(ones, 0, NaN)).toBe(0);
+  });
+
+  it('is at least 0.8 for white noise with an exact delay at 20 dB over 4 and 8 chunks', () => {
+    for (const fs of [48000, 44100]) {
+      for (const frames of [4, 8]) {
+        for (const lag of [-10, -3.5, 0, 2, 7.5]) {
+          const { left, right } = makeStereo({ signal: 'white', sampleRate: fs, snrDb: 20, lagSec: lag / fs, seed: 40 + lag * 2, frames });
+          const p = gccWindow(left, right, fs);
+          expect(peakConfidence(p.corr, p.peakIndex, p.peak), `${fs} Hz, ${frames} chunks, lag ${lag}`).toBeGreaterThanOrEqual(0.8);
+        }
+      }
+    }
+  });
+
+  it('stays below minConfidence for independent noise on the two channels in at least 95% of 200 trials', () => {
+    let below = 0;
+    for (let trial = 0; trial < 200; trial++) {
+      const rng = mulberry32(5000 + trial);
+      const left = noise(8 * CHUNK, 1e-4, rng);
+      const right = noise(8 * CHUNK, 1e-4, rng);
+      const fs = trial % 2 === 0 ? 48000 : 44100;
+      const p = gccWindow(left, right, fs);
+      const c = peakConfidence(p.corr, p.peakIndex, p.peak);
+      expect(c).toBeGreaterThanOrEqual(0);
+      expect(c).toBeLessThanOrEqual(1);
+      if (c < MIN_CONFIDENCE) below++;
+    }
+    expect(below).toBeGreaterThanOrEqual(190);
   });
 });
 

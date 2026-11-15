@@ -14,8 +14,8 @@ export const ILD_SATURATION_DB = 12;
 export const ILD_DEAD_ZONE_DB = 1;
 /** Peak-to-sidelobe ratio that gives Confidence 0. */
 export const Q_LOW = 3;
-/** Peak-to-sidelobe ratio that gives Confidence 1. */
-export const Q_HIGH = 10;
+/** Peak-to-sidelobe ratio that gives Confidence 1. Measured: 12 (docs/bearing.md). */
+export const Q_HIGH = 12;
 /** Samples per GCC-PHAT chunk. */
 export const CHUNK = 1024;
 /** FFT size: twice the chunk, so circular wrap-around cannot alias the lag search. */

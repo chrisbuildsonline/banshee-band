@@ -63,3 +63,23 @@ Each chunk's PHAT cross-spectrum `W` is multiplied by the chunk energy `sqrt(E_L
 | 4096 | 0.1 | 0.98 / 0.43 | 3.97 / 1.53 | 1.12 / 0.41 | 62.89 / 13.23 | 2.69 / 0.47 | 11.18 / 2.22 | 31.29 / 7.95 |
 
 Chosen: **per-chunk energy weighting, CHUNK 1024 (NFFT 2048), `regularization` 0.03.** It is the only setting measured that meets every hard bound (white noise, hum, clap) at 48000 and 44100 Hz. `regularization` 0.01 leaves the clap at 5.50°; 0.1 breaks the hum. The tone rows are left to the confidence rule of R9.7.
+
+### Confidence thresholds (task 4.3)
+
+`q = peak / sidelobeRms` (R5.1), measured with energy weighting, CHUNK 1024, `regularization` 0.03. Signal rows: 48000 and 44100 Hz, bearings -60 to 60, 5 seeds (90 results each). Noise-only: independent Gaussian noise on the two channels, 8 Frames, 1000 seeded trials.
+
+| Input | q min | q p10 | q p50 | results over 4° (10° below 0 dB) | highest q of those |
+|---|---|---|---|---|---|
+| noise only | | | 3.50 (p90 4.93, p95 5.29, p99 6.14, max 7.62) | | |
+| white 20 dB | 139.79 | 146.53 | 155.03 | 0 | |
+| white 0 dB | 46.76 | 50.16 | 57.47 | 0 | |
+| white -5 dB | 19.76 | 22.05 | 25.94 | 0 | |
+| white -10 dB | 4.89 | 6.71 | 9.61 | 0 | |
+| hum 20 dB | 6.46 | 6.48 | 6.82 | 0 | |
+| clap 10 dB | 57.22 | 63.34 | 69.27 | 0 | |
+| tones 10 dB | 6.45 | 6.52 | 6.65 | 41 of 90 | 6.83 |
+| tones 0 dB | 5.35 | 5.99 | 6.54 | 76 of 90 | 8.75 |
+
+With the first values (`Q_LOW` 3, `Q_HIGH` 10, `minConfidence` 0.3, threshold q 5.1) only 188 of 200 noise-only trials of the unit test stayed below `minConfidence` (94%, target 95%). Changed: **`Q_HIGH` 12** (`Q_LOW` 3 and `minConfidence` 0.3 unchanged). The threshold is now q = 5.7 and Confidence 0.8 is q = 10.2. Noise-only false `gcc-phat` rate: **21 of 1000 (2.1%)**; the 200-trial unit test passes.
+
+**Unresolved conflict: tones (R9.7) against hum (hard 4°).** The hum row's q (6.46 to about 6.8) lies inside the range of the bad tone results (up to 6.83 at 10 dB and 8.75 at 0 dB). Both are narrowband: the common hum and the three tones put large values at every lag of the correlation, so the sidelobe RMS is high. A threshold above 8.75 would flag every bad tone result but send every hum result to `'loudness'` (about 0°, error up to 60°); a threshold below 6.46 keeps the hum but labels the bad tone results `'gcc-phat'`. The second half of R9.7 (error at most 4° when Confidence is at least 0.8) holds with `Q_HIGH` 12, because every tone result has q below 10.2. Other settings do not separate them either (lowest hum q / highest bad-tone q): chunk 1024 reg 0.003: 10.49 / 9.34 (clap fails, 6.71°); reg 0.01: 7.53 / 9.11 (clap 5.50°); chunk 2048 reg 0.03: 7.03 / 8.07 (clap 5.15°); chunk 4096 reg 0.01: 8.08 / 7.44 (clap 4.78°); chunk 4096 reg 0.03: 6.93 / 7.69; chunk 8192 reg 0.03: 6.89 / 7.88 (clap 4.49°). With 5 seeds: chunk 4096 reg 0.015: 7.57 / 7.47 (clap 4.54°); reg 0.02: 7.28 / 7.62 (clap 4.35°); chunk 8192 reg 0.01: 8.03 / 7.52 (clap 5.79°); reg 0.015: 7.53 / 7.60 (clap 5.37°); reg 0.02: 7.24 / 7.80 (clap 5.03°); chunk 2048 reg 0.02: 7.42 / 8.10 (clap 5.68°). Wherever the q ranges separate, the clap misses its 4° bound.

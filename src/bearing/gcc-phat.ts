@@ -1,4 +1,4 @@
-import { CHUNK } from './constants';
+import { CHUNK, Q_HIGH, Q_LOW } from './constants';
 import { createFftPlan, fft, ifft, type FftPlan } from './fft';
 
 /** FFT plan and scratch arrays for one NFFT-point chunk transform, allocated once and reused. */
@@ -116,6 +116,28 @@ export function phatSpectrum(
     accIm[k] += gIm[k] * w * energy;
   }
   return true;
+}
+
+/**
+ * Confidence from Peak sharpness: q = peak / sidelobeRms, where sidelobeRms is the RMS of `corr` over
+ * every lag except peakIndex ± 2, mapped to clamp01((q - Q_LOW) / (Q_HIGH - Q_LOW)). 0 when the peak
+ * is not positive or the sidelobe RMS is 0 or not finite.
+ */
+export function peakConfidence(corr: Float64Array, peakIndex: number, peak: number): number {
+  if (!(peak > 0) || !Number.isFinite(peak)) return 0;
+  const n = corr.length;
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < n; i++) {
+    const d = Math.abs(i - peakIndex);
+    if (Math.min(d, n - d) <= 2) continue;
+    sum += corr[i] * corr[i];
+    count++;
+  }
+  const sidelobeRms = count > 0 ? Math.sqrt(sum / count) : 0;
+  if (!(sidelobeRms > 0) || !Number.isFinite(sidelobeRms)) return 0;
+  const c = (peak / sidelobeRms - Q_LOW) / (Q_HIGH - Q_LOW);
+  return c > 1 ? 1 : c > 0 ? c : 0;
 }
 
 /**
