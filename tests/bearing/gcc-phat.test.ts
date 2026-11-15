@@ -100,6 +100,35 @@ describe('phatSpectrum and correlationPeak', () => {
     }
   });
 
+  it('finds a clap in 1 Frame of 8 at 10 dB within 4° (noise-only chunks do not outvote it)', () => {
+    for (const fs of [48000, 44100]) {
+      for (const bearing of [-60, -45, -30, -15, 0, 10, 25, 45, 60]) {
+        for (const seed of [1, 2, 3]) {
+          const lagSec = bearingToLagSec(bearing, cfg);
+          const { left, right } = makeStereo({ signal: 'clap', sampleRate: fs, snrDb: 10, lagSec, seed: seed * 1000 + bearing + 100 });
+          const est = lagToBearingDeg(gccWindow(left, right, fs).lagSamples / fs, cfg);
+          expect(Math.abs(est - bearing), `${fs} Hz, ${bearing}°, seed ${seed}`).toBeLessThanOrEqual(4);
+        }
+      }
+    }
+  });
+
+  it('weights each chunk by its energy: a scaled copy of one chunk counts more', () => {
+    const fs = 48000;
+    const a = makeStereo({ signal: 'white', sampleRate: fs, snrDb: 40, lagSec: 3 / fs, seed: 31, frames: 1 });
+    const b = makeStereo({ signal: 'white', sampleRate: fs, snrDb: 40, lagSec: -5 / fs, seed: 32, frames: 1 });
+    const run = (gainB: number) => {
+      const ws = createPhatWorkspace();
+      const accRe = new Float64Array(NFFT);
+      const accIm = new Float64Array(NFFT);
+      phatSpectrum(ws, a.left, a.right, CHUNK, 0.01, accRe, accIm);
+      phatSpectrum(ws, b.left.map((v) => v * gainB), b.right.map((v) => v * gainB), CHUNK, 0.01, accRe, accIm);
+      return Math.round(correlationPeak(ws, accRe, accIm, 11, 11.2).lagSamples);
+    };
+    expect(run(3)).toBe(-5);
+    expect(run(1 / 3)).toBe(3);
+  });
+
   it('skips an all-zero chunk and leaves the accumulator unchanged', () => {
     const ws = createPhatWorkspace();
     const accRe = new Float64Array(NFFT).fill(0.25);

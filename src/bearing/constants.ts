@@ -6,8 +6,8 @@ export const DEFAULT_MIC_SPACING_M = 0.08;
 export const SILENCE_RMS = 10 ** (-70 / 20);
 /** GCC-PHAT results below this Confidence fall back to the loudness bearing. */
 export const MIN_CONFIDENCE = 0.3;
-/** PHAT regulariser, relative to the largest cross-spectrum bin of a chunk. */
-export const DEFAULT_REGULARIZATION = 0.01;
+/** PHAT regulariser, relative to the largest cross-spectrum bin of a chunk. Measured: 0.03 (docs/bearing.md). */
+export const DEFAULT_REGULARIZATION = 0.03;
 /** ILD in dB that maps to a full ±90° loudness bearing. */
 export const ILD_SATURATION_DB = 12;
 /** |ILD| at or below this (dB) gives a loudness bearing of 0. */

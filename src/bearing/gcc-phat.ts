@@ -57,9 +57,10 @@ export function parabolicOffset(ym: number, y0: number, yp: number): number {
 }
 
 /**
- * Adds one chunk's PHAT-weighted cross-spectrum W = G / (|G| + regularization · max|G|) to
- * `accRe`/`accIm`, with G = L · conj(R) of the Hann-windowed, zero-padded chunk, so the correlation
- * peaks at +lag when the left channel is delayed. `len` (1..CHUNK) samples are read from each channel.
+ * Adds one chunk's PHAT-weighted cross-spectrum W = G / (|G| + regularization · max|G|), times the
+ * chunk energy sqrt(E_L · E_R) of the windowed samples, to `accRe`/`accIm`. G = L · conj(R) of the
+ * Hann-windowed, zero-padded chunk, so the correlation peaks at +lag when the left channel is delayed.
+ * `len` (1..chunk) samples are read from each channel.
  * Returns false and adds nothing when the cross-spectrum is all zero. Does not modify the inputs.
  */
 export function phatSpectrum(
@@ -75,10 +76,16 @@ export function phatSpectrum(
   const n = plan.n;
   const mask = n - 1;
   // Pack both real channels into one complex FFT: Z = L + jR.
+  let energyL = 0;
+  let energyR = 0;
   for (let i = 0; i < len; i++) {
     const w = len === ws.chunk ? ws.hann[i] : hannAt(i, len);
-    zRe[i] = w * left[i];
-    zIm[i] = w * right[i];
+    const l = w * left[i];
+    const r = w * right[i];
+    zRe[i] = l;
+    zIm[i] = r;
+    energyL += l * l;
+    energyR += r * r;
   }
   zRe.fill(0, len);
   zIm.fill(0, len);
@@ -101,10 +108,12 @@ export function phatSpectrum(
   }
   if (!(maxBin > 0) || !Number.isFinite(maxBin)) return false;
   const floor = regularization * maxBin;
+  // Chunk weight: a chunk that holds the sound counts more than the noise-only chunks around it.
+  const energy = Math.sqrt(energyL * energyR);
   for (let k = 0; k < n; k++) {
     const w = 1 / (gMag[k] + floor);
-    accRe[k] += gRe[k] * w;
-    accIm[k] += gIm[k] * w;
+    accRe[k] += gRe[k] * w * energy;
+    accIm[k] += gIm[k] * w * energy;
   }
   return true;
 }

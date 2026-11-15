@@ -18,13 +18,13 @@ Each task is small and ends in a test gate. For pure code, write the test first,
   - [x] 2.2 Implement `src/bearing/fft.ts` (`createFftPlan`, `fft`, `ifft`, in place, tables built once).
   - **Gate:** `fft.test.ts` passes, no new import in `boundaries.test.ts` fails.
 
-- [ ] 3. GCC-PHAT core and interpolation
+- [x] 3. GCC-PHAT core and interpolation
   - [x] 3.1 Create `tests/bearing/helpers/synth.ts` (mulberry32 PRNG, Gaussian noise, analytic white-noise, tones, clap and hum generators, noise at a given SNR, helper that builds `StereoFrame[]` for a bearing and lag). Test the helper itself: determinism, measured SNR within 0.1 dB, an exact analytic delay.
     - _Requirements: 9.1, 9.2_
   - [x] 3.2 Write `tests/bearing/gcc-phat.test.ts`: `parabolicOffset` on exact parabolas (offsets -0.4 to 0.4), flat and degenerate input returns 0, clamp to ±0.5; `phatSpectrum` on noise with integer lags (-11 to 11) at 48 kHz recovers the lag; the sign case (`bearingToLagSec(+30)` gives positive); the hum case (plain correlation would give lag 0, PHAT recovers the true lag; use lags -7, 7.5, -9.5 and 10 samples, since the hum only pulls plain correlation to lag 0 from about 6.5 samples). Add stubs and confirm failure.
     - _Requirements: 3.3-3.8, 4.1_
   - [x] 3.3 Implement `src/bearing/gcc-phat.ts` (chunk spectrum with Hann window and zero padding, PHAT weight with regulariser, accumulation, peak search, `parabolicOffset`).
-  - [ ] 3.4 Measure `regularization` on the 0 dB tone case, the hum case and white noise at 0 dB, and the clap row. Record the numbers in `docs/bearing.md` under "Measured values" (the report script of task 7.1 must keep that section) and sync them into "Measured values" in `design.md`. Tone rows are graded by the R9.6 rule (R9.7), not a hard 4° bound. For the clap row, choose per-chunk energy weighting or a larger `CHUNK`, whichever meets all bounds, and record the choice. If a hard-bounded row still cannot be met, stop and tell the user.
+  - [x] 3.4 Measure `regularization` on the 0 dB tone case, the hum case and white noise at 0 dB, and the clap row. Record the numbers in `docs/bearing.md` under "Measured values" (the report script of task 7.1 must keep that section) and sync them into "Measured values" in `design.md`. Tone rows are graded by the R9.6 rule (R9.7), not a hard 4° bound. For the clap row, choose per-chunk energy weighting or a larger `CHUNK`, whichever meets all bounds, and record the choice. If a hard-bounded row still cannot be met, stop and tell the user.
   - **Gate:** `gcc-phat.test.ts` passes.
 
 - [ ] 4. Confidence and loudness fallback
