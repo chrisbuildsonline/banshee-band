@@ -52,14 +52,14 @@ Each task is small and ends in a test gate. For pure code, write the test first,
   - [x] 6.4 Record the worst error per group, the parabolic bias at half-sample lags and the time per 1024-sample `push` in "Measured values".
   - **Gate:** `accuracy.test.ts` and `properties.test.ts` pass; `bun run typecheck` and `bun run test` pass.
 
-- [ ] 7. Accuracy report and limits
-  - [ ] 7.1 Write `tests/bearing/report.ts` and add `"bearing:report": "bun run tests/bearing/report.ts"` to `package.json`. It writes `tests/bearing/accuracy.json` and `docs/bearing.md` (table of true vs estimated bearing, error and SNR; per-group summary; configuration; the "Limits" section of Requirement 11.5). The script must keep the "Measured values" section written in tasks 3.4 and 6.2 (preserve or regenerate it, never drop it).
+- [x] 7. Accuracy report and limits
+  - [x] 7.1 Write `tests/bearing/report.ts` and add `"bearing:report": "bun run tests/bearing/report.ts"` to `package.json`. It writes `tests/bearing/accuracy.json` and `docs/bearing.md` (table of true vs estimated bearing, error and SNR; per-group summary; configuration; the "Limits" section of Requirement 11.5). The script must keep the "Measured values" section written in tasks 3.4 and 6.2 (preserve or regenerate it, never drop it).
     - _Requirements: 11.1-11.3, 11.5, 11.6_
-  - [ ] 7.2 Run `bun run bearing:report` twice and confirm the two outputs are byte-identical (`sha256sum` before and after).
+  - [x] 7.2 Run `bun run bearing:report` twice and confirm the two outputs are byte-identical (`sha256sum` before and after).
     - _Requirements: 11.4_
-  - [ ] 7.3 Write `tests/bearing/report-fresh.test.ts` (regenerate rows, compare with the committed `accuracy.json`). Confirm it fails after a manual edit of one number in the JSON, then restore the file.
+  - [x] 7.3 Write `tests/bearing/report-fresh.test.ts` (regenerate rows, compare with the committed `accuracy.json`). Confirm it fails after a manual edit of one number in the JSON, then restore the file.
     - _Requirements: 11.4_
-  - [ ] 7.4 Read `docs/bearing.md` once as a user would. Check that the Limits section names left/right only, the few-centimetre spacing and the mono case, and makes no safety promise.
+  - [x] 7.4 Read `docs/bearing.md` once as a user would. Check that the Limits section names left/right only, the few-centimetre spacing and the mono case, and makes no safety promise.
   - **Gate:** `test` passes including `report-fresh.test.ts`.
 
 - [ ] 8. Mutation check and final gates

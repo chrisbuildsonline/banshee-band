@@ -167,3 +167,8 @@ export function roundRow(row: Row): Row {
   for (const [k, v] of Object.entries(out)) if (typeof v === 'number') out[k] = Math.round(v * 1000) / 1000 + 0;
   return out as unknown as Row;
 }
+
+/** The text of `tests/bearing/accuracy.json`: every case of `buildCases`, rounded. */
+export function accuracyJson(rows: Row[] = buildCases().map(evaluateCase)): string {
+  return JSON.stringify(rows.map(roundRow), null, 2) + '\n';
+}

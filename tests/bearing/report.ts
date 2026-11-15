@@ -1,0 +1,158 @@
+// `bun run bearing:report`: runs the accuracy cases of Requirement 9 and writes tests/bearing/accuracy.json
+// and docs/bearing.md. Deterministic (fixed seeds, 3-decimal rounding). The "Measured values" section of
+// docs/bearing.md is hand-written and kept as it is.
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { CHUNK, NFFT, Q_HIGH, Q_LOW } from '../../src/bearing/constants';
+import { maxLagSamples, resolveBearingConfig } from '../../src/bearing/geometry';
+import {
+  accuracyJson,
+  buildCases,
+  buildClapSet,
+  CLAP_BOUND_DEG,
+  CLAP_MAX_DEG,
+  CLAP_MIN_SHARE,
+  evaluateCase,
+  roundRow,
+  type Row,
+} from './helpers/cases';
+import { CLAP_ONSET_SAMPLE, FRAME_LEN, HUM_DB, SOURCE_RMS, WINDOW_FRAMES } from './helpers/synth';
+
+const JSON_FILE = new URL('./accuracy.json', import.meta.url);
+const DOC_FILE = new URL('../../docs/bearing.md', import.meta.url);
+const MEASURED = '## Measured values';
+
+/** The kept "Measured values" section: from its heading to the next level-2 heading or the end. */
+function measuredSection(): string {
+  const doc = existsSync(DOC_FILE) ? readFileSync(DOC_FILE, 'utf8') : '';
+  const start = doc.indexOf(`\n${MEASURED}\n`);
+  if (start < 0) throw new Error(`docs/bearing.md has no "${MEASURED}" section; refusing to drop it`);
+  const next = doc.indexOf('\n## ', start + 1);
+  return doc.slice(start + 1, next < 0 ? doc.length : next + 1).trimEnd() + '\n';
+}
+
+const num = (v: number | null, digits: number): string => (v === null ? '-' : v.toFixed(digits));
+
+function ruleText(r: Row): string {
+  switch (r.rule) {
+    case 'bound':
+      return `<= ${r.boundDeg}°`;
+    case 'tone':
+      return 'R9.7';
+    case 'low-snr':
+      return 'R9.6';
+    case 'clap':
+      return 'R9.8';
+    case 'report':
+      return 'report';
+  }
+}
+
+function summary(rows: Row[]): string[] {
+  const lines = ['| Group | Sample rate | Cases | Rule | Mean abs error (°) | Worst abs error (°) | Rule met | Sources |', '|---|---|---|---|---|---|---|---|'];
+  const keys: string[] = [];
+  for (const r of rows) if (!keys.includes(`${r.group}|${r.sampleRate}`)) keys.push(`${r.group}|${r.sampleRate}`);
+  for (const key of keys) {
+    const [group, rate] = key.split('|');
+    const g = rows.filter((r) => r.group === group && String(r.sampleRate) === rate);
+    const errs = g.map((r) => r.absErrorDeg).filter((e): e is number => e !== null);
+    const mean = errs.length ? errs.reduce((a, b) => a + b, 0) / errs.length : null;
+    const worst = errs.length ? Math.max(...errs) : null;
+    const sources = [...new Set(g.map((r) => r.bearingSource))].sort().join(', ');
+    lines.push(`| ${group} | ${rate} | ${g.length} | ${ruleText(g[0])} | ${num(mean, 2)} | ${num(worst, 2)} | ${g.filter((r) => r.boundMet).length} of ${g.length} | ${sources} |`);
+  }
+  return lines;
+}
+
+function caseTable(rows: Row[]): string[] {
+  const lines = [
+    '| Signal | Sample rate | SNR (dB) | True bearing (°) | True lag (samples) | Estimated bearing (°) | Signed error (°) | Abs error (°) | Source | Confidence | Rule | Met |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|',
+  ];
+  for (const r of rows) {
+    lines.push(
+      `| ${r.group} | ${r.sampleRate} | ${r.snrDb} | ${num(r.trueBearingDeg, 3)} | ${num(r.trueLagSamples, 3)} | ${num(r.estimatedBearingDeg, 3)} | ` +
+        `${num(r.signedErrorDeg, 3)} | ${num(r.absErrorDeg, 3)} | ${r.bearingSource} | ${num(r.confidence, 3)} | ${ruleText(r)} | ${r.boundMet ? 'yes' : 'no'} |`,
+    );
+  }
+  return lines;
+}
+
+function clapSummary(clap: Row[]): string[] {
+  const errs = clap.map((r) => r.absErrorDeg ?? Infinity);
+  const within = errs.filter((e) => e <= CLAP_BOUND_DEG).length;
+  const worst = clap.reduce((w, r) => ((r.absErrorDeg ?? Infinity) > (w.absErrorDeg ?? Infinity) ? r : w));
+  const sorted = [...errs].sort((a, b) => a - b);
+  const mean = errs.reduce((a, b) => a + b, 0) / errs.length;
+  const met = within / clap.length >= CLAP_MIN_SHARE && (worst.absErrorDeg ?? Infinity) <= CLAP_MAX_DEG;
+  return [
+    `The clap row is graded over a seeded set (R9.8): ${clap.length} Windows, half at 48000 Hz and half at 44100 Hz, 10 dB, bearings evenly spaced over -60 to 60°, seeds \`5000011 + 7919 · index\` (\`buildClapSet\`).`,
+    '',
+    '| Windows | Within 4° | Share within 4° (rule >= 99.5%) | Worst abs error (rule <= 6°) | Worst case | p99 | Mean | Rule met |',
+    '|---|---|---|---|---|---|---|---|',
+    `| ${clap.length} | ${within} | ${((100 * within) / clap.length).toFixed(2)}% | ${num(worst.absErrorDeg, 3)}° | ${worst.sampleRate} Hz, ${num(worst.trueBearingDeg, 3)}° | ` +
+      `${sorted[Math.floor(0.99 * sorted.length)].toFixed(3)}° | ${mean.toFixed(3)}° | ${met ? 'yes' : 'no'} |`,
+  ];
+}
+
+const cfg = resolveBearingConfig();
+const rows = buildCases().map(evaluateCase);
+const clap = buildClapSet().map(evaluateCase).map(roundRow);
+const rounded = rows.map(roundRow);
+const measured = measuredSection();
+
+const doc = [
+  '# Bearing (GCC-PHAT)',
+  '',
+  'Generated by `bun run bearing:report` (`tests/bearing/report.ts`) from the seeded cases in `tests/bearing/helpers/cases.ts`. Do not edit it by hand, except the "Measured values" section at the end, which the script keeps as it is. The rows are also in `tests/bearing/accuracy.json`, and a test fails when that file is stale.',
+  '',
+  '`src/bearing/` turns the stereo Frames of one sound event into a bearing in degrees from -90 (left) to 90 (right), a source (`gcc-phat`, `loudness` or `none`) and a Confidence from 0 to 1. It measures the delay between the two microphones with GCC-PHAT and falls back to the level difference when the delay is not clear.',
+  '',
+  '## Limits',
+  '',
+  '- Two microphones give left or right, not front or back. A sound behind the user gets the same bearing as the mirrored sound in front.',
+  '- A laptop microphone pair is a few centimetres apart (8 cm assumed). At 48 kHz one sample of delay is about 5° near the centre and much more near ±90° (at 16 kHz about 15°), so the angle is coarse.',
+  '- The angle scales with the assumed Spacing (`micSpacingM`). A wrong Spacing gives a wrong angle.',
+  "- Many devices record the same signal in both channels (mono). The module then reports centre (0°) with `'loudness'` and Confidence 0, which means \"unknown side\", not \"straight ahead\".",
+  "- A sound heard on one microphone only, or silence, gets no direction (`'none'`).",
+  "- Narrowband sounds (beeps, chimes) often fall back to the coarser loudness left/right estimate, because noise easily hides their delay, and they can give a wrong left/right at medium Confidence (below 0.8). Treat a Confidence below 0.8 as an uncertain bearing.",
+  '- Reverberation, several simultaneous sources and wind noise reduce Confidence or give a wrong side.',
+  '- The module is an aid and can be wrong. The figures below come from synthetic signals, not from real rooms.',
+  '',
+  '## Configuration',
+  '',
+  '| Setting | Value |',
+  '|---|---|',
+  `| Microphone spacing | ${cfg.micSpacingM} m |`,
+  `| Speed of sound | ${cfg.speedOfSound} m/s |`,
+  `| Max lag | ${maxLagSamples(48000, cfg)} samples at 48000 Hz, ${maxLagSamples(44100, cfg)} at 44100 Hz, ${maxLagSamples(16000, cfg)} at 16000 Hz |`,
+  `| Window | ${WINDOW_FRAMES} Frames of ${FRAME_LEN} samples |`,
+  `| Chunk / FFT size | ${CHUNK} / ${NFFT}, Hann window, per-chunk energy weighting |`,
+  `| \`regularization\` | ${cfg.regularization} |`,
+  `| Confidence | clamp01((q - ${Q_LOW}) / (${Q_HIGH} - ${Q_LOW})), q = peak / sidelobe RMS |`,
+  `| \`minConfidence\` | ${cfg.minConfidence} |`,
+  `| \`silenceRms\` | ${cfg.silenceRms.toExponential(3)} (-70 dBFS) |`,
+  `| ILD dead zone / saturation | ${cfg.ildDeadZoneDb} dB / ${cfg.ildSaturationDb} dB |`,
+  `| Source level | RMS ${SOURCE_RMS} (-40 dBFS); independent Gaussian noise per channel at the stated SNR |`,
+  `| Signals | white: cosines every 40 Hz to 0.45·fs; tones: 500, 1000, 1500 Hz; clap: 40 damped cosines 500 Hz to 8 kHz, tau 2 ms, from sample ${CLAP_ONSET_SAMPLE}; hum: 100 Hz and 3 harmonics, +${HUM_DB} dB over the source, same in both channels, plus a delayed white source |`,
+  '| Seeds | case `i` of the list uses `1000 + 7919 · i` |',
+  '',
+  '## Summary',
+  '',
+  'Rules: `<= x°` is a hard bound (R9.3); R9.6: within 10° or Confidence below `minConfidence` and not `gcc-phat`; R9.7: within 4° when Confidence is at least 0.8; R9.8: no clap Window over 6° here, and the 4° share over the clap set below; `report`: no bound (16000 Hz and ±90°).',
+  '',
+  ...summary(rounded),
+  '',
+  ...clapSummary(clap),
+  '',
+  '## Cases',
+  '',
+  ...caseTable(rounded),
+  '',
+  measured,
+].join('\n');
+
+writeFileSync(JSON_FILE, accuracyJson(rows));
+writeFileSync(DOC_FILE, doc);
+const failed = rounded.filter((r) => !r.boundMet);
+console.log(`wrote ${JSON_FILE.pathname} (${rows.length} cases) and ${DOC_FILE.pathname}; ${failed.length} cases miss their rule`);
+for (const r of failed) console.log(`  MISS ${r.id}: estimated ${r.estimatedBearingDeg}, ${r.bearingSource}, confidence ${r.confidence}`);
