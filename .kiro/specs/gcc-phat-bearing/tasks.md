@@ -43,9 +43,9 @@ Each task is small and ends in a test gate. For pure code, write the test first,
   - **Gate:** `estimate.test.ts` passes, then `typecheck` and the whole `test` run.
 
 - [ ] 6. Accuracy and property tests
-  - [ ] 6.1 Create `tests/bearing/helpers/cases.ts` (`buildCases`, `evaluateCase`) with the signals, SNRs and bearings of Requirement 9, including 0, ±45, ±90, integer lags and half-sample lags, at 48000 and 44100 Hz, plus 16000 Hz rows without bounds.
+  - [x] 6.1 Create `tests/bearing/helpers/cases.ts` (`buildCases`, `evaluateCase`) with the signals, SNRs and bearings of Requirement 9, including 0, ±45, ±90, integer lags and half-sample lags, at 48000 and 44100 Hz, plus 16000 Hz rows without bounds.
     - _Requirements: 9.2-9.5_
-  - [ ] 6.2 Write `tests/bearing/accuracy.test.ts` with the bounds of Requirement 9.3, the tone rule of 9.7 and the low-SNR rule of 9.6. The clap row is graded by the R9.8 statistical rule (at least 99.5% of at least 1000 seeded Windows within 4°, none over 6°), not per case. Run it. If a bound fails, fix the algorithm or stop and ask. Do not loosen a bound without recording the measured values and the reason in `docs/bearing.md` ("Measured values") and syncing them into `design.md`.
+  - [x] 6.2 Write `tests/bearing/accuracy.test.ts` with the bounds of Requirement 9.3, the tone rule of 9.7 and the low-SNR rule of 9.6. The clap row is graded by the R9.8 statistical rule (at least 99.5% of at least 1000 seeded Windows within 4°, none over 6°), not per case. Run it. If a bound fails, fix the algorithm or stop and ask. Do not loosen a bound without recording the measured values and the reason in `docs/bearing.md` ("Measured values") and syncing them into `design.md`.
     - _Requirements: 9.3, 9.4, 9.6, 9.7, 9.8_
   - [ ] 6.3 Write `tests/bearing/properties.test.ts` with the ten properties of Requirement 10 (fixed `fast-check` seed, at least 100 runs each, lowering `numRuns` only for the slow synth properties and not below 100).
     - _Requirements: 10.1-10.10_

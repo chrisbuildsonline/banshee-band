@@ -7,8 +7,11 @@ import { makeStereo, type SignalKind } from './synth';
 
 const cfg = resolveBearingConfig();
 
-/** How a case is graded: a hard bound (R9.3), the tone rule (R9.7), the low-SNR rule (R9.6), or report only (16 kHz). */
-export type Rule = 'bound' | 'tone' | 'low-snr' | 'report';
+/**
+ * How a case is graded: a hard bound (R9.3), the tone rule (R9.7), the low-SNR rule (R9.6), the clap
+ * rule (R9.8: every Window within 6°, the 4° share is graded over `buildClapSet`), or report only (16 kHz).
+ */
+export type Rule = 'bound' | 'tone' | 'low-snr' | 'clap' | 'report';
 
 export interface Case {
   id: string;
@@ -76,10 +79,42 @@ export function buildCases(): Case[] {
     add('white 0 dB', 'white', 0, CENTRE, 'bound', 4);
     add('tones 10 dB', 'tones', 10, CENTRE, 'tone', 4);
     add('tones 0 dB', 'tones', 0, CENTRE, 'tone', 4);
-    add('clap 10 dB', 'clap', 10, CENTRE, 'bound', 4);
+    add('clap 10 dB', 'clap', 10, CENTRE, 'clap', CLAP_MAX_DEG);
     add('hum 20 dB', 'hum', 20, CENTRE, 'bound', 4);
     add('white -5 dB', 'white', -5, [-45, -15, 0, 30, 60], 'low-snr', 10);
     add('white -10 dB', 'white', -10, [-45, -15, 0, 30, 60], 'low-snr', 10);
+  }
+  return cases;
+}
+
+/** R9.8: share of clap Windows that must be within CLAP_BOUND_DEG, and the bound no Window may exceed. */
+export const CLAP_MIN_SHARE = 0.995;
+export const CLAP_BOUND_DEG = 4;
+export const CLAP_MAX_DEG = 6;
+/** Clap Windows per sample rate in `buildClapSet` (2 rates, so 1008 in total). */
+export const CLAP_SET_PER_RATE = 504;
+
+/**
+ * The seeded clap set of R9.8: CLAP_SET_PER_RATE Windows at each of 48000 and 44100 Hz, 10 dB, bearings
+ * evenly spaced over -60..60°. Seeds follow `5000011 + 7919 · index` and are not chosen to pass.
+ */
+export function buildClapSet(): Case[] {
+  const cases: Case[] = [];
+  for (const sampleRate of [48000, 44100]) {
+    for (let j = 0; j < CLAP_SET_PER_RATE; j++) {
+      const b = -60 + (120 * j) / (CLAP_SET_PER_RATE - 1);
+      cases.push({
+        id: `clap set/${sampleRate}/${b.toFixed(3)}`,
+        group: 'clap set 10 dB',
+        signal: 'clap',
+        sampleRate,
+        snrDb: 10,
+        trueBearingDeg: b,
+        rule: 'clap',
+        boundDeg: CLAP_MAX_DEG,
+        seed: 5000011 + cases.length * 7919,
+      });
+    }
   }
   return cases;
 }
@@ -90,6 +125,7 @@ export function meets(c: Case, absErr: number | null, source: BearingSource, con
     case 'report':
       return true;
     case 'bound':
+    case 'clap':
       return absErr !== null && absErr <= c.boundDeg!;
     case 'tone':
       return confidence < 0.8 || (absErr !== null && absErr <= c.boundDeg!);
