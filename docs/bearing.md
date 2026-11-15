@@ -64,6 +64,19 @@ Each chunk's PHAT cross-spectrum `W` is multiplied by the chunk energy `sqrt(E_L
 
 Chosen: **per-chunk energy weighting, CHUNK 1024 (NFFT 2048), `regularization` 0.03.** It is the only setting measured that meets every hard bound (white noise, hum, clap) at 48000 and 44100 Hz. `regularization` 0.01 leaves the clap at 5.50°; 0.1 breaks the hum. The tone rows are left to the confidence rule of R9.7.
 
+### `regularization` raised to 0.05 (task 6.2)
+
+The accuracy case list (`tests/bearing/helpers/cases.ts`, seed `1000 + 7919 · index`) has one clap case, 44100 Hz at -60°, that missed 4° at 0.03 (5.20°). Measured with the estimator (`estimateBearing`, energy weighting, CHUNK 1024), 48000 and 44100 Hz, bearings -60 to 60:
+
+| reg | clap 10 dB: over 4° / max / p99 | hum 20 dB: over 4° / max / lowest Confidence | white 20 dB 65-85°: max | white 0 dB: max | noise-only false `gcc-phat` |
+|---|---|---|---|---|---|
+| 0.03 | 1 of 540 / 4.23 / 3.24 | 0 of 72 / 1.17 / | 3.97 | 1.29 | 21 of 1000 |
+| 0.04 | 0 of 360 / 3.41 | 0 of 360 / 1.27 / 0.363 | 3.98 | | 23 of 500 |
+| 0.05 | 0 of 540 / 3.47 / 2.70; 0 of 1008 / 3.25 / 2.32 | 0 of 216 / 1.36 / 0.349 | 3.97 | 1.29 | 23 of 500 |
+| 0.07 | 0 of 1008 / 2.89 / 1.92 | 6 of 216 / 60.01 / 0.328 | | | |
+
+Chosen: **`regularization` 0.05** (hum breaks from about 0.07). With it the fixed case 44100 Hz / -60° still gives -55.60° (error 4.40°), the only clap result over 4° among 1548 seeded clap Windows measured. This is an outlier of the noise, not a systematic error (0.4 sample at 44.1 kHz and 60°), and it is unresolved: see the report.
+
 ### Confidence thresholds (task 4.3)
 
 `q = peak / sidelobeRms` (R5.1), measured with energy weighting, CHUNK 1024, `regularization` 0.03. Signal rows: 48000 and 44100 Hz, bearings -60 to 60, 5 seeds (90 results each). Noise-only: independent Gaussian noise on the two channels, 8 Frames, 1000 seeded trials.
