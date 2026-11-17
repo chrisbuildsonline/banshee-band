@@ -58,11 +58,11 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 1.5, 1.6, 9.1-9.8, 13.3_
   - **Gate:** `engine.test.ts` and `boundaries.test.ts` pass, then `typecheck` and the whole `test` run.
 
-- [ ] 7. Property tests
-  - [ ] 7.1 Write `tests/haptics/properties.test.ts` with the eight properties of Requirement 11.5 (fixed `fast-check` seed, at least 100 runs each). Use the arbitraries of the design (inconsistent `bearingSource` and `bearingDeg`, `NaN`, junk settings, sequences with increasing `nowMs`).
+- [x] 7. Property tests
+  - [x] 7.1 Write `tests/haptics/properties.test.ts` with the eight properties of Requirement 11.5 (fixed `fast-check` seed, at least 100 runs each). Use the arbitraries of the design (inconsistent `bearingSource` and `bearingDeg`, `NaN`, junk settings, sequences with increasing `nowMs`).
     - _Requirements: 11.5, 6.6, 5.5, 7.4, 6.5, 8.5, 8.7_
-  - [ ] 7.2 If a property fails, decide whether the code or the requirement is wrong. Fix the code, or stop and ask when a requirement needs to change. Do not weaken a property to make it pass.
-  - [ ] 7.3 Check the property run time (`vitest` output). Keep the whole `tests/haptics` run under about 10 seconds, and lower `numRuns` only for the sequence properties and not below 100.
+  - [x] 7.2 If a property fails, decide whether the code or the requirement is wrong. Fix the code, or stop and ask when a requirement needs to change. Do not weaken a property to make it pass.
+  - [x] 7.3 Check the property run time (`vitest` output). Keep the whole `tests/haptics` run under about 10 seconds, and lower `numRuns` only for the sequence properties and not below 100.
   - **Gate:** `properties.test.ts` passes; `typecheck` and `test` pass.
 
 - [ ] 8. Mutation check
