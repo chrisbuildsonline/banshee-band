@@ -285,6 +285,17 @@ The function reads `input` only when it is a non-null non-array object. For `min
 
 The `shrink-min-gap` mutant only dies because the tests use the literal 80 and a bad gap of 50 (R11.2). If the tests imported `MIN_GAP_MS` to build the bad gap, the mutant would survive. The same applies to the other constants. `patterns.json` is data, so `copy-pattern` edits it in place and the `find` text must match exactly once. The `find` text is the whole `vehicle` object, and the check depends on the file layout. Task 8.1 fixes the layout (one pattern per line) so the match is stable.
 
+Result of `bun run haptics:mutate` (task 8.2):
+
+| Mutant | File | Result | Failing test files |
+|---|---|---|---|
+| `no-confidence-check` | `side.ts` | killed | engine.test.ts, properties.test.ts, side.test.ts |
+| `swap-weights` | `constants.ts` | killed | constants.test.ts, engine.test.ts, priority.test.ts |
+| `shrink-min-gap` | `constants.ts` | killed | constants.test.ts, distinct.test.ts, patterns.test.ts |
+| `copy-pattern` | `patterns.json` | killed | command.test.ts, distinct.test.ts, engine.test.ts, patterns.test.ts, properties.test.ts |
+
+4 of 4 killed.
+
 ## Testing strategy (R11)
 
 Unit tests use literal numbers for the rules of R2 (`80`, `40`, `0.8`, `15`, `150`). Property tests build events with `fast-check` arbitraries:

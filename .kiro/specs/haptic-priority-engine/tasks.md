@@ -65,11 +65,11 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
   - [x] 7.3 Check the property run time (`vitest` output). Keep the whole `tests/haptics` run under about 10 seconds, and lower `numRuns` only for the sequence properties and not below 100.
   - **Gate:** `properties.test.ts` passes; `typecheck` and `test` pass.
 
-- [ ] 8. Mutation check
-  - [ ] 8.1 Write `tests/haptics/mutate.ts` and add `"haptics:mutate": "bun run tests/haptics/mutate.ts"` to `package.json`. Mutants: `no-confidence-check`, `swap-weights`, `shrink-min-gap`, `copy-pattern`. It refuses on uncommitted changes in `src/haptics/` without `--force`, requires each `find` text to match exactly once, restores in `finally` and on SIGINT and SIGTERM, and exits 1 on a survivor or a missing match. Confirm the `patterns.json` layout from task 2.3 gives one match for the `vehicle` object.
+- [x] 8. Mutation check
+  - [x] 8.1 Write `tests/haptics/mutate.ts` and add `"haptics:mutate": "bun run tests/haptics/mutate.ts"` to `package.json`. Mutants: `no-confidence-check`, `swap-weights`, `shrink-min-gap`, `copy-pattern`. It refuses on uncommitted changes in `src/haptics/` without `--force`, requires each `find` text to match exactly once, restores in `finally` and on SIGINT and SIGTERM, and exits 1 on a survivor or a missing match. Confirm the `patterns.json` layout from task 2.3 gives one match for the `vehicle` object.
     - _Requirements: 12.1-12.7, 14.3_
-  - [ ] 8.2 If `src/haptics/` is dirty, ask the user before running with `--force`. Run `bun run haptics:mutate` and paste the killed/survived table into "Mutation check" in `design.md`.
-  - [ ] 8.3 For each surviving mutant, add or tighten a test (for example a literal bound in the validator test, or a direct `sideOf` case) and run again until all four are killed. Confirm with `git diff --stat src/haptics` that the source is unchanged after the run.
+  - [x] 8.2 If `src/haptics/` is dirty, ask the user before running with `--force`. Run `bun run haptics:mutate` and paste the killed/survived table into "Mutation check" in `design.md`.
+  - [x] 8.3 For each surviving mutant, add or tighten a test (for example a literal bound in the validator test, or a direct `sideOf` case) and run again until all four are killed. Confirm with `git diff --stat src/haptics` that the source is unchanged after the run.
     - _Requirements: 12.6_
   - **Gate:** `bun run haptics:mutate` exits 0 with all four mutants killed.
 
