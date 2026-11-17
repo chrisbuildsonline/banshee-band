@@ -1,0 +1,610 @@
+/*
+ * Listening station (index.html). Design tokens only (design/DESIGN.md); the one literal breakpoint is
+ * 720px. Phone first: one column with the Try a sound card as a bar fixed to the bottom; from 720px a
+ * 12-column grid. No @keyframes; the only motion is the shared pill hover, which the motion tokens zero
+ * under reduced motion.
+ */
+
+/* Header: brand, Band simulator link and status pill, theme control */
+.bb-station-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "brand theme"
+    "meta meta";
+  row-gap: var(--bb-space-3);
+}
+
+.bb-station-topbar__brand {
+  grid-area: brand;
+  justify-self: start;
+  min-height: var(--bb-target-min);
+  padding-inline-end: var(--bb-space-2);
+  border-radius: var(--bb-radius-pill);
+  color: var(--bb-color-text);
+  text-decoration: none;
+}
+
+.bb-station-topbar .bb-segmented {
+  grid-area: theme;
+}
+
+.bb-station-topbar__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bb-space-2);
+  min-width: 0;
+}
+
+.bb-station-topbar__link {
+  padding-inline: var(--bb-space-3);
+}
+
+.bb-station-topbar__status {
+  display: flex;
+}
+
+/* Page grid: phone is one column; the Try a sound card leaves the flow as the bottom bar. */
+.bb-station {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bb-space-4);
+  padding-bottom: 0;
+}
+
+.bb-station-page {
+  padding-bottom: var(--bb-station-bar, calc(var(--bb-space-8) * 4));
+}
+
+/* Title block */
+.bb-station-title {
+  display: grid;
+  gap: var(--bb-space-3);
+  padding-block: var(--bb-space-4) var(--bb-space-3);
+}
+
+.bb-station-title__h1 {
+  letter-spacing: -0.02em;
+}
+
+.bb-station-title .bb-lede {
+  font-size: var(--bb-type-body-size);
+}
+
+/* Try a sound */
+.bb-station-try {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 2;
+  gap: var(--bb-space-3);
+  padding: var(--bb-space-4);
+  border-radius: var(--bb-radius-card) var(--bb-radius-card) 0 0;
+}
+
+.bb-station-try__head {
+  display: grid;
+  gap: var(--bb-space-1);
+}
+
+.bb-station-try .bb-heading {
+  font-size: var(--bb-type-body-size);
+}
+
+.bb-station-try__note {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-station-try__label {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-station-try__sounds .bb-station-try__label {
+  display: none;
+}
+
+.bb-station-try__message {
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+}
+
+/* Empty, the live region leaves the flow (it stays rendered, so it still announces). */
+.bb-station-try__message:empty {
+  position: absolute;
+}
+
+/* Side: native radios as a segmented control on a tile track (the band page's look). */
+.bb-station-side {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.bb-station-side legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.bb-station-side__track {
+  display: flex;
+  gap: var(--bb-space-1);
+  padding: var(--bb-space-1);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-station-side__option {
+  position: relative;
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bb-space-1);
+  min-height: var(--bb-target-min);
+  min-width: var(--bb-target-min);
+  padding-inline: var(--bb-space-3);
+  border-radius: var(--bb-radius-pill);
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* The radio covers its label, so the focused element is the full 44px target. */
+.bb-station-side__option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bb-station-side__check {
+  display: none;
+  flex: none;
+  width: var(--bb-space-3);
+  height: var(--bb-space-3);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bb-station-side__option:has(input:checked) {
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-station-side__option:has(input:checked) .bb-station-side__check {
+  display: block;
+}
+
+.bb-station-side__option:has(input:focus-visible) {
+  outline: 3px solid var(--bb-color-focus);
+  outline-offset: 2px;
+}
+
+/* Sound chips: secondary pills, three per row on the phone, one row of six on desktop. */
+.bb-station-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bb-space-2);
+}
+
+.bb-station-chip {
+  min-width: 0;
+  padding-inline: var(--bb-space-2);
+}
+
+.bb-station-chip[aria-disabled="true"] {
+  color: var(--bb-color-text-muted);
+  cursor: progress;
+}
+
+.bb-station-chip[data-running] {
+  border-color: var(--bb-color-accent);
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+/* Ghost field card */
+.bb-station-ghosts {
+  display: flex;
+  flex-direction: column;
+}
+
+.bb-station-ghosts__head,
+.bb-station-alerts__head {
+  display: grid;
+  gap: var(--bb-space-1);
+}
+
+.bb-station-ghosts__note,
+.bb-station-pipeline__note {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+/* Latest alert and Recent sounds */
+.bb-station-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-space-4);
+  min-width: 0;
+}
+
+.bb-station-alerts {
+  gap: var(--bb-space-3);
+}
+
+.bb-station-alerts__eyebrow {
+  color: var(--bb-color-accent);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-station-alert {
+  display: grid;
+  gap: var(--bb-space-1);
+  padding-bottom: var(--bb-space-4);
+}
+
+.bb-station-alert__name {
+  letter-spacing: -0.02em;
+}
+
+.bb-station-alert__detail {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-body-size);
+  line-height: var(--bb-type-body-line);
+}
+
+.bb-station-alert__detail::first-letter {
+  text-transform: uppercase;
+}
+
+.bb-station-alert__empty {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-heading-size);
+  line-height: var(--bb-type-heading-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-station-alerts__empty {
+  color: var(--bb-color-text-muted);
+}
+
+.bb-station-alerts__empty[hidden] {
+  display: none;
+}
+
+.bb-station-rows {
+  display: grid;
+  gap: var(--bb-space-1);
+  margin: 0 calc(var(--bb-space-3) * -1);
+  padding: 0;
+  list-style: none;
+}
+
+.bb-station-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--bb-space-4);
+  padding: var(--bb-space-2) var(--bb-space-3);
+  border-radius: var(--bb-radius-control);
+}
+
+.bb-station-row:hover {
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-station-row__tile {
+  display: grid;
+  place-items: center;
+  width: var(--bb-space-7);
+  height: var(--bb-space-7);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-station-row__text {
+  display: grid;
+  min-width: 0;
+}
+
+.bb-station-row__name {
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-station-row__side,
+.bb-station-row__time {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-station-row__end {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-space-3);
+}
+
+.bb-station-row__time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Band simulator and pipeline */
+.bb-station-sim {
+  min-width: 0;
+}
+
+.bb-station-sim .bb-sim,
+.bb-station-sim .bb-sim__motors {
+  gap: var(--bb-space-4);
+}
+
+/* Pipeline: five stage tiles, stacked on the phone, in a row on desktop. */
+.bb-stages {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bb-space-3);
+}
+
+.bb-stage {
+  display: grid;
+  align-content: start;
+  gap: var(--bb-space-2);
+  min-width: 0;
+  padding: var(--bb-space-4);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-stage__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bb-space-2);
+}
+
+.bb-stage__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bb-space-2);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-stage__num {
+  color: var(--bb-color-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-stage__time {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bb-stage__body {
+  display: grid;
+  gap: var(--bb-space-1);
+}
+
+.bb-stage__value {
+  font-weight: var(--bb-type-heading-weight);
+  overflow-wrap: anywhere;
+}
+
+.bb-stage__detail {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-stage__wave,
+.bb-stage__dial {
+  display: block;
+  width: 100%;
+  height: var(--bb-space-7);
+  margin-block: var(--bb-space-1);
+}
+
+.bb-stage__wave {
+  fill: var(--bb-color-accent);
+}
+
+.bb-stage__arc {
+  fill: none;
+  stroke: var(--bb-color-border);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bb-stage__arc--unknown {
+  stroke-dasharray: 5 4;
+  stroke-linecap: butt;
+}
+
+.bb-stage__needle {
+  stroke: var(--bb-color-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.bb-stage__hub {
+  fill: var(--bb-color-accent);
+}
+
+.bb-stage__dial-end {
+  fill: var(--bb-color-text-muted);
+  font-family: var(--bb-font-family);
+  font-size: var(--bb-space-2);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+/* Footer: the aid sentence and a muted styleguide link */
+.bb-station-footer {
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--bb-space-6);
+  padding-bottom: var(--bb-space-5);
+}
+
+.bb-station-footer p {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.bb-station-footer__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--bb-target-min);
+  min-width: var(--bb-target-min);
+  color: var(--bb-color-text-muted);
+}
+
+/* Screen-reader-only text (the comma between the two alert lines). */
+.bb-station-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Desktop: a 12-column grid. Try a sound across the top, ghost field (7) beside the alerts and simulator (5). */
+@media (min-width: 720px) {
+  .bb-station-topbar {
+    display: flex;
+  }
+
+  .bb-station-topbar__brand {
+    margin-inline-end: auto;
+  }
+
+  .bb-station-topbar__meta {
+    flex-wrap: nowrap;
+    gap: var(--bb-space-3);
+  }
+
+  .bb-station-topbar__link {
+    padding-inline: var(--bb-space-4);
+  }
+
+  /* The side column is 5 of 12: motor titles on one line. */
+  .bb-station-sim .bb-motor__title {
+    font-size: var(--bb-type-body-size);
+  }
+
+  .bb-station-page {
+    padding-bottom: 0;
+  }
+
+  .bb-station {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--bb-space-5);
+  }
+
+  .bb-station-title,
+  .bb-station-try,
+  .bb-station-pipeline {
+    grid-column: 1 / -1;
+  }
+
+  .bb-station-title {
+    padding-block: var(--bb-space-5) var(--bb-space-3);
+  }
+
+  .bb-station-title .bb-lede {
+    font-size: var(--bb-type-heading-size);
+  }
+
+  .bb-station-try {
+    position: static;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "head side"
+      "sounds sounds"
+      "message message";
+    align-items: center;
+    gap: var(--bb-space-5);
+    padding: var(--bb-space-5);
+    border-radius: var(--bb-radius-card);
+  }
+
+  .bb-station-try .bb-heading {
+    font-size: var(--bb-type-heading-size);
+  }
+
+  .bb-station-try__head {
+    grid-area: head;
+  }
+
+  .bb-station-side {
+    grid-area: side;
+    width: calc(var(--bb-space-8) * 5);
+  }
+
+  .bb-station-try__sounds {
+    grid-area: sounds;
+  }
+
+  .bb-station-try__message {
+    grid-area: message;
+  }
+
+  .bb-station-chips {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--bb-space-3);
+  }
+
+  .bb-station-chip {
+    padding-inline: var(--bb-space-4);
+  }
+
+  .bb-station-ghosts {
+    grid-column: span 7;
+    min-height: calc(var(--bb-space-8) * 7.5);
+  }
+
+  .bb-station-side-column {
+    grid-column: span 5;
+    gap: var(--bb-space-5);
+  }
+
+  .bb-station-sim .bb-sim,
+  .bb-station-sim .bb-sim__motors {
+    gap: var(--bb-space-5);
+  }
+
+  .bb-stages {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

@@ -1,5 +1,7 @@
-// App entry. The listening station mounts here in a later feature and starts this capture from a
-// user action. Creating it starts nothing: no microphone, no audio context, no request.
-import { createCapture } from './audio';
+// App entry: the listening station. Mounting it loads the clip list only; the sound model loads on the
+// first chip press, and nothing asks for a microphone.
+import { mountStation } from './station';
+import { initThemeControl } from './ui/theme';
 
-export const capture = createCapture();
+initThemeControl();
+mountStation(document.getElementById('station')!);

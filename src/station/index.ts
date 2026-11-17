@@ -8,3 +8,4 @@ export * from './constants';
 export type * from './types';
 export { buildEvent, processEvent, URGENCY_BY_CLASS, type BuiltEvent, type EventInput, type Processed } from './pipeline';
 export { runSound } from './runner';
+export { mountStation } from './station';
