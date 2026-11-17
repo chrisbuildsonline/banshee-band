@@ -7,3 +7,4 @@
 export type * from './types';
 export { browserScheduler, createSegmentPlayer, type Levels, type Scheduler, type SegmentPlayer } from './segment-player';
 export { createPhoneOutput } from './phone-output';
+export { classLabel, patternName, percentOf, pulseCount, sideText } from './labels';

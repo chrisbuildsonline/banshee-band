@@ -29,10 +29,10 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 10.5, 3.3, 3.4_
   - **Gate:** `phone-output.test.ts` and `properties.test.ts` pass; `typecheck` and `test` pass.
 
-- [ ] 4. Labels
-  - [ ] 4.1 Write `tests/band/labels.test.ts` with stubs that throw, and confirm the failures: `sideText` for the four sides with the exact strings of Requirement 5.2; `classLabel` for the six classes; `percentOf` for 0, 0.3, 0.15, 0.5, 0.75, 1, 0.005 (rounds to 1), `NaN` (0), -0.2 (0) and 1.4 (100); `patternName` for a knock left command ("Knock, left stronger") and for an unknown side (the sentence form of the design); `pulseCount` for the knock (2), the alarm (12) and a command with all levels 0 (the segments at even index).
+- [x] 4. Labels
+  - [x] 4.1 Write `tests/band/labels.test.ts` with stubs that throw, and confirm the failures: `sideText` for the four sides with the exact strings of Requirement 5.2; `classLabel` for the six classes; `percentOf` for 0, 0.3, 0.15, 0.5, 0.75, 1, 0.005 (rounds to 1), `NaN` (0), -0.2 (0) and 1.4 (100); `patternName` for a knock left command ("Knock, left stronger") and for an unknown side (the sentence form of the design); `pulseCount` for the knock (2), the alarm (12) and a command with all levels 0 (the segments at even index).
     - _Requirements: 5.2, 5.3, 5.6, 4.3, 10.6_
-  - [ ] 4.2 Implement `src/band/labels.ts`.
+  - [x] 4.2 Implement `src/band/labels.ts`.
     - _Requirements: 4.3, 5.2, 5.3, 5.6_
   - **Gate:** `labels.test.ts` passes; `typecheck` and `test` pass.
 
