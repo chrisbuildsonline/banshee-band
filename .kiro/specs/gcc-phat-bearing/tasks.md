@@ -63,10 +63,10 @@ Each task is small and ends in a test gate. For pure code, write the test first,
   - **Gate:** `test` passes including `report-fresh.test.ts`.
 
 - [ ] 8. Mutation check and final gates
-  - [ ] 8.1 Write `tests/bearing/mutate.ts` and add `"bearing:mutate": "bun run tests/bearing/mutate.ts"`. Mutants: `phat-off`, `phat-weak`, `interp-off`, `interp-half`, `sign-flip`. It refuses on uncommitted changes in `src/bearing/` without `--force`, requires each `find` text to match exactly once, restores in `finally` and on SIGINT/SIGTERM, and exits 1 on a survivor or a missing match.
+  - [x] 8.1 Write `tests/bearing/mutate.ts` and add `"bearing:mutate": "bun run tests/bearing/mutate.ts"`. Mutants: `phat-off`, `phat-weak`, `interp-off`, `interp-half`, `sign-flip`. It refuses on uncommitted changes in `src/bearing/` without `--force`, requires each `find` text to match exactly once, restores in `finally` and on SIGINT/SIGTERM, and exits 1 on a survivor or a missing match.
     - _Requirements: 12.1-12.8_
   - [ ] 8.2 Commit or stash nothing of the user's: if `src/bearing/` is dirty, ask the user before running with `--force`. Run `bun run bearing:mutate` and paste the killed/survived table into "Measured values" in `design.md`.
-  - [ ] 8.3 For each surviving mutant, add or tighten a test (for example a direct `parabolicOffset` unit test, or a tighter high-SNR bound) and run again until all five are killed. Confirm with `git diff --stat src/bearing` that the source is unchanged after the run.
+  - [x] 8.3 For each surviving mutant, add or tighten a test (for example a direct `parabolicOffset` unit test, or a tighter high-SNR bound) and run again until all five are killed. Confirm with `git diff --stat src/bearing` that the source is unchanged after the run.
     - _Requirements: 12.7_
-  - [ ] 8.4 Final gates: `bun run typecheck`, `bun run test`, `bun run bearing:report` (no diff in `docs/bearing.md` and `accuracy.json` afterwards), `bun run bearing:mutate`. E2E is not required because this feature adds no UI.
+  - [x] 8.4 Final gates: `bun run typecheck`, `bun run test`, `bun run bearing:report` (no diff in `docs/bearing.md` and `accuracy.json` afterwards), `bun run bearing:mutate`. E2E is not required because this feature adds no UI.
   - **Gate:** all four commands exit 0.
