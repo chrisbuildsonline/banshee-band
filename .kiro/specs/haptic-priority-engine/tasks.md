@@ -9,14 +9,14 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 1.2, 1.3, 1.4, 1.7, 2.1, 2.2_
   - **Gate:** `typecheck` and `test` pass.
 
-- [ ] 2. Patterns, validation and distinctiveness
-  - [ ] 2.1 Write `tests/haptics/patterns.test.ts` for `validatePatternData` and `loadPatterns`: one bad example per rule of Requirement 3 (missing class, extra class, a pattern for `other`, empty `pulses`, non-integer `onMs`, `NaN`, `Infinity`, last gap not 0, inner gap 50, pulse 30, cycle 1600, total 4100, `repeat.count` 0, `repeat.pauseMs` 200, `repeat` on `knock`, no `repeat` on `alarm`); junk input (`null`, `42`, `'x'`, `{}`, `[null]`) returns errors and does not throw; `loadPatterns()` returns six patterns in `PATTERN_CLASSES` order, twice the same value, and mutating one result does not change the next. Add stubs and confirm failure.
+- [x] 2. Patterns, validation and distinctiveness
+  - [x] 2.1 Write `tests/haptics/patterns.test.ts` for `validatePatternData` and `loadPatterns`: one bad example per rule of Requirement 3 (missing class, extra class, a pattern for `other`, empty `pulses`, non-integer `onMs`, `NaN`, `Infinity`, last gap not 0, inner gap 50, pulse 30, cycle 1600, total 4100, `repeat.count` 0, `repeat.pauseMs` 200, `repeat` on `knock`, no `repeat` on `alarm`); junk input (`null`, `42`, `'x'`, `{}`, `[null]`) returns errors and does not throw; `loadPatterns()` returns six patterns in `PATTERN_CLASSES` order, twice the same value, and mutating one result does not change the next. Add stubs and confirm failure.
     - _Requirements: 3.1-3.11_
-  - [ ] 2.2 Write `tests/haptics/distinct.test.ts` for `patternDistance` and `checkDistinctiveness`: symmetry, zero distance to itself, different pulse counts are distinct, equal counts at distance 149 and 150, `Infinity` for unequal lengths, one bad example for each violation kind (`'not-distinct'`, `'pulse-too-short'`, `'gap-too-short'`, `'cycle-too-long'`, `'total-too-long'`, `'pause-too-short'`), several violations in one call, and an empty result for `patterns.json`. Add stubs and confirm failure.
+  - [x] 2.2 Write `tests/haptics/distinct.test.ts` for `patternDistance` and `checkDistinctiveness`: symmetry, zero distance to itself, different pulse counts are distinct, equal counts at distance 149 and 150, `Infinity` for unequal lengths, one bad example for each violation kind (`'not-distinct'`, `'pulse-too-short'`, `'gap-too-short'`, `'cycle-too-long'`, `'total-too-long'`, `'pause-too-short'`), several violations in one call, and an empty result for `patterns.json`. Add stubs and confirm failure.
     - _Requirements: 4.1-4.7_
-  - [ ] 2.3 Create `src/haptics/patterns.json` with the six patterns of the design (one pattern per line, so the mutation check of task 8 can match one). Implement `patterns.ts` and `distinct.ts` until the tests pass.
+  - [x] 2.3 Create `src/haptics/patterns.json` with the six patterns of the design (one pattern per line, so the mutation check of task 8 can match one). Implement `patterns.ts` and `distinct.ts` until the tests pass.
     - _Requirements: 3.1-3.11, 4.1-4.7_
-  - [ ] 2.4 Print the pairwise distance table of the real patterns once (a throwaway test run or REPL, not committed) and check it against the table in `design.md`. If a number differs or a pair is close to 150, change the data and update the design table in the same change.
+  - [x] 2.4 Print the pairwise distance table of the real patterns once (a throwaway test run or REPL, not committed) and check it against the table in `design.md`. If a number differs or a pair is close to 150, change the data and update the design table in the same change.
     - _Requirements: 4.2, 4.3, 4.7_
   - **Gate:** `patterns.test.ts`, `distinct.test.ts` and `boundaries.test.ts` pass.
 

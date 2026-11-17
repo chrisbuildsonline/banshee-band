@@ -1,0 +1,8 @@
+[
+  { "class": "knock", "pulses": [{ "onMs": 70, "gapMs": 100 }, { "onMs": 70, "gapMs": 0 }] },
+  { "class": "doorbell", "pulses": [{ "onMs": 250, "gapMs": 150 }, { "onMs": 250, "gapMs": 0 }] },
+  { "class": "alarm", "pulses": [{ "onMs": 150, "gapMs": 100 }, { "onMs": 150, "gapMs": 100 }, { "onMs": 150, "gapMs": 0 }], "repeat": { "count": 3, "pauseMs": 400 } },
+  { "class": "baby", "pulses": [{ "onMs": 100, "gapMs": 80 }, { "onMs": 100, "gapMs": 80 }, { "onMs": 100, "gapMs": 80 }, { "onMs": 100, "gapMs": 0 }] },
+  { "class": "vehicle", "pulses": [{ "onMs": 80, "gapMs": 100 }, { "onMs": 400, "gapMs": 0 }] },
+  { "class": "voice", "pulses": [{ "onMs": 250, "gapMs": 0 }] }
+]
