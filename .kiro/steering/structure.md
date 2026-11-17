@@ -19,14 +19,29 @@ src/band/       haptic outputs: one HapticOutput interface, segment player, phon
   simulator.ts        mountBandSimulator: motor cards, pattern timeline, live region
   simulator.css       simulator styles, design tokens only
   index.ts            public exports
-src/ghosts/     canvas ghost renderer
+src/ghosts/     canvas ghost renderer: shape = class, position = bearing, glow = urgency
+  constants.ts        sizes, margins, urgency style, class names, life and motion values
+  types.ts            GhostInput, GhostLayout, FieldSize, Slot, Block, GhostField
+  shapes.ts           SHAPES: one SVG path per class in a 24-unit box (data only)
+  input.ts            acceptInput: validator and shape check, never throws
+  layout.ts           layoutGhost, layoutGhosts, ghostBasePx, ghostBlock (pure, uses sideOf)
+  life.ts             createGhostSet: newest first, cap 4, expiry (time passed in)
+  text.ts             list item text, canvas label summary, data-x
+  glyph.ts            glyphSpec and createGlyph: inline SVG list glyphs
+  draw.ts             drawField: furniture, uncertain arc, ghosts, labels (canvas only)
+  field.ts            mountGhostField: canvas, "Now:" list, timers, observers, motion
+  field.css           field, list and glyph styles, design tokens only
+  index.ts            public exports
 src/ui/         settings, controls, text alerts, layout
   theme.ts            shared Day and Night theme control
   band-page.ts        band simulator page script: status pill, Feel a pattern card
+  styleguide.ts       styleguide page script: theme control, Ghosts section (field and glyph grid)
 mcp/            banshee-log MCP server (recent_events, event_stats, replay_clip)
 firmware/       ESP32 Arduino C++ for the two-motor band
 tests/          Vitest unit and property tests
+  tests/ghosts/       unit, property, shape raster
 e2e/            Playwright tests
+  e2e/ghosts.spec.ts  ghost field e2e
 public/clips/   CC0 fallback clips (with licence notes)
 design/DESIGN.md  UI source of truth
 ```
