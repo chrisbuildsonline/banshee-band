@@ -7,3 +7,9 @@
  */
 export type * from './types';
 export * from './constants';
+export { SHAPE_BOX, SHAPES } from './shapes';
+export { acceptInput } from './input';
+export { ghostBasePx, ghostBlock, labelTop, layoutGhost, layoutGhosts } from './layout';
+export { createGhostSet, resolveTtl, type GhostSet, type LiveGhost } from './life';
+export { canvasSummary, dataX, EMPTY_TEXT, listItemText, type GhostText } from './text';
+export { createGlyph, GLYPH_SIZE_PX, glyphSpec, type GlyphSpec } from './glyph';

@@ -1,0 +1,13 @@
+/*
+ * Ghost field and ghost glyph styles. Design tokens only (design/DESIGN.md, Ghosts).
+ * The canvas reads its colours from the same tokens through getComputedStyle.
+ */
+
+.bb-ghost-glyph {
+  display: block;
+  flex: none;
+  overflow: visible;
+  fill: var(--bb-ghost-fill);
+  stroke: var(--bb-ghost-outline);
+  stroke-linejoin: round;
+}
