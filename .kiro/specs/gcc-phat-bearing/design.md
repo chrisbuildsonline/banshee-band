@@ -318,13 +318,25 @@ Filled in during tasks 3, 4 and 6.
 | `minConfidence` | 0.3 | 0.3 (unchanged) | 4 |
 | `MAX_SAMPLE_ABS` | 1e150 | 1e100 | 5 |
 | Noise-only false-gcc rate at `minConfidence` | target < 5% | 21 of 1000 (2.1%) at reg 0.03; 23 of 500 (4.6%) at reg 0.05 | 4, 6 |
-| Worst error per row group (white noise, tones, clap, hum) | bounds in R9.3 | | 6 |
-| Parabolic bias at half-sample lags | n/a | | 6 |
-| Time per `push` of 1024 samples, in Node | n/a | | 6 |
+| Worst error per row group (white noise, tones, clap, hum) | bounds in R9.3 | white 20 dB -60 to 60°: 0.95°; white 20 dB 65 to 85°: 3.92°; white 40 dB: 0.70°; white 0 dB: 1.03°; white -5 dB: 0.80°; white -10 dB: 1.78°; hum 20 dB: 1.30°; clap 10 dB fixed cases: 4.40° (44100 Hz, -60°); clap set: 4.47° (44100 Hz, -50.70°), 1007 of 1008 within 4°; tones 10 dB: 7.64°; tones 0 dB: 24.47° | 6 |
+| Parabolic bias at half-sample lags | n/a | worst 0.0004 sample (48000 Hz) and 0.0003 (44100 Hz) without noise; worst 0.0069 and 0.0096 at 20 dB | 6 |
+| Time per `push` of 1024 samples, in Bun 1.4.2 | n/a | 29.6 µs (21 µs per `result()`), about 0.14% of real time at 48 kHz | 6 |
+
+### Mutation check (task 8)
+
+| Mutant | Replacement in `gcc-phat.ts` | Result | Failing test files |
+|---|---|---|---|
+| `phat-off` | `const w = 1;` | killed | accuracy.test.ts, gcc-phat.test.ts, report-fresh.test.ts |
+| `phat-weak` | `const w = 1 / (Math.sqrt(gMag[k] * maxBin) + floor);` | killed | accuracy.test.ts, report-fresh.test.ts |
+| `interp-off` | `const off = 0;` | killed | accuracy.test.ts, estimate.test.ts, gcc-phat.test.ts, report-fresh.test.ts |
+| `interp-half` | `const off = (0.25 * (ym - yp)) / denom;` | killed | accuracy.test.ts, estimate.test.ts, gcc-phat.test.ts, report-fresh.test.ts |
+| `sign-flip` | `const refined = -(peakLag + offset);` | killed | accuracy.test.ts, estimate.test.ts, gcc-phat.test.ts, properties.test.ts, report-fresh.test.ts |
+
+`bun run bearing:mutate` kills 5 of 5 mutants; no test had to be added or tightened.
 
 ## Risks
 
-- **Narrowband sounds (decision).** The PHAT weight of R3.4 stays as is. Tone rows (500/1000/1500 Hz plus noise, 10 dB and 0 dB) have no hard bound (R9.7): among tone results with Confidence at least 0.8 the error is at most 4° (every tone result has q below 10.2, so none reaches 0.8), and results between `minConfidence` and 0.8 may be `'gcc-phat'` with a larger error. Consumers (haptic engine, ghost renderer) treat Confidence below 0.8 as an uncertain bearing. Reason: `q = peak / sidelobeRms` cannot separate the hum row (q 6.46 to 6.8, all within 4°, must stay `'gcc-phat'`) from bad tone results (q up to 6.83 at 10 dB, 8.75 at 0 dB), and no chunk or regularization setting separates them while the clap stays within 4°. Measured worst tone error is 19.9° at `regularization` 0.01 (17.4° at 0.03). The noise-free tone error is 0.09°, so this is the noise sensitivity of narrowband signals and not a bug. Beeps and chimes can therefore give a wrong left/right at medium confidence, and the Limits section says so.
+- **Narrowband sounds (decision).** The PHAT weight of R3.4 stays as is. Tone rows (500/1000/1500 Hz plus noise, 10 dB and 0 dB) have no hard bound (R9.7): among tone results with Confidence at least 0.8 the error is at most 4° (every tone result has q below 10.2, so none reaches 0.8), and results between `minConfidence` and 0.8 may be `'gcc-phat'` with a larger error. Consumers (haptic engine, ghost renderer) treat Confidence below 0.8 as an uncertain bearing. Reason: `q = peak / sidelobeRms` cannot separate the hum row (q 6.46 to 6.8, all within 4°, must stay `'gcc-phat'`) from bad tone results (q up to 6.83 at 10 dB, 8.75 at 0 dB), and no chunk or regularization setting separates them while the clap stays within 4°. Measured worst tone error with the final configuration is 7.64° at 10 dB and 24.47° at 0 dB (accuracy case list, 48000 and 44100 Hz). The noise-free tone error is 0.09°, so this is the noise sensitivity of narrowband signals and not a bug. Beeps and chimes can therefore give a wrong left/right at medium confidence, and the Limits section says so.
 - **Mono microphones.** Many devices put one microphone in both channels. The result is centre + `'loudness'` + confidence 0. Downstream code (haptics) must treat confidence 0 as "no side" and use the same buzz on both sides. This is noted for the haptics spec and is not changed here.
 - **Sign convention.** Left negative, right positive is assumed. One constant and one test fix it if the ghost spec says otherwise.
 - **Wrong Spacing.** The angle scales with the Spacing. Only a configuration option and a documented limit address this.
