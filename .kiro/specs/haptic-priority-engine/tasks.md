@@ -73,11 +73,11 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 12.6_
   - **Gate:** `bun run haptics:mutate` exits 0 with all four mutants killed.
 
-- [ ] 9. Review and final gates
-  - [ ] 9.1 Check the doc comments of every export and the module comment in `index.ts` (it says the module decides what to play, rhythm identifies the class, intensity encodes urgency and side only, and the band is an aid and not a safety device).
+- [x] 9. Review and final gates
+  - [x] 9.1 Check the doc comments of every export and the module comment in `index.ts` (it says the module decides what to play, rhythm identifies the class, intensity encodes urgency and side only, and the band is an aid and not a safety device).
     - _Requirements: 13.3, 13.4_
-  - [ ] 9.2 Check that no code outside `src/haptics/` and `tests/haptics/` changed, apart from `package.json` (and `tsconfig.json` if task 1.1 needed it): `git diff --stat`.
+  - [x] 9.2 Check that no code outside `src/haptics/` and `tests/haptics/` changed, apart from `package.json` (and `tsconfig.json` if task 1.1 needed it): `git diff --stat`.
     - _Requirements: 1.2, 14.2, 14.3_
-  - [ ] 9.3 Final gates: `bun run typecheck`, `bun run test`, `bun run e2e`, `bun run haptics:mutate`. This feature adds no UI, so the e2e run only shows that nothing else broke.
+  - [x] 9.3 Final gates: `bun run typecheck`, `bun run test`, `bun run e2e`, `bun run haptics:mutate`. This feature adds no UI, so the e2e run only shows that nothing else broke.
     - _Requirements: 14.1_
   - **Gate:** `typecheck`, `test` and `e2e` exit 0 (all green), and `haptics:mutate` exits 0.
