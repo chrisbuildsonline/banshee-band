@@ -456,3 +456,17 @@ Parabolic bias (estimated minus true lag, in samples; white noise, 5 seeds per l
 At a half-sample lag the two neighbours of the Peak are equal, so the parabola is symmetric and has no bias. The largest bias is near a quarter sample, about 0.085 sample toward the nearer integer (about 0.45° near the centre at 48 kHz). No bias correction is needed for the bounds.
 
 Speed (Bun 1.4.2, this machine, white noise at 48 kHz, 20000 pushes after a warm-up): **29.6 µs per `push` of 1024 samples** (each push completes one chunk: one packed 2048-point FFT for both channels plus the PHAT weight), 21 µs per `result()`. One 1024-sample Frame lasts 21.3 ms at 48 kHz, so the estimator uses about 0.14% of real time.
+
+### Mutation check (task 8)
+
+`bun run bearing:mutate` (`tests/bearing/mutate.ts`) applies each mutant to `src/bearing/gcc-phat.ts`, runs `vitest run tests/bearing`, and restores the file. It first checks that every `find` text occurs exactly once and that the unmutated tests pass. Result with the final configuration (no test had to be added or tightened):
+
+| Mutant | Replacement in `gcc-phat.ts` | Result | Failing test files |
+|---|---|---|---|
+| `phat-off` | `const w = 1;` | killed | accuracy.test.ts, gcc-phat.test.ts, report-fresh.test.ts |
+| `phat-weak` | `const w = 1 / (Math.sqrt(gMag[k] * maxBin) + floor);` | killed | accuracy.test.ts, report-fresh.test.ts |
+| `interp-off` | `const off = 0;` | killed | accuracy.test.ts, estimate.test.ts, gcc-phat.test.ts, report-fresh.test.ts |
+| `interp-half` | `const off = (0.25 * (ym - yp)) / denom;` | killed | accuracy.test.ts, estimate.test.ts, gcc-phat.test.ts, report-fresh.test.ts |
+| `sign-flip` | `const refined = -(peakLag + offset);` | killed | accuracy.test.ts, estimate.test.ts, gcc-phat.test.ts, properties.test.ts, report-fresh.test.ts |
+
+5 of 5 killed. Every mutant also fails `accuracy.test.ts`, not only the stale-file check of `report-fresh.test.ts`. `git diff --stat src/bearing` is empty after the run.
