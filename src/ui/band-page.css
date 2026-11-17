@@ -23,7 +23,7 @@
 .bb-title-block {
   display: grid;
   gap: var(--bb-space-3);
-  padding-block: var(--bb-space-6) var(--bb-space-6);
+  padding-block: var(--bb-space-6) var(--bb-space-7);
 }
 
 .bb-title-block .bb-lede {

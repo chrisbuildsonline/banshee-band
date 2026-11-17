@@ -168,12 +168,15 @@
   overflow: visible;
 }
 
+/* Lane tracks are tiles inside the card. SVG clamps rx to half a mark's size, so thin marks stay round. */
 .bb-lane__track {
   fill: var(--bb-color-surface-raised);
+  rx: var(--bb-radius-control);
 }
 
 .bb-lane__mark {
   fill: var(--bb-color-accent);
+  rx: var(--bb-space-2);
 }
 
 .bb-timeline__scale {

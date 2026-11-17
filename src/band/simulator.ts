@@ -98,7 +98,7 @@ export function mountBandSimulator(container: HTMLElement): BandSimulator {
   laneLabels.append(el('span', '', 'L'), el('span', '', 'R'));
   const lanes = svgEl('svg', { class: 'bb-timeline__lanes', width: '100%', height: LANES_HEIGHT, 'aria-hidden': 'true' });
   for (const y of [0, LANE_HEIGHT + LANE_GAP]) {
-    lanes.append(svgEl('rect', { class: 'bb-lane__track', x: 0, y, width: '100%', height: LANE_HEIGHT, rx: 10 }));
+    lanes.append(svgEl('rect', { class: 'bb-lane__track', x: 0, y, width: '100%', height: LANE_HEIGHT }));
   }
   const marks = svgEl('g', {});
   lanes.append(marks);
@@ -157,7 +157,7 @@ export function mountBandSimulator(container: HTMLElement): BandSimulator {
       ] as const) {
         const h = Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0)) * LANE_HEIGHT;
         if (h <= 0) continue;
-        marks.append(svgEl('rect', { class: 'bb-lane__mark', 'data-lane': lane, x: `${x.toFixed(3)}%`, y: (bottom - h).toFixed(2), width: `${w.toFixed(3)}%`, height: h.toFixed(2), rx: Math.min(6, h / 2).toFixed(2) }));
+        marks.append(svgEl('rect', { class: 'bb-lane__mark', 'data-lane': lane, x: `${x.toFixed(3)}%`, y: (bottom - h).toFixed(2), width: `${w.toFixed(3)}%`, height: h.toFixed(2) }));
       }
       start += seg.ms;
     }
