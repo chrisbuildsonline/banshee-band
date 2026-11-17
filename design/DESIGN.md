@@ -105,6 +105,9 @@ Short, tinted, `radius-pill`, `label` type, min height 32px (status pills are no
 | Band not connected | Band not connected | ○ open circle | neutral |
 | Fallback active | Phone vibration fallback | ▲ triangle | neutral |
 | Error | Problem | ✕ cross | strong |
+| Microphone starting (Listen card) | Starting | ○ open circle | neutral |
+| Microphone stopped (Listen card) | Stopped | ■ square | neutral |
+| Microphone permission denied (Listen card) | Mic blocked | ✕ cross | strong |
 | Phone can vibrate (band simulator page) | Phone vibration on | ▲ triangle | accent |
 | Phone cannot vibrate (band simulator page) | No phone vibration here | ○ open circle | neutral |
 
@@ -275,7 +278,7 @@ Common rules for every screen:
 
 ### Listening station
 
-The home screen (`index.html`). Round 1 tries the whole chain on recorded sample clips: no microphone, no band. **No primary action yet**, so no near-black pill: the Try a sound card (sound chips and a side control) is the main action. The **Start listening** / **Stop listening** primary pill arrives with the Listen spec, together with the live microphone path.
+The home screen (`index.html`). It runs the whole chain live from the microphone or on recorded sample clips; no band is connected. **Primary action: Start listening**, the one near-black pill of the screen, in the Listen card first in the main content. While listening it is replaced by a **Stop** secondary pill, and the Listen card's own status pill says Starting, Listening, Stopped, Mic blocked or Problem (see Status pills). The microphone is asked for only after the press, and the card says in one muted sentence that the sound is processed on the device and never recorded or sent. The Try a sound card (sound chips and a side control) stays as the second way in.
 
 Desktop (1440px), a 12-column grid with 24px gaps:
 
@@ -311,7 +314,7 @@ Desktop (1440px), a 12-column grid with 24px gaps:
 Regions in DOM order (the tab order follows it):
 1. Header: brand link, "Band simulator" secondary pill link, the status pill (Band not connected, or Phone vibration fallback when the phone can vibrate; Problem when the sound model fails), the Day/Night control.
 2. Title block: the eyebrow, `display` "Listening station" and the lede beside it on the right (under it near 720px). The lede says the sounds are sample clips, no microphone is used and no band is connected.
-3. Try a sound card, all 12 columns: heading, the muted simulated-side sentence, the Left/Centre/Right segmented control (default Centre), one secondary pill chip per clip with a 24px low ghost glyph, and a polite message line.
+3. Listen card, all 12 columns: `heading` "Listen" and the muted sentence on the left; the Start listening primary pill (or Stop) and the Listen status pill on the right; a polite message line under them (the model loading, or the plain reason the microphone could not start). Then the Try a sound card, all 12 columns: heading, the muted simulated-side sentence, the Left/Centre/Right segmented control (default Centre), one secondary pill chip per clip with a 24px low ghost glyph, and a polite message line.
 4. Ghost field card, 7 columns, at least 480px: the canvas (448px on desktop) on thin `accent-tint` sonar rings around the listener mark, "All quiet" over an empty field, the "Now:" list as its DOM text equivalent, and an urgency key (the same ghost at Low, Medium and Urgent). It keeps its own height and sticks inside its grid row while the right column, which grows with every row, scrolls past.
 5. Right column, 5 columns: the Latest alert and Recent sounds card (the `aria-live` region, class in `display`, side and urgency below; up to 10 rows), then the band simulator (two motor cards and the pattern card).
 6. Pipeline card, all 12 columns: five `surface-raised` stage tiles in a row (stacked on the phone), Waveform (bars), Label, Bearing (a dial), Pattern and Band, each with an accent step number, its value as text and its time ("— ms" before the first run). The four-card Pipeline view below is the later live screen.
@@ -341,7 +344,7 @@ Phone (390px):
 +------------------------------+
 ```
 
-One column in the visual order title, ghost field, Latest alert and Recent sounds, simulator, pipeline, footer. The Try a sound card stays second in the DOM (after the title block, so keyboard users reach the action first) but is placed as a compact bar fixed to the bottom (about 175px): the heading and the simulated-side sentence as one caption paragraph, the side control, then one sideways-scrolling row of chips nearest the thumb. Its chips and side control lie in the lower 45% of an 844px viewport. The page keeps the bar's measured height (`--bb-station-bar`) free below the footer, so nothing hides behind it, and the ghost field with a run's ghost and its label is in the first view. The eyebrow is left out on the phone. No horizontal scrolling at 390px.
+One column in the visual order title, ghost field, Latest alert and Recent sounds, simulator, pipeline, footer. The lede is left out on the phone so the ghost field stays in the first view. The Listen and Try a sound cards stay second in the DOM (after the title block, so keyboard users reach the action first) but are placed together as one compact bar fixed to the bottom (about 230px). Its first row is the Start listening primary pill, in thumb reach, with the caption "Processed on this device. Never recorded or sent." beside it (the status pill takes the caption's place once there is a status). Then the Try a sound part: the heading and the simulated-side sentence as one caption paragraph, the side control, then one sideways-scrolling row of chips nearest the thumb. Its chips and side control lie in the lower 45% of an 844px viewport. The page keeps the bar's measured height (`--bb-station-bar`) free below the footer, so nothing hides behind it, and the ghost field with a run's ghost and its label is in the first view. The eyebrow is left out on the phone. No horizontal scrolling at 390px.
 
 ### Pipeline view
 

@@ -132,8 +132,9 @@ test.describe('listening station', () => {
     await expect(page.locator('main')).toContainText('No band is connected');
     await expect(page.locator('main')).toContainText('microphone');
 
-    // No primary pill, and nothing loads the model before a chip is used.
-    await expect(page.locator('.bb-pill--primary')).toHaveCount(0);
+    // One primary pill (Start listening), and nothing loads the model before a chip or Start is used.
+    await expect(page.locator('.bb-pill--primary')).toHaveCount(1);
+    await expect(page.locator('.bb-pill--primary')).toHaveText('Start listening');
     expect(requests.filter((p) => p.startsWith('/models/'))).toEqual([]);
   });
 
@@ -232,7 +233,7 @@ test.describe('listening station', () => {
     await page.goto('/');
     await expect(chip(page, 'Voice')).toBeVisible();
     const names: string[] = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 13; i++) {
       await page.keyboard.press('Tab');
       names.push(
         await page.evaluate(() => {
@@ -247,6 +248,7 @@ test.describe('listening station', () => {
       'a:Band simulator',
       'button:Day',
       'button:Night',
+      'button:Start listening',
       'radio:Centre',
       // The chips follow the manifest order (R4.1).
       ...manifest.map((c) => `button:${NAME_OF[c.class]}`),
@@ -327,10 +329,11 @@ test.describe('listening station', () => {
     expect(alerts.y + alerts.height).toBeLessThanOrEqual(sim.y);
     expect(sim.y + sim.height).toBeLessThanOrEqual(pipeline.y);
 
-    // The bar is compact: one row for the side, one sideways-scrolling row of chips, the simulated-side sentence.
-    const bar0 = await box(page, '[data-card="try"]');
-    expect(bar0.height).toBeLessThanOrEqual(180);
-    expect(await page.locator('[data-card="try"]').evaluate((b) => b.scrollWidth - b.clientWidth), 'the bar overflows sideways').toBeLessThanOrEqual(0);
+    // The bar is compact: the Start listening row, one row for the side, one sideways-scrolling row of chips,
+    // the simulated-side sentence.
+    const bar0 = await box(page, '.bb-station-controls');
+    expect(bar0.height).toBeLessThanOrEqual(240);
+    expect(await page.locator('.bb-station-controls').evaluate((b) => b.scrollWidth - b.clientWidth), 'the bar overflows sideways').toBeLessThanOrEqual(0);
     const chipTops = await Promise.all(CHIP_NAMES.map(async (n) => Math.round((await chip(page, n).boundingBox())!.y)));
     expect(new Set(chipTops).size, `chip rows at ${chipTops.join(', ')}`).toBe(1);
     // First view: a lone ghost and its label sit in the top 240 px of the 360 px field (urgent block 8 + (312 - 138) / 2 + 138 = 233).
@@ -347,7 +350,7 @@ test.describe('listening station', () => {
 
     // Scrolled to the end, the footer clears the fixed bar.
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    const bar = await box(page, '[data-card="try"]');
+    const bar = await box(page, '.bb-station-controls');
     const footer = await box(page, 'footer');
     expect(footer.y + footer.height).toBeLessThanOrEqual(bar.y);
   });

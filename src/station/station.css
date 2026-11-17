@@ -86,15 +86,93 @@
  * sentence as one caption paragraph, the side control (44 px), then one sideways-scrolling row of chips
  * nearest the thumb. About 170 px tall at 390 px, so the ghost field is in the first view.
  */
-.bb-station-try {
+.bb-station-controls {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
   z-index: 2;
-  grid-template-columns: minmax(0, 1fr);
+  display: grid;
   gap: var(--bb-space-2);
   padding: var(--bb-space-2) var(--bb-space-4);
+  background-color: var(--bb-color-surface);
   border-radius: var(--bb-radius-card) var(--bb-radius-card) 0 0;
+  box-shadow: var(--bb-shadow-soft);
+}
+
+/* On the phone bar the two cards are rows of the bar, not cards of their own. */
+.bb-station-controls > .bb-card {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.bb-station-try {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bb-space-2);
+}
+
+/* Listen: on the phone only the row (Start or Stop, status pill) and a message; the title lede says why. */
+.bb-station-listen {
+  gap: var(--bb-space-2);
+}
+
+.bb-station-listen__head {
+  display: none;
+}
+
+.bb-station-listen__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bb-space-3);
+}
+
+.bb-station-listen__start,
+.bb-station-listen__stop {
+  flex: none;
+}
+
+.bb-station-listen__start[hidden],
+.bb-station-listen__stop[hidden],
+.bb-station-listen__row .bb-status[hidden] {
+  display: none;
+}
+
+.bb-station-listen__short {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+/* While a status shows, the row holds the pill and the status only. */
+.bb-station-listen__row .bb-status:not([hidden]) ~ .bb-station-listen__short {
+  display: none;
+}
+
+/* Phone: the lede leaves the first view so the ghost field stays in it; the bar's caption says the privacy part. */
+.bb-station-title .bb-lede {
+  display: none;
+}
+
+.bb-station-listen__start[aria-disabled="true"] {
+  cursor: progress;
+}
+
+.bb-station-listen__note {
+  color: var(--bb-color-text-muted);
+}
+
+.bb-station-listen__message {
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+}
+
+.bb-station-listen__message:empty {
+  position: absolute;
 }
 
 .bb-station-try__head {
@@ -698,8 +776,52 @@
     padding: var(--bb-space-1);
   }
 
-  .bb-station-try {
+  .bb-station-controls {
     position: static;
+    grid-column: 1 / -1;
+    gap: var(--bb-space-5);
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .bb-station-controls > .bb-card {
+    padding: var(--bb-space-5);
+    background-color: var(--bb-color-surface);
+    border-radius: var(--bb-radius-card);
+    box-shadow: var(--bb-shadow-soft);
+  }
+
+  .bb-station-listen {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--bb-space-5);
+  }
+
+  .bb-station-listen__head {
+    display: grid;
+    gap: var(--bb-space-1);
+  }
+
+  .bb-station-listen__message {
+    grid-column: 1 / -1;
+  }
+
+  .bb-station-listen__start,
+  .bb-station-listen__stop {
+    flex: none;
+  }
+
+  .bb-station-listen__short {
+    display: none;
+  }
+
+  .bb-station-title .bb-lede {
+    display: block;
+  }
+
+  .bb-station-try {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:

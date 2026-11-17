@@ -1,19 +1,23 @@
-import { fetchClip, loadManifest, type ClipInfo } from '../audio';
+import { createCapture, fetchClip, loadManifest, type ClipInfo } from '../audio';
 import { createPhoneOutput, mountBandSimulator, type HapticOutput } from '../band';
+import { createBearingWindow } from '../bearing';
 import { createClassifier, type Classifier } from '../classify';
 import { createGlyph, mountGhostField } from '../ghosts';
 import { createHapticEngine, sideOf } from '../haptics';
-import { failureText } from './format';
+import { failureText, LIVE_FAILURE_TEXT } from './format';
 import { mountEventList } from './list';
+import { mountListenCard } from './listen';
+import { createLive, type Live } from './live';
 import { mountPipelineView } from './pipeline-view';
 import { runSound } from './runner';
 import { mountStatusPill } from './status';
 import { mountTrySound } from './try-sound';
-import type { RunnerDeps, TrySide } from './types';
+import type { RunnerDeps, RunResultOk, TrySide } from './types';
 
 const LOADING_MODEL = 'Loading the sound model';
 const LISTENING = 'Listening to the clip';
 const MODEL_FAILED = 'The sound model could not be loaded. Reload the page to try again.';
+const CAPTURE_FAILED = 'Audio could not start because of an unexpected problem. Reload the page and try again.';
 
 function card(tag: 'section' | 'div', className: string, name: string): HTMLElement {
   const node = document.createElement(tag);
@@ -79,7 +83,11 @@ export function mountStation(root: HTMLElement): void {
   const vibrates = phone.available(); // read once at load
   const status = mountStatusPill(document.getElementById('station-status') ?? root, vibrates);
 
+  const controls = document.createElement('div');
+  controls.className = 'bb-station-controls';
+  const listenCard = card('section', 'bb-card bb-station-listen', 'listen');
   const tryCard = card('section', 'bb-card bb-station-try', 'try');
+  controls.append(listenCard, tryCard);
   const ghostCard = card('section', 'bb-card bb-station-ghosts', 'ghosts');
   const side = document.createElement('div');
   side.className = 'bb-station-side-column';
@@ -88,7 +96,7 @@ export function mountStation(root: HTMLElement): void {
   const simHost = card('div', 'bb-station-sim', 'simulator');
   const pipelineCard = card('section', 'bb-card bb-station-pipeline', 'pipeline');
   side.append(alertsCard, simHost);
-  root.append(tryCard, ghostCard, side, pipelineCard);
+  root.append(controls, ghostCard, side, pipelineCard);
 
   const ghostHead = document.createElement('div');
   ghostHead.className = 'bb-station-ghosts__head';
@@ -115,28 +123,50 @@ export function mountStation(root: HTMLElement): void {
   const engine = createHapticEngine({ rateLimitMs: 0 });
 
   let classifier: Classifier | null = null;
+  let loading: Promise<Classifier> | null = null;
   let deps: RunnerDeps | null = null;
   let busy = false;
+
+  /** The page's one classifier, shared by Try a sound and Listen; a failed load can be tried again. */
+  async function loadClassifier(): Promise<Classifier> {
+    if (classifier) return classifier;
+    loading ??= createClassifier().then(
+      (c) => (classifier = c),
+      (e) => {
+        loading = null;
+        status.setProblem();
+        throw e;
+      },
+    );
+    const c = await loading;
+    status.reset();
+    return c;
+  }
+
+  /** Shows a run, from a clip or a live window, as a ghost, a row and the pipeline view. */
+  function show(result: RunResultOk): void {
+    const bearingConfidence = result.bearingConfidence;
+    field.show({ event: result.event, bearingConfidence });
+    list.add({ cls: result.event.class, side: sideOf(result.event, bearingConfidence), urgency: result.event.urgency, at: result.at });
+    pipeline.show(result);
+  }
 
   async function pick(clip: ClipInfo, chosen: TrySide): Promise<void> {
     if (busy) return;
     busy = true;
     try {
       trySound.setBusy(classifier ? LISTENING : LOADING_MODEL, clip.id);
-      if (!classifier) {
-        try {
-          classifier = await createClassifier();
-        } catch {
-          status.setProblem();
-          trySound.setBusy(null);
-          trySound.setMessage(MODEL_FAILED);
-          return;
-        }
-        status.reset();
-        trySound.setBusy(LISTENING, clip.id);
+      let c: Classifier;
+      try {
+        c = await loadClassifier();
+      } catch {
+        trySound.setBusy(null);
+        trySound.setMessage(MODEL_FAILED);
+        return;
       }
+      trySound.setBusy(LISTENING, clip.id);
       // One deps object for the page, so the runner numbers its events station-1, station-2, ...
-      deps ??= { loadClip: (id) => fetchClip(id), classifier, engine, outputs, now: () => performance.now(), epoch: () => Date.now() };
+      deps ??= { loadClip: (id) => fetchClip(id), classifier: c, engine, outputs, now: () => performance.now(), epoch: () => Date.now() };
       const result = await runSound(deps, clip.id, chosen);
       trySound.setBusy(null);
       if (!result.ok) {
@@ -144,14 +174,47 @@ export function mountStation(root: HTMLElement): void {
         trySound.setMessage(failureText(result.code));
         return;
       }
-      const bearingConfidence = result.bearingConfidence;
-      field.show({ event: result.event, bearingConfidence });
-      list.add({ cls: result.event.class, side: sideOf(result.event, bearingConfidence), urgency: result.event.urgency, at: result.at });
-      pipeline.show(result);
+      show(result);
     } finally {
       busy = false;
     }
   }
+
+  // Live listening: its own engine with the default rate limit, the shared classifier and outputs.
+  let live: Live | null = null;
+  let starting = false;
+
+  async function startListening(): Promise<void> {
+    if (starting) return;
+    starting = true;
+    listen.setState('starting', classifier ? null : LOADING_MODEL);
+    try {
+      let c: Classifier;
+      try {
+        c = await loadClassifier();
+      } catch {
+        listen.setState('problem', MODEL_FAILED);
+        return;
+      }
+      live ??= createLive(
+        { capture: createCapture(), classifier: c, bearing: createBearingWindow(), engine: createHapticEngine(), outputs, now: () => performance.now(), epoch: () => Date.now() },
+        (u) => {
+          if (u.kind === 'event') show(u.result);
+          else if (u.kind === 'failure') listen.setState('problem', LIVE_FAILURE_TEXT);
+          else if (u.state !== 'starting') listen.setState(u.state, u.message);
+        },
+      );
+      try {
+        await live.start();
+      } catch {
+        listen.setState('problem', CAPTURE_FAILED);
+      }
+    } finally {
+      starting = false;
+    }
+  }
+
+  const listen = mountListenCard(listenCard, { onStart: () => void startListening(), onStop: () => void live?.stop() });
 
   const trySound = mountTrySound(tryCard, { onPick: (clip, chosen) => void pick(clip, chosen) });
 
@@ -160,8 +223,8 @@ export function mountStation(root: HTMLElement): void {
     () => trySound.setClipsFailed(),
   );
 
-  // Phone: the Try a sound card is a bar fixed to the bottom; the page keeps its height free below the content.
+  // Phone: Listen and Try a sound are a bar fixed to the bottom; the page keeps its height free below the content.
   new ResizeObserver(() => {
-    document.body.style.setProperty('--bb-station-bar', `${Math.ceil(tryCard.getBoundingClientRect().height)}px`);
-  }).observe(tryCard);
+    document.body.style.setProperty('--bb-station-bar', `${Math.ceil(controls.getBoundingClientRect().height)}px`);
+  }).observe(controls);
 }
