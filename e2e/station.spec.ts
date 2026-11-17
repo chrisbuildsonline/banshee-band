@@ -69,6 +69,7 @@ const rows = (page: Page) => page.getByRole('list', { name: 'Recent sounds' }).g
 const ghostItems = (page: Page) => page.locator('.bb-ghost-field__items li[data-class]');
 const message = (page: Page) => page.locator('[data-card="try"] [aria-live="polite"]');
 const stages = (page: Page) => page.locator('[data-card="pipeline"] section[data-stage]');
+const idle = (page: Page) => page.locator('[data-card="ghosts"] .bb-station-ghosts__idle');
 
 /** Checks the side radio by its label. */
 async function pickSide(page: Page, name: 'Left' | 'Centre' | 'Right'): Promise<void> {
@@ -152,6 +153,7 @@ test.describe('listening station', () => {
     await expect(ghost).toHaveAttribute('data-class', 'knock');
     await expect(ghost).toHaveAttribute('data-side', 'left');
     expect(Number(await ghost.getAttribute('data-x'))).toBeLessThan(0.5);
+    await expect(idle(page)).toBeHidden();
 
     const first = rows(page).first();
     await expect(first).toContainText('Knock');
@@ -325,6 +327,16 @@ test.describe('listening station', () => {
     expect(alerts.y + alerts.height).toBeLessThanOrEqual(sim.y);
     expect(sim.y + sim.height).toBeLessThanOrEqual(pipeline.y);
 
+    // The bar is compact: one row for the side, one sideways-scrolling row of chips, the simulated-side sentence.
+    const bar0 = await box(page, '[data-card="try"]');
+    expect(bar0.height).toBeLessThanOrEqual(180);
+    expect(await page.locator('[data-card="try"]').evaluate((b) => b.scrollWidth - b.clientWidth), 'the bar overflows sideways').toBeLessThanOrEqual(0);
+    const chipTops = await Promise.all(CHIP_NAMES.map(async (n) => Math.round((await chip(page, n).boundingBox())!.y)));
+    expect(new Set(chipTops).size, `chip rows at ${chipTops.join(', ')}`).toBe(1);
+    // First view: a lone ghost and its label sit in the top 240 px of the 360 px field (urgent block 8 + (312 - 138) / 2 + 138 = 233).
+    const canvas = await box(page, '[data-card="ghosts"] canvas');
+    expect(canvas.y + 240).toBeLessThanOrEqual(bar0.y);
+
     const lowest45 = 844 * 0.55;
     const targets = [...CHIP_NAMES.map((n) => chip(page, n)), ...['Left', 'Centre', 'Right'].map((n) => page.locator('label', { has: page.getByLabel(n, { exact: true }) }))];
     for (const t of targets) {
@@ -353,6 +365,9 @@ test.describe('listening station', () => {
     await expect(page.getByText('No sounds yet. Choose a sound to try.', { exact: true })).toBeVisible();
     await expect(rows(page)).toHaveCount(0);
     await expect(page.locator('#latest-alert')).toHaveText('No sound yet');
+    await expect(idle(page)).toBeVisible();
+    await expect(idle(page)).toContainText('All quiet');
+    await expect(page.getByRole('list', { name: 'Urgency key' }).getByRole('listitem')).toHaveText(['Low', 'Medium', 'Urgent']);
     await expect(stages(page)).toHaveCount(5);
     await expect(stages(page).getByText('— ms', { exact: true })).toHaveCount(5);
     await expect(stages(page).locator('[data-ms]')).toHaveCount(0);

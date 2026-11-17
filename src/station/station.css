@@ -12,7 +12,7 @@
   grid-template-areas:
     "brand theme"
     "meta meta";
-  row-gap: var(--bb-space-3);
+  row-gap: var(--bb-space-2);
 }
 
 .bb-station-topbar__brand {
@@ -59,13 +59,21 @@
 }
 
 /* Title block */
+/* Phone: tight, and the eyebrow (the bar's heading says it) is left out, so the field is in the first view. */
 .bb-station-title {
   display: grid;
-  gap: var(--bb-space-3);
-  padding-block: var(--bb-space-4) var(--bb-space-3);
+  gap: var(--bb-space-2);
+  padding-block: var(--bb-space-2);
 }
 
+.bb-station-title .bb-eyebrow {
+  display: none;
+}
+
+/* The phone takes the title step so the h1 fits one line and the ghost field is in the first view. */
 .bb-station-title__h1 {
+  font-size: var(--bb-type-title-size);
+  line-height: var(--bb-type-title-line);
   letter-spacing: -0.02em;
 }
 
@@ -73,27 +81,38 @@
   font-size: var(--bb-type-body-size);
 }
 
-/* Try a sound */
+/*
+ * Try a sound. Phone: a compact bar fixed to the bottom, in DOM order: the heading and the simulated-side
+ * sentence as one caption paragraph, the side control (44 px), then one sideways-scrolling row of chips
+ * nearest the thumb. About 170 px tall at 390 px, so the ghost field is in the first view.
+ */
 .bb-station-try {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
   z-index: 2;
-  gap: var(--bb-space-3);
-  padding: var(--bb-space-4);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bb-space-2);
+  padding: var(--bb-space-2) var(--bb-space-4);
   border-radius: var(--bb-radius-card) var(--bb-radius-card) 0 0;
 }
 
 .bb-station-try__head {
-  display: grid;
-  gap: var(--bb-space-1);
+  display: block;
+  margin-bottom: calc(var(--bb-space-1) * -1);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
 }
 
 .bb-station-try .bb-heading {
-  font-size: var(--bb-type-body-size);
+  display: inline;
+  margin-inline-end: var(--bb-space-1);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
 }
 
 .bb-station-try__note {
+  display: inline;
   color: var(--bb-color-text-muted);
   font-size: var(--bb-type-caption-size);
   line-height: var(--bb-type-caption-line);
@@ -141,7 +160,7 @@
 .bb-station-side__track {
   display: flex;
   gap: var(--bb-space-1);
-  padding: var(--bb-space-1);
+  padding: 0;
   border-radius: var(--bb-radius-pill);
   background-color: var(--bb-color-surface-raised);
 }
@@ -202,16 +221,25 @@
   outline-offset: 2px;
 }
 
-/* Sound chips: secondary pills, three per row on the phone, one row of six on desktop. */
+/*
+ * Sound chips: secondary pills. Phone: one row that scrolls sideways inside the bar, bleeding to the bar's
+ * edges; the block padding keeps the focus ring from being clipped. Desktop: one grid row of six.
+ */
 .bb-station-chips {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: var(--bb-space-2);
+  margin: calc(var(--bb-space-2) * -1) calc(var(--bb-space-4) * -1);
+  padding: var(--bb-space-2) var(--bb-space-4);
+  overflow-x: auto;
+  scroll-padding-inline: var(--bb-space-4);
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
 }
 
 .bb-station-chip {
-  min-width: 0;
-  padding-inline: var(--bb-space-2);
+  flex: none;
+  padding-inline: var(--bb-space-4);
+  scroll-snap-align: start;
 }
 
 .bb-station-chip[aria-disabled="true"] {
@@ -229,6 +257,92 @@
 .bb-station-ghosts {
   display: flex;
   flex-direction: column;
+  gap: var(--bb-space-3);
+}
+
+/*
+ * The field's backdrop: thin sonar rings in accent-tint around the listener mark (drawn by the canvas at
+ * 10 px above the bottom centre). Static, behind the transparent canvas, so the ghosts and their labels draw
+ * on top. No filled glow: the uncertain arc (border) would fall under 3:1 on accent-tint in Night. The
+ * labels and ghost fill that cross a ring are in the Contrast table ("on field ring").
+ */
+.bb-station-ghosts .bb-ghost-field {
+  position: relative;
+}
+
+.bb-station-ghosts .bb-ghost-field__canvas {
+  border-radius: var(--bb-radius-control);
+  background-image: repeating-radial-gradient(
+    circle at 50% calc(100% - var(--bb-space-2) - 2px),
+    transparent 0 calc(var(--bb-space-8) * 1.5 - 2px),
+    var(--bb-color-accent-tint) calc(var(--bb-space-8) * 1.5 - 2px) calc(var(--bb-space-8) * 1.5)
+  );
+}
+
+/* Over the field's middle, above the listener mark and the "Now:" line; hidden while a ghost is shown. */
+.bb-station-ghosts__idle {
+  position: absolute;
+  inset: 0 0 calc(var(--bb-space-8) + var(--bb-space-4));
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--bb-space-1);
+  text-align: center;
+  pointer-events: none;
+}
+
+.bb-station-ghosts:has(.bb-ghost-field__items li[data-class]) .bb-station-ghosts__idle {
+  display: none;
+}
+
+.bb-station-ghosts__idle .bb-ghost-glyph {
+  width: var(--bb-space-7);
+  height: var(--bb-space-7);
+  margin-bottom: var(--bb-space-2);
+}
+
+.bb-station-ghosts__idle-title,
+.bb-station-ghosts__idle-text {
+  padding-inline: var(--bb-space-2);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface);
+}
+
+.bb-station-ghosts__idle-title {
+  font-size: var(--bb-type-heading-size);
+  line-height: var(--bb-type-heading-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-station-ghosts__idle-text {
+  max-width: calc(var(--bb-space-8) * 4.5);
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+/* Urgency key: three tiles, the same ghost at the three urgency sizes, bottoms aligned so the sizes compare. */
+.bb-station-key {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bb-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bb-station-key__item {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--bb-space-2);
+  padding: var(--bb-space-3);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
 }
 
 .bb-station-ghosts__head,
@@ -537,12 +651,51 @@
     grid-column: 1 / -1;
   }
 
+  /*
+   * A hero row: the eyebrow over the display title, the lede beside it on the right, bottoms aligned. Where
+   * the two do not fit side by side (near 720px) the lede wraps under the title. Keeps the title block
+   * short so the ghost of a run is in the first view at 1440 x 900.
+   */
   .bb-station-title {
-    padding-block: var(--bb-space-5) var(--bb-space-3);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--bb-space-2) var(--bb-space-7);
+    padding-block: var(--bb-space-5) var(--bb-space-2);
+  }
+
+  .bb-station-title .bb-eyebrow {
+    display: block;
+    flex: 1 0 100%;
   }
 
   .bb-station-title .bb-lede {
-    font-size: var(--bb-type-heading-size);
+    flex: 1 1 calc(var(--bb-space-8) * 5);
+    max-width: calc(var(--bb-space-8) * 7.5);
+    font-size: var(--bb-type-body-size);
+  }
+
+  .bb-station-title__h1 {
+    flex: none;
+    font-size: var(--bb-type-display-size);
+    line-height: var(--bb-type-display-line);
+  }
+
+  .bb-station-try__head {
+    display: grid;
+    gap: var(--bb-space-1);
+    margin: 0;
+  }
+
+  .bb-station-try__note,
+  .bb-station-try .bb-heading {
+    display: block;
+    margin: 0;
+  }
+
+  .bb-station-side__track {
+    padding: var(--bb-space-1);
   }
 
   .bb-station-try {
@@ -551,8 +704,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "head side"
-      "sounds sounds"
-      "message message";
+      "sounds sounds";
     align-items: center;
     gap: var(--bb-space-5);
     padding: var(--bb-space-5);
@@ -561,6 +713,7 @@
 
   .bb-station-try .bb-heading {
     font-size: var(--bb-type-heading-size);
+    line-height: var(--bb-type-heading-line);
   }
 
   .bb-station-try__head {
@@ -576,22 +729,41 @@
     grid-area: sounds;
   }
 
+  /* An implicit third row, so an empty (out of flow) message adds no gap. */
   .bb-station-try__message {
-    grid-area: message;
+    grid-column: 1 / -1;
   }
 
   .bb-station-chips {
+    display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--bb-space-3);
+    margin: 0;
+    padding: 0;
+    overflow: visible;
   }
 
   .bb-station-chip {
-    padding-inline: var(--bb-space-4);
+    min-width: 0;
   }
 
+  /*
+   * The field keeps its own height (a 448px canvas, a card of about 700px) instead of stretching to the
+   * right column, which grows with every row: a tall field leaves one ghost alone in empty space. It sticks
+   * while the right column scrolls past, inside its own grid row.
+   */
   .bb-station-ghosts {
+    gap: var(--bb-space-4);
     grid-column: span 7;
+    align-self: start;
+    position: sticky;
+    top: var(--bb-space-5);
     min-height: calc(var(--bb-space-8) * 7.5);
+  }
+
+  .bb-station-ghosts .bb-ghost-field__canvas {
+    flex: none;
+    height: calc(var(--bb-space-8) * 7);
   }
 
   .bb-station-side-column {

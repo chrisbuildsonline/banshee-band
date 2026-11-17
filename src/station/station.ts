@@ -1,7 +1,7 @@
 import { fetchClip, loadManifest, type ClipInfo } from '../audio';
 import { createPhoneOutput, mountBandSimulator, type HapticOutput } from '../band';
 import { createClassifier, type Classifier } from '../classify';
-import { mountGhostField } from '../ghosts';
+import { createGlyph, mountGhostField } from '../ghosts';
 import { createHapticEngine, sideOf } from '../haptics';
 import { failureText } from './format';
 import { mountEventList } from './list';
@@ -28,6 +28,43 @@ function heading(text: string, id: string): HTMLHeadingElement {
   h.id = id;
   h.textContent = text;
   return h;
+}
+
+/**
+ * The idle hint over an empty ghost field: a faint ghost, "All quiet" and where a ghost will appear. CSS hides
+ * it while the field's "Now:" list names a ghost. Decorative (`aria-hidden`): the list says the same in words.
+ */
+function idleHint(): HTMLElement {
+  const hint = document.createElement('div');
+  hint.className = 'bb-station-ghosts__idle';
+  hint.setAttribute('aria-hidden', 'true');
+  const title = document.createElement('p');
+  title.className = 'bb-station-ghosts__idle-title';
+  title.textContent = 'All quiet';
+  const text = document.createElement('p');
+  text.className = 'bb-station-ghosts__idle-text';
+  text.textContent = 'Try a sound and its ghost appears here, on the side it came from.';
+  hint.append(createGlyph('other', 'low'), title, text);
+  return hint;
+}
+
+/**
+ * The urgency key under the ghost field: the same ghost at the three urgency sizes, each with its word, so
+ * size and outline weight read as urgency before the first sound arrives.
+ */
+function urgencyKey(): HTMLElement {
+  const key = document.createElement('ul');
+  key.className = 'bb-station-key';
+  key.setAttribute('aria-label', 'Urgency key');
+  for (const [urgency, word] of [['low', 'Low'], ['medium', 'Medium'], ['high', 'Urgent']] as const) {
+    const item = document.createElement('li');
+    item.className = 'bb-station-key__item';
+    const label = document.createElement('span');
+    label.textContent = word;
+    item.append(createGlyph('other', urgency), label);
+    key.append(item);
+  }
+  return key;
 }
 
 /**
@@ -62,6 +99,8 @@ export function mountStation(root: HTMLElement): void {
   ghostCard.setAttribute('aria-labelledby', 'ghosts-title');
   ghostCard.append(ghostHead);
   const field = mountGhostField(ghostCard);
+  ghostCard.querySelector('.bb-ghost-field')?.append(idleHint());
+  ghostCard.append(urgencyKey());
 
   pipelineCard.setAttribute('aria-labelledby', 'pipeline-title');
   const pipelineNote = document.createElement('p');
