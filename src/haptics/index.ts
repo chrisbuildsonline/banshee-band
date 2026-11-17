@@ -6,3 +6,10 @@
  */
 export * from './constants';
 export type * from './types';
+export { buildCommand } from './command';
+export { checkDistinctiveness, cycleMs, patternDistance, totalMs } from './distinct';
+export { createHapticEngine } from './engine';
+export { loadPatterns, validatePatternData } from './patterns';
+export { priorityOf } from './priority';
+export { DEFAULT_HAPTIC_SETTINGS, resolveHapticSettings } from './settings';
+export { sideOf } from './side';

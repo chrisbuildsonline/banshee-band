@@ -50,4 +50,21 @@ describe('haptics constants (R2)', () => {
     expect(haptics.MIN_GAP_MS).toBe(80);
     expect(haptics.PATTERN_CLASSES).toBe(PATTERN_CLASSES);
   });
+
+  it('exports the public API from index.ts (R1.1)', () => {
+    for (const name of [
+      'createHapticEngine',
+      'sideOf',
+      'priorityOf',
+      'buildCommand',
+      'validatePatternData',
+      'loadPatterns',
+      'checkDistinctiveness',
+      'patternDistance',
+      'resolveHapticSettings',
+    ] as const) {
+      expect(typeof haptics[name], name).toBe('function');
+    }
+    expect(Object.isFrozen(haptics.DEFAULT_HAPTIC_SETTINGS)).toBe(true);
+  });
 });

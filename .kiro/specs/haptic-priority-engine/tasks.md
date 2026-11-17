@@ -41,8 +41,8 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
   - [x] 5.2 Implement `src/haptics/command.ts` (`buildCommand`) as in the design.
   - **Gate:** `command.test.ts` passes.
 
-- [ ] 6. Engine
-  - [ ] 6.1 Write `tests/haptics/engine.test.ts`:
+- [x] 6. Engine
+  - [x] 6.1 Write `tests/haptics/engine.test.ts`:
     - every drop reason: `'no-pattern'` for `other` (also when the class is off and when it is loud), `'disabled-class'`, `'too-quiet'` at -50.01 versus -50 as the threshold, `'rate-limited'` and `'lower-priority'`;
     - the order of Requirement 9.2 with an event that meets two reasons at once (`other` that is also quiet; a disabled class that is also quiet; a quiet event that is also in the rate limit);
     - preemption: a `high` alarm preempts a `low` knock that is playing; `medium` vehicle preempts nothing when a `high` alarm plays; an equal priority is dropped; an event after `startMs + totalMs` plays whatever its priority (also at exactly `startMs + totalMs`);
@@ -54,7 +54,7 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - `decide` throws `RangeError` for `NaN` and `Infinity` as `nowMs` and for nothing else.
     Add a stub and confirm failure.
     - _Requirements: 8.3-8.7, 9.1-9.8, 10.6, 10.7_
-  - [ ] 6.2 Implement `src/haptics/engine.ts` (`createHapticEngine`) and export the public API from `index.ts` (doc comment on every export).
+  - [x] 6.2 Implement `src/haptics/engine.ts` (`createHapticEngine`) and export the public API from `index.ts` (doc comment on every export).
     - _Requirements: 1.5, 1.6, 9.1-9.8, 13.3_
   - **Gate:** `engine.test.ts` and `boundaries.test.ts` pass, then `typecheck` and the whole `test` run.
 
