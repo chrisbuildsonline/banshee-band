@@ -152,6 +152,18 @@
   display: none;
 }
 
+/* Shown once the service worker has cached the app, the model and the clips. */
+.bb-station-title__offline {
+  flex-basis: 100%;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+html:not([data-offline-ready]) .bb-station-title__offline {
+  display: none;
+}
+
 /* Phone: the lede leaves the first view so the ghost field stays in it; the bar's caption says the privacy part. */
 .bb-station-title .bb-lede {
   display: none;

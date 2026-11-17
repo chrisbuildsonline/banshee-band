@@ -14,6 +14,8 @@ const ALLOWED_PATHS = [
   /^\/$/,
   /^\/index\.html$/,
   /^\/favicon\.svg$/,
+  /^\/manifest\.webmanifest$/,
+  /^\/icons\/[\w-]+\.png$/,
   /^\/src\//,
   /^\/@vite\/client$/,
   /^\/node_modules\//,

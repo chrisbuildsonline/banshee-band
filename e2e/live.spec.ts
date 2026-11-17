@@ -98,8 +98,10 @@ test.describe('live listening', () => {
     await recordGetUserMedia(page, true);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
+    test.setTimeout(LIVE_TIMEOUT + 30_000);
     await start(page).click();
-    await expect(listenStatus(page)).toHaveText('Mic blocked');
+    // The sound model loads before the microphone is asked for.
+    await expect(listenStatus(page)).toHaveText('Mic blocked', { timeout: LIVE_TIMEOUT });
     await expect(page.locator('[data-card="listen"]')).toContainText(DENIED);
     await expect(start(page)).toBeVisible();
     await expect(start(page)).toBeFocused();
