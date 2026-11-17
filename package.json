@@ -11,7 +11,8 @@
     "e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "classify:report": "bun run tests/classify/report.ts",
-    "bearing:report": "bun run tests/bearing/report.ts"
+    "bearing:report": "bun run tests/bearing/report.ts",
+    "bearing:mutate": "bun run tests/bearing/mutate.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
