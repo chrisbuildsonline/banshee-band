@@ -2,10 +2,10 @@
 
 Each task is small and ends in a test gate. Write the test first, see it fail for the right reason (a stub that throws `not implemented`), then implement. Run `bun run typecheck` and `bun run test` at every gate, and `bun run e2e` at every gate that touches the page. Requirement numbers refer to `requirements.md`. Do not add dependencies. Tests use literal numbers and strings for the values that the requirements fix (offsets, percents, side texts). Do not change `src/haptics/`.
 
-- [ ] 1. Contract and boundaries
-  - [ ] 1.1 Create `src/band/types.ts` (`HapticOutput`) and `src/band/index.ts` with the module comment of Requirement 1.5 (outputs play a command that `haptics` decided; the band is an aid and not a safety device). Remove `src/band/.gitkeep` once a real file exists. Export types only for now.
+- [x] 1. Contract and boundaries
+  - [x] 1.1 Create `src/band/types.ts` (`HapticOutput`) and `src/band/index.ts` with the module comment of Requirement 1.5 (outputs play a command that `haptics` decided; the band is an aid and not a safety device). Remove `src/band/.gitkeep` once a real file exists. Export types only for now.
     - _Requirements: 1.1, 1.4, 1.5_
-  - [ ] 1.2 Write `tests/band/boundaries.test.ts`: scan `src/band/*.ts` (comments removed) for imports other than `../events`, `../haptics`, `./*` and `.css` files, and for the forbidden identifiers (`fetch`, `XMLHttpRequest`, `WebSocket`, `bluetooth`, `console`, `Math.random`, `Date`). Check that `src/haptics/*.ts` has no import of `band` (the existing haptics boundary test also covers it).
+  - [x] 1.2 Write `tests/band/boundaries.test.ts`: scan `src/band/*.ts` (comments removed) for imports other than `../events`, `../haptics`, `./*` and `.css` files, and for the forbidden identifiers (`fetch`, `XMLHttpRequest`, `WebSocket`, `bluetooth`, `console`, `Math.random`, `Date`). Check that `src/haptics/*.ts` has no import of `band` (the existing haptics boundary test also covers it).
     - _Requirements: 1.2, 1.3, 1.4, 1.7_
   - **Gate:** `boundaries.test.ts` and `tests/haptics/boundaries.test.ts` pass; `typecheck` passes.
 
