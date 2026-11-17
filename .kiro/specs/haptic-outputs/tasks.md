@@ -36,56 +36,56 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 4.3, 5.2, 5.3, 5.6_
   - **Gate:** `labels.test.ts` passes; `typecheck` and `test` pass.
 
-- [ ] 5. Simulator component
-  - [ ] 5.1 Write the simulator checks that can run without a browser as far as possible (the labels are already covered). For the DOM behaviour, write the e2e cases of task 8 for the simulator in a first version against a minimal page (see 6.1), and see them fail. Do not add a DOM test environment to Vitest.
+- [x] 5. Simulator component
+  - [x] 5.1 Write the simulator checks that can run without a browser as far as possible (the labels are already covered). For the DOM behaviour, write the e2e cases of task 8 for the simulator in a first version against a minimal page (see 6.1), and see them fail. Do not add a DOM test environment to Vitest.
     - _Requirements: 4.1-4.10, 5.1-5.11, 6.1-6.8_
-  - [ ] 5.2 Create `src/band/simulator.ts` and `src/band/simulator.css`: the DOM tree of the design, `mountBandSimulator`, the player wired to the motor cards (number, `data-level`, bar width from one function), the timeline lanes (SVG, `aria-hidden`), `data-side` on the root, the glyphs, the live region (clear and set in a microtask), `destroy`. Build the tree with `createElement` and `textContent`. Use tokens only. Add `transition: none` under `prefers-reduced-motion: reduce` and no `@keyframes`. Export from `src/band/index.ts`.
+  - [x] 5.2 Create `src/band/simulator.ts` and `src/band/simulator.css`: the DOM tree of the design, `mountBandSimulator`, the player wired to the motor cards (number, `data-level`, bar width from one function), the timeline lanes (SVG, `aria-hidden`), `data-side` on the root, the glyphs, the live region (clear and set in a microtask), `destroy`. Build the tree with `createElement` and `textContent`. Use tokens only. Add `transition: none` under `prefers-reduced-motion: reduce` and no `@keyframes`. Export from `src/band/index.ts`.
     - _Requirements: 4.1-4.10, 5.1-5.11, 6.1-6.8_
-  - [ ] 5.3 Check the contrast of every pair the simulator uses against the contrast table of `design/DESIGN.md` (text on card, muted unit on card, accent bar on its track and on the card, lane marks on card, dashed outline on card, in Day and Night). If a pair is missing from the table, compute it with `tests/ui/contrast.ts` and add it to the table and to `tests/ui/contrast.test.ts` in the same change.
+  - [x] 5.3 Check the contrast of every pair the simulator uses against the contrast table of `design/DESIGN.md` (text on card, muted unit on card, accent bar on its track and on the card, lane marks on card, dashed outline on card, in Day and Night). If a pair is missing from the table, compute it with `tests/ui/contrast.ts` and add it to the table and to `tests/ui/contrast.test.ts` in the same change.
     - _Requirements: 6.8, 9.1_
   - **Gate:** `typecheck` passes and `boundaries.test.ts` passes (the new files obey the import rules); the e2e simulator cases of task 8 pass once the page exists.
 
-- [ ] 6. Band simulator page
-  - [ ] 6.1 Create `band.html` and `src/ui/band-page.ts`, `src/ui/band-page.css`: header with the brand link, the status pill and the theme control, the title block with "Band simulator" and the sentence that this is a simulator and that no band is connected, the simulator mounted in its container, the footer with the aid sentence verbatim. Read `index.html`, `styleguide.html` and `src/ui/styleguide.ts` first. If the theme control exists only inside the styleguide script, move it into a shared module in `src/ui/` and use it from both pages. Do not copy it. Add `band.html` to `build.rolldownOptions.input` in `vite.config.ts` (key `band`).
+- [x] 6. Band simulator page
+  - [x] 6.1 Create `band.html` and `src/ui/band-page.ts`, `src/ui/band-page.css`: header with the brand link, the status pill and the theme control, the title block with "Band simulator" and the sentence that this is a simulator and that no band is connected, the simulator mounted in its container, the footer with the aid sentence verbatim. Read `index.html`, `styleguide.html` and `src/ui/styleguide.ts` first. If the theme control exists only inside the styleguide script, move it into a shared module in `src/ui/` and use it from both pages. Do not copy it. Add `band.html` to `build.rolldownOptions.input` in `vite.config.ts` (key `band`).
     - _Requirements: 7.1-7.11, 9.1_
-  - [ ] 6.2 Write the status pill: read `createPhoneOutput().available()` once at load, show "Phone vibration on" (triangle glyph, accent tint) or "No phone vibration here" (open-circle glyph, neutral tint). Glyphs are inline SVG, `aria-hidden`. Reuse the status pill classes of the other pages.
+  - [x] 6.2 Write the status pill: read `createPhoneOutput().available()` once at load, show "Phone vibration on" (triangle glyph, accent tint) or "No phone vibration here" (open-circle glyph, neutral tint). Glyphs are inline SVG, `aria-hidden`. Reuse the status pill classes of the other pages.
     - _Requirements: 7.4_
-  - [ ] 6.3 Update `.kiro/steering/structure.md`: add `band.html` (and `src/ui/band-page.ts`) to the structure text and list the files of `src/band`. Keep the rules section unchanged.
+  - [x] 6.3 Update `.kiro/steering/structure.md`: add `band.html` (and `src/ui/band-page.ts`) to the structure text and list the files of `src/band`. Keep the rules section unchanged.
     - _Requirements: 7.1_
   - **Gate:** `bun run dev` serves `/band.html` with no console error (check with a quick Playwright run of task 8.1); `typecheck` and `test` pass.
 
-- [ ] 7. Feel a pattern card
-  - [ ] 7.1 Write the first e2e cases of task 8 for the card (Knock with Left, Unknown, the vibrate stub) and see them fail.
+- [x] 7. Feel a pattern card
+  - [x] 7.1 Write the first e2e cases of task 8 for the card (Knock with Left, Unknown, the vibrate stub) and see them fail.
     - _Requirements: 8.1-8.10, 10.8_
-  - [ ] 7.2 Implement the card in `src/ui/band-page.ts` and `band-page.css`: heading and sentence, the side fieldset with four native radios (default Centre, check glyph on the selected option, selection by arrow keys), the six chips as secondary pills in a group, `buildDemoCommand` with the urgency and bearing tables of the design (a new engine per choice), the calls to the simulator output and, when available, the phone output, and the error text live region. Changing the side plays nothing.
+  - [x] 7.2 Implement the card in `src/ui/band-page.ts` and `band-page.css`: heading and sentence, the side fieldset with four native radios (default Centre, check glyph on the selected option, selection by arrow keys), the six chips as secondary pills in a group, `buildDemoCommand` with the urgency and bearing tables of the design (a new engine per choice), the calls to the simulator output and, when available, the phone output, and the error text live region. Changing the side plays nothing.
     - _Requirements: 8.1-8.10_
   - **Gate:** the e2e cases of 7.1 pass; `typecheck` and `test` pass.
 
-- [ ] 8. End-to-end tests
-  - [ ] 8.1 Write `e2e/band.spec.ts` (start it in tasks 5 and 7 and finish it here): Knock plus Left gives `data-level` of the left motor greater than the right and the text "left stronger"; Unknown gives equal levels, the text "Side unknown" and `data-side="unknown"` on the simulator root and a dashed outline on both motor cards (computed `outline-style`); Centre gives equal levels and "both motors, centre"; with `page.clock` installed before `goto`, the levels are not 0 at 239 ms and are 0 after 240 ms; a second chip while the first plays replaces it (no stale 0 from the first one); an init script stubs `navigator.vibrate` and the test checks the call is `[70, 100, 70]` once per choice, and `navigator.vibrate(0)` is not called by a play; with `navigator.vibrate` removed, the pill reads "No phone vibration here" and a choice raises no error; with the stub, the pill reads "Phone vibration on"; the live region text is set once per choice and does not change while the segments run; keyboard flow (Tab order brand, theme control, side control, chips; arrow keys change the side and do not play; Enter and Space on a chip play); reduced motion (`emulateMedia`) gives computed `transition-duration` `0s` on the bar fill and numbers that still update; no console errors and no page errors; no request to another origin; no element with `tabindex` inside the simulator.
+- [x] 8. End-to-end tests
+  - [x] 8.1 Write `e2e/band.spec.ts` (start it in tasks 5 and 7 and finish it here): Knock plus Left gives `data-level` of the left motor greater than the right and the text "left stronger"; Unknown gives equal levels, the text "Side unknown" and `data-side="unknown"` on the simulator root and a dashed outline on both motor cards (computed `outline-style`); Centre gives equal levels and "both motors, centre"; with `page.clock` installed before `goto`, the levels are not 0 at 239 ms and are 0 after 240 ms; a second chip while the first plays replaces it (no stale 0 from the first one); an init script stubs `navigator.vibrate` and the test checks the call is `[70, 100, 70]` once per choice, and `navigator.vibrate(0)` is not called by a play; with `navigator.vibrate` removed, the pill reads "No phone vibration here" and a choice raises no error; with the stub, the pill reads "Phone vibration on"; the live region text is set once per choice and does not change while the segments run; keyboard flow (Tab order brand, theme control, side control, chips; arrow keys change the side and do not play; Enter and Space on a chip play); reduced motion (`emulateMedia`) gives computed `transition-duration` `0s` on the bar fill and numbers that still update; no console errors and no page errors; no request to another origin; no element with `tabindex` inside the simulator.
     - _Requirements: 4.4, 4.6, 5.2, 5.7, 6.1, 6.4, 7.4, 7.9, 7.11, 8.2-8.8, 10.8, 10.9_
-  - [ ] 8.2 Check, with a few chips and the page clock, that the player's emissions in the browser are on the fake clock (R2.3): if the page uses its timers before `page.clock.install`, fix the order in the test. Do not change the product code to suit the test.
+  - [x] 8.2 Check, with a few chips and the page clock, that the player's emissions in the browser are on the fake clock (R2.3): if the page uses its timers before `page.clock.install`, fix the order in the test. Do not change the product code to suit the test.
     - _Requirements: 2.3, 2.6_
   - **Gate:** `bun run e2e` passes for `band.spec.ts` and for the existing specs.
 
-- [ ] 9. Design gate
-  - [ ] 9.1 Have the builder take Playwright screenshots of `band.html` at 1440 px and 390 px in Day and Night after a Knock plus Left press, saved as `e2e/screenshots/band-1440-day.png`, `band-1440-night.png`, `band-390-day.png` and `band-390-night.png` (add them to the e2e spec so they are made on each run). Look at each one against `design/DESIGN.md` (soft canvas, floating white surfaces, 16-20 px radius, one accent, Night through tokens, large display numbers, tinted status pill, the unknown state's dashed outline in a second screenshot of Unknown at 390 px Night if needed). Fix every mismatch: overflow, a missing glyph, text on the wrong surface, targets under 44 px, motor cards that stack at 390 px.
+- [x] 9. Design gate
+  - [x] 9.1 Have the builder take Playwright screenshots of `band.html` at 1440 px and 390 px in Day and Night after a Knock plus Left press, saved as `e2e/screenshots/band-1440-day.png`, `band-1440-night.png`, `band-390-day.png` and `band-390-night.png` (add them to the e2e spec so they are made on each run). Look at each one against `design/DESIGN.md` (soft canvas, floating white surfaces, 16-20 px radius, one accent, Night through tokens, large display numbers, tinted status pill, the unknown state's dashed outline in a second screenshot of Unknown at 390 px Night if needed). Fix every mismatch: overflow, a missing glyph, text on the wrong surface, targets under 44 px, motor cards that stack at 390 px.
     - _Requirements: 9.1-9.4, 7.10_
-  - [ ] 9.2 Decide the position of the Feel a pattern card from the 390 px screenshot (design, "The page"). If it moves, update Requirement 7.5, the tab order text and the DESIGN.md text in the same change.
+  - [x] 9.2 Decide the position of the Feel a pattern card from the 390 px screenshot (design, "The page"). If it moves, update Requirement 7.5, the tab order text and the DESIGN.md text in the same change.
     - _Requirements: 7.5, 7.9, 9.4_
-  - [ ] 9.3 Update the Band simulator section of `design/DESIGN.md`: the status pill ("Phone vibration on" and "No phone vibration here", with glyph and tint), the Feel a pattern card (six chips, side control, what it plays), the missing Connect band pill ("arrives with the BLE feature"), the two layouts at 1440 px and 390 px, and the tab order (brand link, theme control, side control, chips). Add the two rows to the Status pills table. If a token changed, update `src/ui/tokens.css` and `tests/ui/tokens.test.ts` in the same commit.
+  - [x] 9.3 Update the Band simulator section of `design/DESIGN.md`: the status pill ("Phone vibration on" and "No phone vibration here", with glyph and tint), the Feel a pattern card (six chips, side control, what it plays), the missing Connect band pill ("arrives with the BLE feature"), the two layouts at 1440 px and 390 px, and the tab order (brand link, theme control, side control, chips). Add the two rows to the Status pills table. If a token changed, update `src/ui/tokens.css` and `tests/ui/tokens.test.ts` in the same commit.
     - _Requirements: 9.5, 7.6_
   - **Gate:** the four screenshots exist and were checked; `tests/ui` tests pass; `typecheck` and `test` pass.
 
-- [ ] 10. Review
-  - [ ] 10.1 Check the doc comment of every export of `src/band/` and the module comment of `index.ts` (Requirement 1.5). Check that no copy says the band keeps the user safe, replaces a smoke alarm, or that a band is connected (Requirements 7.6, 11.2).
+- [x] 10. Review
+  - [x] 10.1 Check the doc comment of every export of `src/band/` and the module comment of `index.ts` (Requirement 1.5). Check that no copy says the band keeps the user safe, replaces a smoke alarm, or that a band is connected (Requirements 7.6, 11.2).
     - _Requirements: 1.5, 11.2, 11.3_
-  - [ ] 10.2 Check with `git diff --stat` that `src/haptics/` is unchanged, and that the only changes outside `src/band/`, `src/ui/`, `band.html`, `tests/band/`, `e2e/`, `.kiro/specs/haptic-outputs/` are `vite.config.ts`, `.kiro/steering/structure.md` and `design/DESIGN.md` (and `tests/ui/`, `src/ui/tokens.css` if the contrast table needed a row).
+  - [x] 10.2 Check with `git diff --stat` that `src/haptics/` is unchanged, and that the only changes outside `src/band/`, `src/ui/`, `band.html`, `tests/band/`, `e2e/`, `.kiro/specs/haptic-outputs/` are `vite.config.ts`, `.kiro/steering/structure.md` and `design/DESIGN.md` (and `tests/ui/`, `src/ui/tokens.css` if the contrast table needed a row).
     - _Requirements: 12.3, 12.4_
-  - [ ] 10.3 Check privacy: no network request from the page except its own files, no `console` call in `src/band/` or `band-page.ts`, no `localStorage` use added by this feature.
+  - [x] 10.3 Check privacy: no network request from the page except its own files, no `console` call in `src/band/` or `band-page.ts`, no `localStorage` use added by this feature.
     - _Requirements: 7.11, 11.1, 11.4_
 
-- [ ] 11. Gate (last)
-  - [ ] 11.1 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green, and `bun run build` must emit `dist/band.html` (check that the file exists).
+- [x] 11. Gate (last)
+  - [x] 11.1 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green, and `bun run build` must emit `dist/band.html` (check that the file exists).
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
   - **Gate:** `typecheck`, `test` and `e2e` exit 0, and `bun run build` exits 0 with `dist/band.html` present.
