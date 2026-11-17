@@ -32,6 +32,8 @@ export interface ClassifierOptions {
 }
 
 export interface Classifier {
+  /** The TF.js backend the model runs on (`'webgl'`, `'cpu'`, ...), read once after `tf.ready()`; `'unknown'` if none. */
+  readonly backend: string;
   classify(frame: Float32Array): Promise<Classification>;
   dispose(): void;
 }

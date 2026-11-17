@@ -52,10 +52,12 @@ export async function createClassifier(options: ClassifierOptions = {}): Promise
   const fetchFunc: typeof fetch = options.fetchFunc ?? ((input, init) => fetch(input, init));
 
   let tf: typeof TF;
+  let backend: string;
   try {
     tf = await import('@tensorflow/tfjs');
     // Keeps a backend the caller already chose; otherwise TF.js picks its default (WebGL, CPU fallback; CPU in Node).
     await tf.ready();
+    backend = tf.getBackend() || 'unknown';
   } catch {
     throw new ClassifyError('model-load-failed');
   }
@@ -96,6 +98,7 @@ export async function createClassifier(options: ClassifierOptions = {}): Promise
   let queue: Promise<unknown> = Promise.resolve();
   let disposed = false;
   return {
+    backend,
     classify(frame: Float32Array): Promise<Classification> {
       if (disposed) return Promise.reject(new ClassifyError('disposed'));
       if (!isValidFrame(frame)) return Promise.reject(new ClassifyError('invalid-frame'));

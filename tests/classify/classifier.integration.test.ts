@@ -52,6 +52,10 @@ describe('classifier with the real YAMNet model', { timeout: 120_000 }, () => {
     globalFetch?.mockRestore();
   });
 
+  it('reports the TF.js backend it runs on', () => {
+    expect(classifier.backend).toBe('cpu');
+  });
+
   it('keeps FRAME_SIZE equal to WINDOW_SIZE from src/audio', () => {
     expect(FRAME_SIZE).toBe(WINDOW_SIZE);
   });
