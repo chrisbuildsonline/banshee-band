@@ -138,6 +138,15 @@ export function processEvent(input: EventInput, engine: Pick<HapticEngine, 'deci
 
 `buildEvent` reads each field once inside one `try/catch` (a getter may throw), builds the plain object and returns `validateSoundEvent`'s event or errors. It never repairs a value. `processEvent` calls `decide({ event, bearingConfidence }, nowMs)` only on `ok: true`. `decide` throws a `RangeError` for a non-finite `nowMs`; `buildEvent` rejects that case first because `t` must be finite and at least 0, so `decide` is never reached with it.
 
+Implementation choices (task 1):
+
+- `processEvent` passes `event.t` as `nowMs` to `decide`.
+- `buildEvent` returns the error "input could not be read" for undefined input or a throwing getter.
+- The run id counter is per deps object and counts every `runSound` call, failed ones included.
+- The runner calls `play` only on outputs whose `available()` is true.
+- `decodePcm16kWav` returns null when the data chunk comes before fmt.
+- `constants.ts` also exports `STAGES`.
+
 Literal example for the unit test: `classification { class: 'knock', label: 'Knock', confidence: 0.67 }`, `bearing { bearingDeg: -53.5, source: 'gcc-phat', confidence: 0.93, lagSec: -0.0001875, ildDb: 0, usedFrames: 7, skippedFrames: 0 }`, `loudnessDb: -20`, `nowMs: 1234.5`, `id: 'station-1'` gives `event { id: 'station-1', t: 1234.5, class: 'knock', label: 'Knock', confidence: 0.67, bearingDeg: -53.5, bearingSource: 'gcc-phat', loudnessDb: -20, urgency: 'medium' }` and `bearingConfidence: 0.93`.
 
 Property arbitraries: class from `SOUND_CLASSES`; label `fc.string({ minLength: 1 })` with a non-blank filter; confidence `fc.double({ min: 0, max: 1, noNaN: true })`; bearing as a pair that is consistent (`gcc-phat` or `loudness` with a degree in [-90, 90], or `none` with null); loudness in [-120, 0]; plus a junk arbitrary (`fc.anything()` per field, `NaN`, `Infinity`, `undefined`) for the "never throws, `ok` equals the validator" property.
@@ -300,14 +309,23 @@ Old: `DASH_UNITS = [3, 2]` with butt caps, gap 2 units against an outline of up 
 
 ### Measured side results (filled in task 1.7)
 
-| Clip | Left: side, bearing, confidence | Right: side, bearing, confidence | Centre |
-|---|---|---|---|
-| knock | | | |
-| doorbell | | | not measured |
-| alarm | | | not measured |
-| baby | | | not measured |
-| vehicle | | | not measured |
-| voice | | | not measured |
+| Clip | Chosen | Side | Bearing (deg) | Confidence | Source |
+|---|---|---|---|---|---|
+| doorbell | left | left | -53.5 | 0.965 | gcc-phat |
+| doorbell | right | right | 53.5 | 0.965 | gcc-phat |
+| knock | left | left | -53.5 | 1.000 | gcc-phat |
+| knock | right | right | 53.5 | 1.000 | gcc-phat |
+| knock | centre | centre | 0.0 | 1.000 | gcc-phat |
+| alarm | left | unknown | 0.0 | 0.000 | loudness |
+| alarm | right | unknown | 0.0 | 0.000 | loudness |
+| baby | left | left | -53.5 | 1.000 | gcc-phat |
+| baby | right | right | 53.5 | 1.000 | gcc-phat |
+| vehicle | left | unknown | -53.5 | 0.448 | gcc-phat |
+| vehicle | right | unknown | 53.5 | 0.448 | gcc-phat |
+| voice | left | left | -53.5 | 1.000 | gcc-phat |
+| voice | right | right | 53.5 | 1.000 | gcc-phat |
+
+Knock meets requirement 8.3 (a); no clip ever reads the opposite side (b); every clip is at least -50 dBFS (c); DITHER_AMPLITUDE stays 1e-4. Alarm (tonal, the bearing falls back to loudness) and Vehicle (confidence 0.448, under 0.8) show "Side unknown" for Left and Right in the station, as the tonal-clip risk in this design expected; this is honest behaviour, not a bug.
 
 ## Testing strategy
 
