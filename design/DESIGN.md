@@ -141,13 +141,13 @@ Mapping is fixed: **shape = sound class, position = bearing, glow = urgency.** N
 | Baby | Small round ghost with a single curl on top |
 | Vehicle | Wide, low ghost with a long trailing hem |
 | Voice | Round ghost with an open, wavy mouth |
-| Other | Plain round-topped ghost with a wavy hem and no feature |
+| Other | Plain round-topped ghost with a wavy hem |
 
-The ghosts have no eyes, so every difference is in the outline. Each pair of silhouettes differs in at least 8% of the box (a test rasterises them).
+Every ghost has two small oval eyes cut as holes, so the card surface shows through them; the eyes are the same on every ghost, so every difference is still in the outline. Each pair of silhouettes differs in at least 8% of the box without the eyes (a test rasterises them). The outline is stroked around the body and the Voice mouth, never around the eyes, so a heavy urgent outline does not close an eye.
 
 **Field.** The ghost field is a transparent canvas on the card surface with a "Now:" list under it that names each ghost by class, side and urgency (the text equivalent). Faint "L" and "R" labels sit at the left and right edges, and a small listener mark (a dot with a bearing arc above it) sits at the bottom centre. The bearing convention: negative is left, 0 is the middle, and the bearing maps linearly to the field width up to 90 degrees; a bearing beyond 90 degrees (behind the listener) clamps to the nearer edge. Ghosts stack in rows, newest on top, at most four at once; the oldest leaves first. Every ghost has its label drawn under it, always: the event label, the side and the urgency word ("Knock · Left · Urgent"). A ghost lives 8 seconds.
 
-**Uncertain.** When the side is not known (a bearing that is not from the stereo estimate, or not confident enough), the ghost sits in the middle with a dashed outline, a thin double-headed arc in `--bb-color-border` runs behind it from the L side to the R side, and its label says "Side unknown". Three cues, none of them colour, the same dashed language as the unknown state of the band simulator.
+**Uncertain.** When the side is not known (a bearing that is not from the stereo estimate, or not confident enough), the ghost sits in the middle with a dashed outline (a few long dashes, about 3 to 8 around the outline and fewer as the outline gets heavier, a whole number of them so no stub is left where the outline starts; the Voice mouth stays solid), a thin double-headed arc in `--bb-color-border` runs behind it from the L side to the R side, and its label says "Side unknown". Three cues, none of them colour, the same dashed language as the unknown state of the band simulator.
 
 Glow levels always pair with size and outline weight, and the text alert repeats the urgency word, so glow is never the only cue:
 
