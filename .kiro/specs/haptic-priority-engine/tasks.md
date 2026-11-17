@@ -2,10 +2,10 @@
 
 Each task is small and ends in a test gate. Write the test first, see it fail for the right reason (a stub that throws `not implemented`), then implement. Run `bun run typecheck` and `bun run test` at every gate. Requirement numbers refer to `requirements.md`. Do not add dependencies. Tests use literal numbers for the rules of Requirement 2 (see Requirement 11.2).
 
-- [ ] 1. Contract, constants and boundaries
-  - [ ] 1.1 Create `src/haptics/constants.ts`, `types.ts` and `index.ts` (types and constants only; put the module comment of Requirement 13.3 in `index.ts`). Check that `tsconfig.json` has `resolveJsonModule` and turn it on if not.
+- [x] 1. Contract, constants and boundaries
+  - [x] 1.1 Create `src/haptics/constants.ts`, `types.ts` and `index.ts` (types and constants only; put the module comment of Requirement 13.3 in `index.ts`). Check that `tsconfig.json` has `resolveJsonModule` and turn it on if not.
     - _Requirements: 1.1, 2.1, 2.2, 13.3_
-  - [ ] 1.2 Write `tests/haptics/boundaries.test.ts`: scan `src/haptics/*.ts` (comments removed) for imports other than `../events`, `./*` and `./patterns.json`, and for the forbidden identifiers. Write `tests/haptics/constants.test.ts`: the nine values of Requirement 2.1 as literals, and `PATTERN_CLASSES` plus `'other'` equals `SOUND_CLASSES` as a set.
+  - [x] 1.2 Write `tests/haptics/boundaries.test.ts`: scan `src/haptics/*.ts` (comments removed) for imports other than `../events`, `./*` and `./patterns.json`, and for the forbidden identifiers. Write `tests/haptics/constants.test.ts`: the nine values of Requirement 2.1 as literals, and `PATTERN_CLASSES` plus `'other'` equals `SOUND_CLASSES` as a set.
     - _Requirements: 1.2, 1.3, 1.4, 1.7, 2.1, 2.2_
   - **Gate:** `typecheck` and `test` pass.
 
