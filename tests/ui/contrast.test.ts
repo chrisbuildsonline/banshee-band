@@ -68,6 +68,28 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#B49CFF', '#241F2E')).toBeCloseTo(6.97, 2);
   });
 
+  it('gives the station pipeline tile its accent stage number at 4.5:1 and its dial arc at 3:1 (Day and Night)', () => {
+    expect(contrastRatio('#6236E0', '#F4F5F8')).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio('#B49CFF', '#241F2E')).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio('#7C8291', '#F4F5F8')).toBeCloseTo(3.53, 2);
+    expect(contrastRatio('#736C82', '#241F2E')).toBeCloseTo(3.2, 2);
+  });
+
+  it('keeps ghost labels and ghosts readable where they cross a station field ring (accent-tint)', () => {
+    // Day: text, muted, ghost fill, ghost outline on #ECE6FF.
+    expect(contrastRatio('#111318', '#ECE6FF')).toBeCloseTo(15.33, 2);
+    expect(contrastRatio('#5A606C', '#ECE6FF')).toBeCloseTo(5.21, 2);
+    expect(contrastRatio('#8B6CF2', '#ECE6FF')).toBeCloseTo(3.14, 2);
+    expect(contrastRatio('#4A22B5', '#ECE6FF')).toBeCloseTo(7.92, 2);
+    // Night: the same on #2D2348.
+    expect(contrastRatio('#F2EEF8', '#2D2348')).toBeCloseTo(12.7, 2);
+    expect(contrastRatio('#A9A1B8', '#2D2348')).toBeCloseTo(5.86, 2);
+    expect(contrastRatio('#E6DEFF', '#2D2348')).toBeCloseTo(11.25, 2);
+    expect(contrastRatio('#B49CFF', '#2D2348')).toBeCloseTo(6.32, 2);
+    // Why the rings stay thin lines: the uncertain arc (border) would be under 3:1 on a filled Night glow.
+    expect(contrastRatio('#736C82', '#2D2348')).toBeLessThan(3);
+  });
+
   it('is exactly 1 for a colour against itself', () => {
     fc.assert(fc.property(hexColour, (a) => contrastRatio(a, a) === 1));
   });

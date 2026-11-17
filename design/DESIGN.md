@@ -214,6 +214,12 @@ Ratios are WCAG 2.x, computed from the hex values in `tokens.css` by `tests/ui/t
 | Ghost glow urgent on card | `--bb-ghost-glow-3` | `--bb-color-surface` | Day | 9.60 | 3 |
 | Ghost fill on tile | `--bb-ghost-fill` | `--bb-color-surface-raised` | Day | 3.48 | 3 |
 | Bar and lane mark on track | `--bb-color-accent` | `--bb-color-surface-raised` | Day | 6.17 | 3 |
+| Accent text on tile (stage number) | `--bb-color-accent` | `--bb-color-surface-raised` | Day | 6.17 | 4.5 |
+| Dial arc on tile | `--bb-color-border` | `--bb-color-surface-raised` | Day | 3.53 | 3 |
+| Body text on field ring | `--bb-color-text` | `--bb-color-accent-tint` | Day | 15.33 | 4.5 |
+| Muted text on field ring | `--bb-color-text-muted` | `--bb-color-accent-tint` | Day | 5.21 | 4.5 |
+| Ghost fill on field ring | `--bb-ghost-fill` | `--bb-color-accent-tint` | Day | 3.14 | 3 |
+| Ghost outline on field ring | `--bb-ghost-outline` | `--bb-color-accent-tint` | Day | 7.92 | 3 |
 | Body text on canvas | `--bb-color-text` | `--bb-color-canvas` | Night | 17.05 | 4.5 |
 | Body text on card | `--bb-color-text` | `--bb-color-surface` | Night | 15.54 | 4.5 |
 | Body text on tile | `--bb-color-text` | `--bb-color-surface-raised` | Night | 14.01 | 4.5 |
@@ -244,8 +250,16 @@ Ratios are WCAG 2.x, computed from the hex values in `tokens.css` by `tests/ui/t
 | Ghost glow urgent on card | `--bb-ghost-glow-3` | `--bb-color-surface` | Night | 12.89 | 3 |
 | Ghost fill on tile | `--bb-ghost-fill` | `--bb-color-surface-raised` | Night | 12.41 | 3 |
 | Bar and lane mark on track | `--bb-color-accent` | `--bb-color-surface-raised` | Night | 6.97 | 3 |
+| Accent text on tile (stage number) | `--bb-color-accent` | `--bb-color-surface-raised` | Night | 6.97 | 4.5 |
+| Dial arc on tile | `--bb-color-border` | `--bb-color-surface-raised` | Night | 3.20 | 3 |
+| Body text on field ring | `--bb-color-text` | `--bb-color-accent-tint` | Night | 12.70 | 4.5 |
+| Muted text on field ring | `--bb-color-text-muted` | `--bb-color-accent-tint` | Night | 5.86 | 4.5 |
+| Ghost fill on field ring | `--bb-ghost-fill` | `--bb-color-accent-tint` | Night | 11.25 | 3 |
+| Ghost outline on field ring | `--bb-ghost-outline` | `--bb-color-accent-tint` | Night | 6.32 | 3 |
 
 The Night primary pill fill is near-black on a near-black canvas (about 1.1:1) by design; its boundary is the light `pill-outline`, which is the pair measured above. The Day `pill-outline` is `transparent` and is not measured.
+
+The field rings are the listening station's thin (2px) `accent-tint` sonar rings behind the ghost field canvas; a ghost or its label can cross one, so those pairs are measured against `accent-tint`. The rings stay thin lines, never a filled glow, because the uncertain arc (`border`) is 2.90:1 on `accent-tint` in Night.
 
 ## Screens
 
@@ -261,61 +275,73 @@ Common rules for every screen:
 
 ### Listening station
 
-The home screen. Primary action: **Start listening** / **Stop listening** (same pill, label swaps).
+The home screen (`index.html`). Round 1 tries the whole chain on recorded sample clips: no microphone, no band. **No primary action yet**, so no near-black pill: the Try a sound card (sound chips and a side control) is the main action. The **Start listening** / **Stop listening** primary pill arrives with the Listen spec, together with the live microphone path.
 
-Desktop (1440px):
+Desktop (1440px), a 12-column grid with 24px gaps:
 
 ```
 +--------------------------------------------------------------------------------+
-| Banshee Band          [● Listening] [○ Band not connected]        Settings     |
+| Banshee Band                [Band simulator] [▲ Phone vibration fallback] Day|Night |
 |                                                                                |
-| Listening station                                         [ Stop listening ]  |
-| 3 sounds in the last hour                                                      |
-|                                                                                |
-| +------------------------------------------------+  +-------------------------+|
-| |  Ghost field (canvas)                           |  | Latest alert (live)     ||
-| |                                                 |  | Knock                   ||
-| |      L  ( ghost )            ( ghost )  R       |  | Left side · Urgent      ||
-| |                                                 |  +-------------------------+|
-| |  Now: Knock, left, urgent · Voice, right, low   |  | Recent sounds           ||
-| +------------------------------------------------+  |  [g] Knock    Urgent 13:36||
-|                                                      |  [g] Voice    Low   13:21||
-|                                                      +-------------------------+|
-| Banshee Band is an aid, not a safety device. ...                               |
+| Try it with sample clips                                                       |
+| Listening station                         Choose a sound and see it become a   |
+|                                           ghost, a buzz and a line of text...  |
+| +----------------------------------------------------------------------------+ |
+| | Try a sound                                     [ Left | Centre | Right ]   | |
+| | The side is simulated: ...                                                  | |
+| | [Doorbell] [Knock] [Alarm] [Baby] [Vehicle] [Voice]                         | |
+| +----------------------------------------------------------------------------+ |
+| +------------------------------------------+ +-------------------------------+ |
+| | Ghost field                              | | Latest alert                  | |
+| |   L   ( ghost )  sonar rings        R    | | Knock                         | |
+| |              listener mark               | | Left side, medium             | |
+| | Now: Knock, left, medium                 | | Recent sounds                 | |
+| | [ Low ] [ Medium ] [ Urgent ]  (key)     | |  [g] Knock   [Medium]  13:36  | |
+| +------------------------------------------+ +-------------------------------+ |
+|                                              | Left motor 75 % | Right 22 %  | |
+|                                              | Pattern: Knock, left stronger | |
+|                                              +-------------------------------+ |
+| +----------------------------------------------------------------------------+ |
+| | Pipeline  [1 Waveform] [2 Label] [3 Bearing] [4 Pattern] [5 Band]          | |
+| +----------------------------------------------------------------------------+ |
+| Banshee Band is an aid, not a safety device. ...                  Styleguide  |
 +--------------------------------------------------------------------------------+
 ```
 
-Regions in order:
-1. Header: brand, status pills, Settings link.
-2. Title block: `title` "Listening station", muted count line, primary pill on the right.
-3. Ghost field card, left, about two-thirds width, `radius-card`, min height 480px. Its DOM text equivalent is a list under the canvas ("Now:") naming each current ghost by class, side and urgency.
-4. Side column, one-third width: Latest alert card (the `aria-live` region, class in `display`, side and urgency below) and Recent sounds card (event list rows).
-5. Footer: the aid sentence, muted.
-
-Tab order: Settings link, primary pill, ghost list (not focusable, read by screen readers), recent sounds rows (only if they become interactive), footer links.
+Regions in DOM order (the tab order follows it):
+1. Header: brand link, "Band simulator" secondary pill link, the status pill (Band not connected, or Phone vibration fallback when the phone can vibrate; Problem when the sound model fails), the Day/Night control.
+2. Title block: the eyebrow, `display` "Listening station" and the lede beside it on the right (under it near 720px). The lede says the sounds are sample clips, no microphone is used and no band is connected.
+3. Try a sound card, all 12 columns: heading, the muted simulated-side sentence, the Left/Centre/Right segmented control (default Centre), one secondary pill chip per clip with a 24px low ghost glyph, and a polite message line.
+4. Ghost field card, 7 columns, at least 480px: the canvas (448px on desktop) on thin `accent-tint` sonar rings around the listener mark, "All quiet" over an empty field, the "Now:" list as its DOM text equivalent, and an urgency key (the same ghost at Low, Medium and Urgent). It keeps its own height and sticks inside its grid row while the right column, which grows with every row, scrolls past.
+5. Right column, 5 columns: the Latest alert and Recent sounds card (the `aria-live` region, class in `display`, side and urgency below; up to 10 rows), then the band simulator (two motor cards and the pattern card).
+6. Pipeline card, all 12 columns: five `surface-raised` stage tiles in a row (stacked on the phone), Waveform (bars), Label, Bearing (a dial), Pattern and Band, each with an accent step number, its value as text and its time ("— ms" before the first run). The four-card Pipeline view below is the later live screen.
+7. Footer: the aid sentence, muted, and the Styleguide link.
 
 Phone (390px):
 
 ```
 +------------------------------+
-| [● Listening] [○ No band]    |
+| Banshee Band       Day|Night |
+| [Band simulator] [▲ Phone..] |
 | Listening station            |
-| 3 sounds in the last hour    |
+| Choose a sound and see ...   |
 | +--------------------------+ |
-| |  Ghost field             | |
+| | Ghost field              | |
 | |   L  (ghost)        R    | |
 | +--------------------------+ |
-| Knock · Left side · Urgent   |  <- live region
-| Recent sounds                |
-|  [g] Knock     Urgent  13:36 |
-|  [g] Voice     Low     13:21 |
-|                              |
-| [    Stop listening    ]     |  <- sticky bottom bar
-| Listen  Pipeline  Band  Set. |
+| Latest alert, Recent sounds  |
+| Band simulator               |
+| Pipeline (tiles stacked)     |
+| Footer                       |
+|+----------------------------+|
+|| Try a sound  The side ...  ||  <- bar fixed to the bottom
+|| [ Left | Centre | Right ]  ||
+|| [Doorbell] [Knock] [Ala..  ||  <- one row, scrolls sideways
+|+----------------------------+|
 +------------------------------+
 ```
 
-One job: listen. The ghost field is full width and square-ish (about 360px tall). The primary pill is full width in a sticky bottom bar above the tab bar. Tab order: status pills are not focusable; title, live alert, recent rows, primary pill, tab bar.
+One column in the visual order title, ghost field, Latest alert and Recent sounds, simulator, pipeline, footer. The Try a sound card stays second in the DOM (after the title block, so keyboard users reach the action first) but is placed as a compact bar fixed to the bottom (about 175px): the heading and the simulated-side sentence as one caption paragraph, the side control, then one sideways-scrolling row of chips nearest the thumb. Its chips and side control lie in the lower 45% of an 844px viewport. The page keeps the bar's measured height (`--bb-station-bar`) free below the footer, so nothing hides behind it, and the ghost field with a run's ghost and its label is in the first view. The eyebrow is left out on the phone. No horizontal scrolling at 390px.
 
 ### Pipeline view
 
