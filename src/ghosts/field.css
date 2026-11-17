@@ -1,7 +1,63 @@
 /*
  * Ghost field and ghost glyph styles. Design tokens only (design/DESIGN.md, Ghosts).
  * The canvas reads its colours from the same tokens through getComputedStyle.
+ * Sizes are multiples of the space scale: 360px is --bb-space-7 * 7.5.
  */
+
+.bb-ghost-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-space-4);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.bb-ghost-field__canvas {
+  display: block;
+  width: 100%;
+  height: calc(var(--bb-space-7) * 7.5);
+  min-height: calc(var(--bb-space-7) * 7.5);
+  flex: 1 1 auto;
+}
+
+.bb-ghost-field__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bb-space-2) var(--bb-space-3);
+  color: var(--bb-color-text);
+}
+
+.bb-ghost-field__now {
+  margin: 0;
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-ghost-field__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bb-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bb-ghost-field__item {
+  padding: var(--bb-space-1) var(--bb-space-3);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+  font-weight: var(--bb-type-label-weight);
+}
+
+.bb-ghost-field__item--empty {
+  background-color: transparent;
+  padding-inline: 0;
+  font-weight: var(--bb-type-caption-weight);
+}
 
 .bb-ghost-glyph {
   display: block;

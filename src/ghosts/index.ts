@@ -13,3 +13,5 @@ export { ghostBasePx, ghostBlock, labelTop, layoutGhost, layoutGhosts } from './
 export { createGhostSet, resolveTtl, type GhostSet, type LiveGhost } from './life';
 export { canvasSummary, dataX, EMPTY_TEXT, listItemText, type GhostText } from './text';
 export { createGlyph, GLYPH_SIZE_PX, glyphSpec, type GlyphSpec } from './glyph';
+export { drawField, fitLabel, parseDurationMs, type DrawnGhost, type DrawState, type FieldColours } from './draw';
+export { mountGhostField } from './field';
