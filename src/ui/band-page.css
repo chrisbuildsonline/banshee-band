@@ -1,0 +1,262 @@
+/*
+ * Band simulator page layout: header, title block, Feel a pattern card, simulator column.
+ * Tokens only (design/DESIGN.md). The one literal breakpoint (720px) is documented there.
+ */
+
+/* Header: brand, phone status pill, theme control */
+.bb-band-topbar__status {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+}
+
+.bb-brand--link {
+  min-height: var(--bb-target-min);
+  padding-inline-end: var(--bb-space-2);
+  border-radius: var(--bb-radius-pill);
+  color: var(--bb-color-text);
+  text-decoration: none;
+}
+
+/* Title block */
+.bb-title-block {
+  display: grid;
+  gap: var(--bb-space-3);
+  padding-block: var(--bb-space-6) var(--bb-space-6);
+}
+
+.bb-title-block .bb-lede {
+  font-size: var(--bb-type-body-size);
+}
+
+/* Two columns on desktop: the control on the left, what it plays on the right. */
+.bb-band__layout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--bb-space-5);
+  align-items: start;
+}
+
+.bb-feel {
+  grid-column: span 5;
+  gap: var(--bb-space-5);
+}
+
+.bb-band__sim {
+  grid-column: span 7;
+  min-width: 0;
+}
+
+/* Feel a pattern card */
+.bb-feel__intro {
+  display: grid;
+  gap: var(--bb-space-2);
+}
+
+.bb-feel__lede {
+  color: var(--bb-color-text-muted);
+}
+
+.bb-feel__label {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-feel__sounds {
+  display: grid;
+  gap: var(--bb-space-3);
+}
+
+.bb-feel__message {
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+}
+
+/* Empty, the live region leaves the flow (it stays rendered, so it still announces). */
+.bb-feel__message:empty {
+  position: absolute;
+}
+
+/* Side: native radios styled as a segmented control on a tile track. */
+.bb-sidepick {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.bb-sidepick legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--bb-space-3);
+  padding: 0;
+}
+
+.bb-sidepick__track {
+  clear: both;
+  display: flex;
+  gap: var(--bb-space-1);
+  padding: var(--bb-space-1);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-sidepick__option {
+  position: relative;
+  flex: 1 1 auto;
+  display: inline-flex;
+  padding-inline: var(--bb-space-2);
+  white-space: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bb-space-1);
+  min-height: var(--bb-target-min);
+  min-width: var(--bb-target-min);
+  border-radius: var(--bb-radius-pill);
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+  cursor: pointer;
+}
+
+/* The radio covers its label, so the focused element is the full 44px target. */
+.bb-sidepick__option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bb-sidepick__check {
+  display: none;
+  flex: none;
+  width: var(--bb-space-3);
+  height: var(--bb-space-3);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bb-sidepick__option:has(input:checked) {
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-sidepick__option:has(input:checked) .bb-sidepick__check {
+  display: block;
+}
+
+.bb-sidepick__option:has(input:focus-visible) {
+  outline: 3px solid var(--bb-color-focus);
+  outline-offset: 2px;
+}
+
+/* Two tiles that say how to read a pattern. */
+.bb-feel__tips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bb-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bb-feel__tips li {
+  display: grid;
+  gap: var(--bb-space-1);
+  padding: var(--bb-space-4);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-feel__tip-title {
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-feel__tip-text {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+/* Sound chips: secondary pills in an even grid. */
+.bb-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bb-space-3);
+}
+
+.bb-chip {
+  padding-inline: var(--bb-space-3);
+}
+
+.bb-chip__rhythm {
+  flex: none;
+  width: calc(var(--bb-space-6) - var(--bb-space-1));
+  height: var(--bb-space-3);
+  fill: var(--bb-color-accent);
+}
+
+/* Phone: one column; the two motor cards stay side by side (simulator.css). */
+@media (max-width: 720px) {
+  .bb-band-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand theme"
+      "status status";
+    row-gap: var(--bb-space-3);
+  }
+
+  .bb-band-topbar .bb-brand {
+    grid-area: brand;
+  }
+
+  .bb-band-topbar .bb-segmented {
+    grid-area: theme;
+  }
+
+  .bb-band-topbar__status {
+    grid-area: status;
+    justify-content: flex-start;
+  }
+
+  .bb-title-block {
+    padding-block: var(--bb-space-4) var(--bb-space-5);
+  }
+
+  .bb-band__layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--bb-space-4);
+  }
+
+  .bb-feel,
+  .bb-band__sim {
+    grid-column: auto;
+  }
+
+  .bb-feel {
+    gap: var(--bb-space-4);
+  }
+
+  .bb-chip {
+    padding-inline: var(--bb-space-2);
+  }
+
+  .bb-chip__rhythm,
+  .bb-feel__tips {
+    display: none;
+  }
+}

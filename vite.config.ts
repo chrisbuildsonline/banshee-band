@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: resolve(root, 'index.html'),
         styleguide: resolve(root, 'styleguide.html'),
+        band: resolve(root, 'band.html'),
       },
     },
   },
