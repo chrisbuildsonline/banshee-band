@@ -153,8 +153,17 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   ctx.fillStyle = colours.fill;
   ctx.fill(path, 'evenodd');
   ctx.shadowBlur = 0;
+  // The glow spills into the eye holes; cut them clear so they show the card surface.
+  if (parts.eyes.length > 0) {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.globalAlpha = 1;
+    ctx.fill(pathOf(state, `${l.shape}|eyes`, parts.eyes.join(' ')));
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = alpha;
+  }
 
-  // Volume: a soft crescent of the outline colour along the lower edge, inside the body.
+  // Volume: a soft crescent of the outline colour along the lower edge, inside the body. The shifted fill has no
+  // eye holes, so the crescent follows the outline only and the eyes keep clean edges.
   ctx.save();
   ctx.clip(path, 'evenodd');
   ctx.globalAlpha = alpha * SHADE_ALPHA;
@@ -163,7 +172,7 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   ctx.globalAlpha = alpha;
   ctx.translate(SHADE_OFFSET.x, SHADE_OFFSET.y);
   ctx.fillStyle = colours.fill;
-  ctx.fill(path, 'evenodd');
+  ctx.fill(strokePath, 'evenodd');
   ctx.restore();
 
   ctx.lineWidth = l.outlineWidth;
