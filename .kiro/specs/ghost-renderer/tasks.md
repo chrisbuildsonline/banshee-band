@@ -59,8 +59,8 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 2.7, 12.3, 12.4_
   - **Gate:** `glyph.test.ts` passes; `typecheck` and `test` pass.
 
-- [ ] 6. End-to-end tests first
-  - [ ] 6.1 Write `e2e/ghosts.spec.ts` against the styleguide as it is now (no Ghosts section, no field) and confirm the failures. Reuse the `watch` helper style of `e2e/styleguide.spec.ts` (console errors and warnings, page errors, failed requests, off-origin requests). Build a helper that mounts a fresh test field through `page.evaluate(() => import('/src/ghosts/index.ts'))` (design, Testing strategy) and a helper that counts accent pixels in a third of the canvas. Cases:
+- [x] 6. End-to-end tests first
+  - [x] 6.1 Write `e2e/ghosts.spec.ts` against the styleguide as it is now (no Ghosts section, no field) and confirm the failures. Reuse the `watch` helper style of `e2e/styleguide.spec.ts` (console errors and warnings, page errors, failed requests, off-origin requests). Build a helper that mounts a fresh test field through `page.evaluate(() => import('/src/ghosts/index.ts'))` (design, Testing strategy) and a helper that counts accent pixels in a third of the canvas. Cases:
     - knock at -60 degrees, confidence 0.95, `gcc-phat`: one list item with `data-class="knock"`, `data-side="left"`, `data-x` below 0.5; accent pixels in the left third of the canvas and none in the right third;
     - an uncertain ghost (confidence 0.5): `data-side="unknown"`, the item text contains "side unknown", the canvas `aria-label` contains "side unknown", `ghosts()[0].sideText` is "Side unknown" and `x` is half the canvas width;
     - invalid inputs (`null`, `{}`, an event with a bad class) return `false` and leave the list and the label unchanged; `show` after `destroy` returns `false`;
@@ -78,28 +78,28 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 1.5, 6.3, 7.3-7.8, 8.1-8.4, 9.1, 9.7, 10.3-10.5, 10.7, 11.2, 11.3, 12.2, 12.3, 14.11, 14.12_
   - **Gate:** the new e2e cases fail for the right reason (missing module, missing section), and the existing e2e specs still pass.
 
-- [ ] 7. Canvas field
-  - [ ] 7.1 Create `src/ghosts/draw.ts` (`drawField`, label shortening, the arc, furniture, path cache) and `src/ghosts/field.ts` (`mountGhostField`: DOM, observers, expiry timer, motion switch, redraw rules, `destroy`) and the field styles in `src/ghosts/field.css` (tokens only, no `@keyframes`). Follow the flow and the drawing order of the design. Export from `index.ts`. Keep `draw.ts` free of state and of DOM access other than the context.
+- [x] 7. Canvas field
+  - [x] 7.1 Create `src/ghosts/draw.ts` (`drawField`, label shortening, the arc, furniture, path cache) and `src/ghosts/field.ts` (`mountGhostField`: DOM, observers, expiry timer, motion switch, redraw rules, `destroy`) and the field styles in `src/ghosts/field.css` (tokens only, no `@keyframes`). Follow the flow and the drawing order of the design. Export from `index.ts`. Keep `draw.ts` free of state and of DOM access other than the context.
     - _Requirements: 1.5-1.7, 3.1, 5.2, 6.1-6.5, 7.1-7.10, 8.1-8.6, 9.1-9.10, 10.1-10.7, 11.2, 11.5, 11.6_
-  - [ ] 7.2 Run the e2e cases of task 6 that do not need the showcase and fix the product code until they pass. Do not change a test to fit the code unless the test is wrong; if a requirement is wrong, change the requirement in this spec in the same change and say so in the commit.
+  - [x] 7.2 Run the e2e cases of task 6 that do not need the showcase and fix the product code until they pass. Do not change a test to fit the code unless the test is wrong; if a requirement is wrong, change the requirement in this spec in the same change and say so in the commit.
     - _Requirements: 14.11_
-  - [ ] 7.3 Check by hand, with `bun run dev` and a temporary mount or the test helper, the cases the tests cannot judge: the fade, the drift (4 px, slow), a label near each edge, the dashed outline at every urgency, the arc and its arrowheads, a long label, four ghosts at 360 px high.
+  - [x] 7.3 Check by hand, with `bun run dev` and a temporary mount or the test helper, the cases the tests cannot judge: the fade, the drift (4 px, slow), a label near each edge, the dashed outline at every urgency, the arc and its arrowheads, a long label, four ghosts at 360 px high.
     - _Requirements: 6.1, 6.2, 9.4, 10.1, 10.2_
   - **Gate:** the non-showcase e2e cases pass; `typecheck`, `test` and `boundaries.test.ts` pass.
 
-- [ ] 8. Contrast
-  - [ ] 8.1 Read `tests/ui/contrast.ts`, `tests/ui/tokens.test.ts` and `tests/ui/design-parse.ts`, then write `tests/ghosts/contrast.test.ts`: from `src/ui/tokens.css`, for Day and Night, `--bb-color-text` and `--bb-color-text-muted` on `--bb-color-surface` at 4.5; `--bb-ghost-fill`, `--bb-ghost-outline`, `--bb-ghost-glow-1`, `-2`, `-3` and `--bb-color-border` on `--bb-color-surface` at 3; and `--bb-ghost-fill` on `--bb-color-surface-raised` at 3 (the glyph tile). Compare with the values of the contrast table in `design/DESIGN.md` within 0.1. If a pair is missing from the table, add the row and update the table test in the same change.
+- [x] 8. Contrast
+  - [x] 8.1 Read `tests/ui/contrast.ts`, `tests/ui/tokens.test.ts` and `tests/ui/design-parse.ts`, then write `tests/ghosts/contrast.test.ts`: from `src/ui/tokens.css`, for Day and Night, `--bb-color-text` and `--bb-color-text-muted` on `--bb-color-surface` at 4.5; `--bb-ghost-fill`, `--bb-ghost-outline`, `--bb-ghost-glow-1`, `-2`, `-3` and `--bb-color-border` on `--bb-color-surface` at 3; and `--bb-ghost-fill` on `--bb-color-surface-raised` at 3 (the glyph tile). Compare with the values of the contrast table in `design/DESIGN.md` within 0.1. If a pair is missing from the table, add the row and update the table test in the same change.
     - _Requirements: 11.4, 13.5, 14.10_
   - **Gate:** `contrast.test.ts` passes; `tests/ui` passes; `typecheck` and `test` pass.
 
-- [ ] 9. Showcase and design gate
-  - [ ] 9.1 Add the Ghosts section to `styleguide.html`, `src/ui/styleguide.ts` and `src/ui/styleguide.css`: the heading and the plain-words text, the ghost field card (mounted with `ttlMs: Infinity` and the four demo events of the design, shown in that order), the glyph grid (7 columns by 3 rows, 48 px `surface-raised` circles, class names and row labels). Read the existing section markup first and reuse its classes. No token is added.
+- [x] 9. Showcase and design gate
+  - [x] 9.1 Add the Ghosts section to `styleguide.html`, `src/ui/styleguide.ts` and `src/ui/styleguide.css`: the heading and the plain-words text, the ghost field card (mounted with `ttlMs: Infinity` and the four demo events of the design, shown in that order), the glyph grid (7 columns by 3 rows, 48 px `surface-raised` circles, class names and row labels). Read the existing section markup first and reuse its classes. No token is added.
     - _Requirements: 12.1-12.6, 13.1_
-  - [ ] 9.2 Run `bun run e2e`. The showcase cases of task 6 pass, and so do the existing styleguide cases.
+  - [x] 9.2 Run `bun run e2e`. The showcase cases of task 6 pass, and so do the existing styleguide cases.
     - _Requirements: 12.6, 14.11_
-  - [ ] 9.3 Add the four screenshots to `e2e/ghosts.spec.ts`: the Ghosts section at 1440 px and 390 px, Day and Night (through the page's theme control), `reducedMotion: 'reduce'`, saved as `e2e/screenshots/ghosts-1440-day.png`, `ghosts-1440-night.png`, `ghosts-390-day.png` and `ghosts-390-night.png`. Look at each one against `design/DESIGN.md` (soft canvas, floating white surface, 20 px radius, one accent, Night through tokens). Judge the ghosts as an illustration: clean curves, consistent proportions, an outline that grows with urgency without clogging the shape, a soft glow that does not hide the outline, a label that does not touch a ghost. Fix every mismatch: redraw a path that looks like clip art, a ghost or glow that clips at an edge, a label overlap, overflow at 390 px, a glyph that is unreadable at 24 px.
+  - [x] 9.3 Add the four screenshots to `e2e/ghosts.spec.ts`: the Ghosts section at 1440 px and 390 px, Day and Night (through the page's theme control), `reducedMotion: 'reduce'`, saved as `e2e/screenshots/ghosts-1440-day.png`, `ghosts-1440-night.png`, `ghosts-390-day.png` and `ghosts-390-night.png`. Look at each one against `design/DESIGN.md` (soft canvas, floating white surface, 20 px radius, one accent, Night through tokens). Judge the ghosts as an illustration: clean curves, consistent proportions, an outline that grows with urgency without clogging the shape, a soft glow that does not hide the outline, a label that does not touch a ghost. Fix every mismatch: redraw a path that looks like clip art, a ghost or glow that clips at an edge, a label overlap, overflow at 390 px, a glyph that is unreadable at 24 px.
     - _Requirements: 13.1-13.3_
-  - [ ] 9.4 Update the Ghosts section of `design/DESIGN.md` as Requirement 13.4 says. Run `tests/ui` and fix what the new text breaks in the same change.
+  - [x] 9.4 Update the Ghosts section of `design/DESIGN.md` as Requirement 13.4 says. Run `tests/ui` and fix what the new text breaks in the same change.
     - _Requirements: 13.4_
   - **Gate:** the four screenshots exist and were looked at; `tests/ui` passes; `bun run e2e`, `typecheck` and `test` pass.
 

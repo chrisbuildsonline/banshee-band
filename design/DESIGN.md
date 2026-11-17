@@ -131,15 +131,23 @@ A two-option segmented control, "Day" and "Night", each with a sun or moon glyph
 
 ## Ghosts
 
-Mapping is fixed: **shape = sound class, position = bearing, glow = urgency.** Nothing else carries meaning. Ghosts are drawn in a later feature; this section fixes their vocabulary.
+Mapping is fixed: **shape = sound class, position = bearing, glow = urgency.** Nothing else carries meaning. `src/ghosts` draws the ghosts: the silhouettes are SVG paths in a 24-unit box (`SHAPES`), shared by the canvas field and the list glyphs, and the Ghosts section of the styleguide shows them in Day and Night.
 
 | Class | Silhouette (recognisable without colour) |
 |---|---|
 | Knock | Tall ghost with a square-shouldered top and a flat hem |
+| Doorbell | Narrow ghost with a small round chime knob on top |
 | Alarm | Bell-shaped ghost with a wide flared hem |
-| Voice | Round ghost with an open, wavy mouth |
-| Vehicle | Wide, low ghost with a long trailing hem |
 | Baby | Small round ghost with a single curl on top |
+| Vehicle | Wide, low ghost with a long trailing hem |
+| Voice | Round ghost with an open, wavy mouth |
+| Other | Plain round-topped ghost with a wavy hem and no feature |
+
+The ghosts have no eyes, so every difference is in the outline. Each pair of silhouettes differs in at least 8% of the box (a test rasterises them).
+
+**Field.** The ghost field is a transparent canvas on the card surface with a "Now:" list under it that names each ghost by class, side and urgency (the text equivalent). Faint "L" and "R" labels sit at the left and right edges, and a small listener mark (a dot with a bearing arc above it) sits at the bottom centre. The bearing convention: negative is left, 0 is the middle, and the bearing maps linearly to the field width up to 90 degrees; a bearing beyond 90 degrees (behind the listener) clamps to the nearer edge. Ghosts stack in rows, newest on top, at most four at once; the oldest leaves first. Every ghost has its label drawn under it, always: the event label, the side and the urgency word ("Knock · Left · Urgent"). A ghost lives 8 seconds.
+
+**Uncertain.** When the side is not known (a bearing that is not from the stereo estimate, or not confident enough), the ghost sits in the middle with a dashed outline, a thin double-headed arc in `--bb-color-border` runs behind it from the L side to the R side, and its label says "Side unknown". Three cues, none of them colour, the same dashed language as the unknown state of the band simulator.
 
 Glow levels always pair with size and outline weight, and the text alert repeats the urgency word, so glow is never the only cue:
 
