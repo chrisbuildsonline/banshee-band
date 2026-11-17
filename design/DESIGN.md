@@ -105,6 +105,10 @@ Short, tinted, `radius-pill`, `label` type, min height 32px (status pills are no
 | Band not connected | Band not connected | ○ open circle | neutral |
 | Fallback active | Phone vibration fallback | ▲ triangle | neutral |
 | Error | Problem | ✕ cross | strong |
+| Phone can vibrate (band simulator page) | Phone vibration on | ▲ triangle | accent |
+| Phone cannot vibrate (band simulator page) | No phone vibration here | ○ open circle | neutral |
+
+The two band simulator rows say what the device can do (whether `navigator.vibrate` exists), not that a fallback is active or a band is missing, so they reuse the triangle and open-circle shapes with their own labels. The page reads this once at load.
 
 The listening dot may breathe slowly (one cycle every 6s) when motion is allowed. Under reduced motion it is a static filled circle.
 
@@ -387,30 +391,75 @@ Phone (390px): the card is full width; the two pills stack full width at the bot
 
 ### Band simulator
 
-Shows what the wristband would feel. **No primary action**; Connect band is a secondary pill.
+Shows what the wristband would feel, and lets a new wearer try each pattern before they need it. `band.html`. **No primary action**, so no near-black pill. No band is connected on this page, and no copy says one is: the **Connect band** secondary pill arrives with the BLE feature (`band-ble-protocol`) and is not shown until then.
 
 Desktop (1440px):
 
 ```
 +--------------------------------------------------------------------------------+
-| Banshee Band          [● Listening] [▲ Phone vibration fallback]   Settings    |
-| Band simulator                                         [Connect band]          |
-| +-------------------------------------+ +------------------------------------+ |
-| | Left motor                          | | Right motor                        | |
-| | 80%                                 | | 20%                                | |
-| | [=========          ]               | | [==                 ]              | |
-| +-------------------------------------+ +------------------------------------+ |
-| +----------------------------------------------------------------------------+ |
-| | Pattern: Knock (short-short), left stronger                                | |
-| | L ▮ ▮      ▮ ▮                                                              | |
-| | R ▯ ▯      ▯ ▯                       0 ms ........................ 1500 ms | |
-| +----------------------------------------------------------------------------+ |
+| Banshee Band                         [▲ Phone vibration on]   [☀ Day | ☾ Night] |
+|                                                                                |
+| Learn the patterns                                                             |
+| Band simulator                                                                 |
+| A simulator of the wrist band. No band is connected. ...                       |
+|                                                                                |
+| +-------------------------------+ +----------------------+ +------------------+ |
+| | Feel a pattern                | | Left motor        L  | | Right motor    R | |
+| | Choose a sound to play ...    | | 75 %                 | | 22 %             | |
+| | Side                          | | [=========      ]    | | [===          ]  | |
+| | ( ✓Left | Centre | Right |    | +----------------------+ +------------------+ |
+| |   Unknown )                   | +---------------------------------------------+ |
+| | Sound                         | | Pattern                    2 pulses, 240 ms | |
+| | [Knock] [Doorbell] [Alarm]    | | (←) Knock, left stronger                    | |
+| | [Baby]  [Vehicle]  [Voice]    | | L ▮▮▮▮▮               ▮▮▮▮▮                 | |
+| | [Rhythm tile] [Stronger tile] | | R ▂▂▂▂▂               ▂▂▂▂▂                 | |
+| +-------------------------------+ | 0 ms                                 240 ms | |
+|                                   +---------------------------------------------+ |
+| (i) Banshee Band is an aid, not a safety device. ...                           |
 +--------------------------------------------------------------------------------+
 ```
 
-Regions: header; title block with the Connect band secondary pill; left and right motor cards, each with the level as a `display` number and a bar; the pattern timeline card beneath, with the pattern named in text. Bars are decorative; the number is the value. Tab order: Connect band, then nothing else (the cards are not interactive).
+Regions, in DOM and reading order:
 
-Phone (390px): the two motor cards stay side by side (two narrow columns), the timeline card full width beneath, Connect band below the title.
+1. Header: the brand (a link to `index.html`), the phone status pill (see Status pills: "Phone vibration on" with the triangle and accent tint, or "No phone vibration here" with the open circle and neutral tint), and the theme control.
+2. Title block: a short eyebrow, `title` "Band simulator", and a muted lede that says this is a simulator of the wrist band and that no band is connected.
+3. **Feel a pattern** card (left, 5 of 12 columns): `heading`, a muted sentence that a sound plays on the simulator and, when the phone can vibrate, on the phone; the **Side** segmented control (four native radios, Left, Centre, Right, Unknown, default Centre, in a `surface-raised` track; the selected option takes `accent-tint`, an `accent-strong` label and a check glyph, so it differs by more than colour; arrow keys move it, and changing it plays nothing); the **Sound** group of six chips (secondary pills Knock, Doorbell, Alarm, Baby, Vehicle, Voice, three per row, each with a small accent picture of its rhythm, decorative); a polite live region that only ever shows "This pattern could not be played"; and two `surface-raised` tiles that say how to read a pattern (rhythm is the sound, the stronger motor is the side). A chip builds the real command with the haptics engine and plays it on the simulator and, when it can vibrate, the phone.
+4. Simulator (right, 7 of 12 columns): the left and right motor cards side by side, each with a `heading`, a small L or R tag (accent tint on the stronger side), the level as a `display` number with tabular figures and a `caption` muted `%`, and a decorative accent bar on a `surface-raised` track. Beneath, the Pattern card: the pattern count and length as a muted caption, the side glyph in a round tile (left arrow, right arrow, centre mark, question mark) beside the pattern name and side text, two lanes L and R as `surface-raised` tiles with one accent mark per pulse (height follows the motor level), and the `0 ms` to total scale. Before the first press it says "No pattern yet". When the side is unknown both motor cards get a 2px dashed `border` outline inside their edge.
+5. Footer: the aid sentence with an info glyph, muted.
+
+The Feel card comes first in the DOM, so a keyboard or screen-reader user reaches the control before the result. On desktop the result sits beside the control, so both are in view at once. Bars, lanes and glyphs are `aria-hidden`; the numbers and the pattern name are the text. The simulator has one polite live region that reads the pattern name once per press.
+
+Tab order: brand link, theme control (Day, Night), side control (one stop; arrows inside), the six chips. The motor cards and the timeline are not interactive.
+
+Phone (390px):
+
+```
++------------------------------+
+| (g) Banshee Band [☀Day|☾Night]|
+| [▲ Phone vibration on]       |
+| Band simulator               |
+| A simulator of the wrist ... |
+| +--------------------------+ |
+| | Feel a pattern           | |
+| | (✓Left|Centre|Right|Unkn)| |
+| | [Knock][Doorbell][Alarm] | |
+| | [Baby][Vehicle][Voice]   | |
+| +--------------------------+ |
+| +-----------+ +------------+ |
+| |Left motor | |Right motor | |
+| | 75 %      | | 22 %       | |
+| | [=====  ] | | [==     ]  | |
+| +-----------+ +------------+ |
+| +--------------------------+ |
+| | Pattern  2 pulses, 240 ms| |
+| | (←) Knock, left stronger | |
+| | L ▮▮   ▮▮  /  R ▂▂   ▂▂  | |
+| +--------------------------+ |
+| (i) Banshee Band is an aid...|
++------------------------------+
+```
+
+One column, in the same order. The header puts the brand and the theme control on one row and the status pill below. The Feel card is full width; the side control spans it, and the chips sit three per row, each at least 44px tall (the rhythm pictures and the two tips tiles are hidden to save height). The two motor cards stay side by side in two narrow columns, and their numbers are in view without scrolling after a chip press at 390 x 844, so the Feel card stays above them. The timeline card is full width beneath.
 
 ## Token reference
 
