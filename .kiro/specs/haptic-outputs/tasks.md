@@ -20,12 +20,12 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 10.4, 2.4, 2.5_
   - **Gate:** `segment-player.test.ts` and `properties.test.ts` pass; `typecheck` and the whole `test` run pass.
 
-- [ ] 3. Phone output
-  - [ ] 3.1 Write `tests/band/phone-output.test.ts` with a stub that throws `not implemented`, and confirm the failures. Cases, with a stubbed `navigator.vibrate` passed as `nav`: one call with the command's `vibrate` array (literal `[70, 100, 70]` for the knock); the call has the same values in the same order; a command with every level 0 does not call `vibrate`; a command with one level above 0 does; `vibrate` missing, `nav` an empty object and `navigator` missing give `available()` false and no throw from `play` or `stop`; `stop` calls `vibrate(0)` once; `stop` with no `vibrate` calls nothing; a throwing `vibrate` does not throw out of `play` or `stop`; `available()` does not call `vibrate`; `kind` is `'phone'`; `vibrate` is called as a method of the object (the stub checks `this`); with no `nav` argument the output reads `globalThis.navigator` at call time (stub it with `vi.stubGlobal`).
+- [x] 3. Phone output
+  - [x] 3.1 Write `tests/band/phone-output.test.ts` with a stub that throws `not implemented`, and confirm the failures. Cases, with a stubbed `navigator.vibrate` passed as `nav`: one call with the command's `vibrate` array (literal `[70, 100, 70]` for the knock); the call has the same values in the same order; a command with every level 0 does not call `vibrate`; a command with one level above 0 does; `vibrate` missing, `nav` an empty object and `navigator` missing give `available()` false and no throw from `play` or `stop`; `stop` calls `vibrate(0)` once; `stop` with no `vibrate` calls nothing; a throwing `vibrate` does not throw out of `play` or `stop`; `available()` does not call `vibrate`; `kind` is `'phone'`; `vibrate` is called as a method of the object (the stub checks `this`); with no `nav` argument the output reads `globalThis.navigator` at call time (stub it with `vi.stubGlobal`).
     - _Requirements: 3.1-3.9, 10.3_
-  - [ ] 3.2 Implement `src/band/phone-output.ts` as in the design, with the intensity 0 decision and its doc comment.
+  - [x] 3.2 Implement `src/band/phone-output.ts` as in the design, with the intensity 0 decision and its doc comment.
     - _Requirements: 3.1-3.9_
-  - [ ] 3.3 Add to `tests/band/properties.test.ts` the phone property of Requirement 10.5: for any engine command, `vibrate` is called zero times when every level is 0 and once with the command's array otherwise.
+  - [x] 3.3 Add to `tests/band/properties.test.ts` the phone property of Requirement 10.5: for any engine command, `vibrate` is called zero times when every level is 0 and once with the command's array otherwise.
     - _Requirements: 10.5, 3.3, 3.4_
   - **Gate:** `phone-output.test.ts` and `properties.test.ts` pass; `typecheck` and `test` pass.
 

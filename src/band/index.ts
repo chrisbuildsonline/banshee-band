@@ -5,3 +5,5 @@
  * `HapticOutput` interface. The band is an aid, one of several forms of an alert, and not a safety device.
  */
 export type * from './types';
+export { browserScheduler, createSegmentPlayer, type Levels, type Scheduler, type SegmentPlayer } from './segment-player';
+export { createPhoneOutput } from './phone-output';

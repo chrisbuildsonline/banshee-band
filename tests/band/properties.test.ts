@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { createPhoneOutput } from '../../src/band/phone-output';
 import { createSegmentPlayer, type Levels } from '../../src/band/segment-player';
 import { BEARING_SOURCES, URGENCY_LEVELS, type SoundEvent } from '../../src/events';
 import { PATTERN_CLASSES, createHapticEngine, type HapticCommand } from '../../src/haptics';
@@ -63,5 +64,34 @@ describe('segment player on engine commands (R10.4)', () => {
       }),
       params,
     );
+  });
+});
+
+describe('phone output on engine commands (R10.5)', () => {
+  it('vibrates zero times when every level is 0, else once with the command array', () => {
+    let silentSeen = 0;
+    let loudSeen = 0;
+    fc.assert(
+      fc.property(engineInput, (inp) => {
+        const command = commandFor(inp);
+        fc.pre(command !== null);
+        const cmd = command!;
+        const calls: unknown[] = [];
+        createPhoneOutput({ vibrate: (p: unknown) => calls.push(p) }).play(cmd);
+        const silent = cmd.segments.every((s) => s.left === 0 && s.right === 0);
+        if (silent) {
+          silentSeen++;
+          expect(calls).toEqual([]);
+        } else {
+          loudSeen++;
+          expect(calls).toHaveLength(1);
+          expect(calls[0]).toBe(cmd.vibrate);
+        }
+      }),
+      params,
+    );
+    // Both branches were exercised.
+    expect(silentSeen).toBeGreaterThan(0);
+    expect(loudSeen).toBeGreaterThan(0);
   });
 });
