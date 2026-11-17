@@ -35,10 +35,10 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
   - [x] 4.4 Implement `src/haptics/settings.ts`.
   - **Gate:** `priority.test.ts` and `settings.test.ts` pass.
 
-- [ ] 5. Command building
-  - [ ] 5.1 Create `tests/haptics/helpers/events.ts` (`makeEvent(overrides)` builds a valid `SoundEvent`, `makeInput` adds `bearingConfidence`). Write `tests/haptics/command.test.ts`: exact `segments`, `vibrate` and `totalMs` for `knock` (left, high; right, low), `voice` (one pulse, so one segment), `doorbell`, `vehicle`, `baby` and `alarm` (with repeats: 3 pulses, 4 cycles, 400 ms pauses, 3800 ms); levels for left, right, centre and unknown at each urgency and at intensity 1, 0.5 and 0; motor levels 0.3 times the level on the other side as literals; segments start and end with a pulse and alternate; no segment has `ms` 0; mutating a command does not change the next one. Add a stub and confirm failure.
+- [x] 5. Command building
+  - [x] 5.1 Create `tests/haptics/helpers/events.ts` (`makeEvent(overrides)` builds a valid `SoundEvent`, `makeInput` adds `bearingConfidence`). Write `tests/haptics/command.test.ts`: exact `segments`, `vibrate` and `totalMs` for `knock` (left, high; right, low), `voice` (one pulse, so one segment), `doorbell`, `vehicle`, `baby` and `alarm` (with repeats: 3 pulses, 4 cycles, 400 ms pauses, 3800 ms); levels for left, right, centre and unknown at each urgency and at intensity 1, 0.5 and 0; motor levels 0.3 times the level on the other side as literals; segments start and end with a pulse and alternate; no segment has `ms` 0; mutating a command does not change the next one. Add a stub and confirm failure.
     - _Requirements: 6.1-6.7, 7.1-7.7_
-  - [ ] 5.2 Implement `src/haptics/command.ts` (`buildCommand`) as in the design.
+  - [x] 5.2 Implement `src/haptics/command.ts` (`buildCommand`) as in the design.
   - **Gate:** `command.test.ts` passes.
 
 - [ ] 6. Engine
