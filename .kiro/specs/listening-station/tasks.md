@@ -67,28 +67,28 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 2.1-2.11, 4.1-4.9, 10.5-10.7, 11.1-11.7, 12.1-12.4, 16.1, 17.1_
   - **Gate:** the cases above pass; `typecheck`, `test` and `boundaries.test.ts` pass; `bun run build` passes.
 
-- [ ] 7. Pipeline view, design check and DESIGN.md
+- [x] 7. Pipeline view, design check and DESIGN.md
   - [x] 7.1 Create `src/station/pipeline-view.ts` (`mountPipelineView`) with the five tiles, the waveform bars SVG, the bearing dial SVG and the stage times through `formatMs`, as in design.md "Pipeline view". Wire it in `station.ts`: `show(result)` after a valid run, `failed()` for an invalid event (keeps the previous result and sets the Pattern stage to "Not played" only when there was no earlier result), `clear()` is not used by the page. Add its styles to `station.css`.
     - _Requirements: 13.1-13.8, 17.6_
   - [x] 7.2 Run the remaining e2e cases (five stage times, "— ms" five times at first, reduced motion) and fix until they pass. Then run the whole `bun run e2e`.
     - _Requirements: 13.2, 17.3, 18.2_
-  - [ ] 7.3 Check the colour pairs the page uses against the contrast table (text, muted, tile, status pills, accent on tile, ghost fill on tile) in Day and Night. If a pair is missing from the table, compute it with `tests/ui/contrast.ts` and add it to the table and `tests/ui` in the same change.
+  - [x] 7.3 Check the colour pairs the page uses against the contrast table (text, muted, tile, status pills, accent on tile, ghost fill on tile) in Day and Night. If a pair is missing from the table, compute it with `tests/ui/contrast.ts` and add it to the table and `tests/ui` in the same change.
     - _Requirements: 17.5_
-  - [ ] 7.4 Look at `e2e/screenshots/station-1440-day.png` and `station-390-night.png` against `design/DESIGN.md` (soft canvas, floating white cards with 20 px radius, one violet accent, near-black pill absent by decision, Night through tokens, tinted status pills, Try a sound reachable by thumb, nothing hidden behind the bottom bar, the ghost with eyes and a clean outline, no overlap of labels, no overflow at 390 px). Look at the same page in Night at 1440 and Day at 390 once by hand. Fix every mismatch, then run the screenshot test again.
+  - [x] 7.4 Look at `e2e/screenshots/station-1440-day.png` and `station-390-night.png` against `design/DESIGN.md` (soft canvas, floating white cards with 20 px radius, one violet accent, near-black pill absent by decision, Night through tokens, tinted status pills, Try a sound reachable by thumb, nothing hidden behind the bottom bar, the ghost with eyes and a clean outline, no overlap of labels, no overflow at 390 px). Look at the same page in Night at 1440 and Day at 390 once by hand. Fix every mismatch, then run the screenshot test again.
     - _Requirements: 2.4-2.6, 18.4_
-  - [ ] 7.5 Update `design/DESIGN.md` (Screens, Listening station) for the round 1 screen as Requirement 18.6 says: the Try a sound card across the top instead of the primary pill, the grid of ghost field, Latest alert, Recent sounds, simulator and the five-stage pipeline card, the phone bar and its DOM position, and a note that the Start listening pill arrives with the Listen spec. Run `tests/ui`.
+  - [x] 7.5 Update `design/DESIGN.md` (Screens, Listening station) for the round 1 screen as Requirement 18.6 says: the Try a sound card across the top instead of the primary pill, the grid of ghost field, Latest alert, Recent sounds, simulator and the five-stage pipeline card, the phone bar and its DOM position, and a note that the Start listening pill arrives with the Listen spec. Run `tests/ui`.
     - _Requirements: 18.6_
   - **Gate:** `bun run e2e` passes with both screenshots made and looked at; `tests/ui`, `typecheck` and `test` pass.
 
-- [ ] 8. Review and final gate
-  - [ ] 8.1 Check the doc comment of every export of `src/station/` and the module comment of `index.ts` (Requirement 1.6). Check the copy: it says sample clips, simulated side, no microphone on this screen, no band connected; it never says a microphone heard a sound, that the page keeps the user safe or replaces a smoke alarm; the aid sentence is verbatim.
+- [x] 8. Review and final gate
+  - [x] 8.1 Check the doc comment of every export of `src/station/` and the module comment of `index.ts` (Requirement 1.6). Check the copy: it says sample clips, simulated side, no microphone on this screen, no band connected; it never says a microphone heard a sound, that the page keeps the user safe or replaces a smoke alarm; the aid sentence is verbatim.
     - _Requirements: 1.6, 2.9, 2.10, 12.4_
-  - [ ] 8.2 Check the diff: `src/events`, `src/classify`, `src/bearing`, `src/haptics` and `src/band` unchanged; `src/audio` changed only by the three re-exports; `src/ghosts` changed only by the eyes, the dashes, `outline.ts`, the glyph and its CSS; `package.json` and `bun.lock` unchanged; `vite.config.ts` unchanged.
+  - [x] 8.2 Check the diff: `src/events`, `src/classify`, `src/bearing`, `src/haptics` and `src/band` unchanged; `src/audio` changed only by the three re-exports; `src/ghosts` changed only by the eyes, the dashes, `outline.ts`, the glyph and its CSS; `package.json` and `bun.lock` unchanged; `vite.config.ts` unchanged.
     - _Requirements: 1.4, 1.5_
-  - [ ] 8.3 Check privacy and motion: no `getUserMedia`, `AudioContext`, storage, `console` or `Math.random` in `src/station/`; no `@keyframes` outside `prefers-reduced-motion: no-preference`; the event `id`, `confidence` and `loudnessDb` appear nowhere in the DOM.
+  - [x] 8.3 Check privacy and motion: no `getUserMedia`, `AudioContext`, storage, `console` or `Math.random` in `src/station/`; no `@keyframes` outside `prefers-reduced-motion: no-preference`; the event `id`, `confidence` and `loudnessDb` appear nowhere in the DOM.
     - _Requirements: 16.2, 16.3, 17.4_
-  - [ ] 8.4 Update `.kiro/steering/structure.md` as Requirement 18.6 says: add `src/station/` with its files in the style of the `src/band` block, change the first line to say that `index.html` is the station page, mention `src/ghosts/outline.ts`, and add the one Rules line. Leave the other rules unchanged.
+  - [x] 8.4 Update `.kiro/steering/structure.md` as Requirement 18.6 says: add `src/station/` with its files in the style of the `src/band` block, change the first line to say that `index.html` is the station page, mention `src/ghosts/outline.ts`, and add the one Rules line. Leave the other rules unchanged.
     - _Requirements: 18.6_
-  - [ ] 8.5 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green. Then write the commit summary: what is built, the measured side table, the decisions of design.md that need the owner's yes or no (no primary pill, centre dither, rate limit 0), and the Out of scope list.
+  - [x] 8.5 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green. Then write the commit summary: what is built, the measured side table, the decisions of design.md that need the owner's yes or no (no primary pill, centre dither, rate limit 0), and the Out of scope list.
     - _Requirements: 18.5_
   - **Gate:** `typecheck`, `test`, `e2e` and `build` exit 0; the diff matches 8.2.
