@@ -20,19 +20,19 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 4.2, 4.3, 4.7_
   - **Gate:** `patterns.test.ts`, `distinct.test.ts` and `boundaries.test.ts` pass.
 
-- [ ] 3. Side from bearing
-  - [ ] 3.1 Write `tests/haptics/side.test.ts`: confidence 0.79 gives `'unknown'` and 0.8 gives a side; bearings of -15.01, -15, 0, 15 and 15.01 (`'left'`, `'centre'`, `'centre'`, `'centre'`, `'right'`); sources `'loudness'` and `'none'` with confidence 1 give `'unknown'`; `bearingDeg` null, `NaN`, confidence `NaN`, -0.1, 1.1 and a string give `'unknown'` and do not throw; negative is left and positive is right. Add a stub and confirm failure.
+- [x] 3. Side from bearing
+  - [x] 3.1 Write `tests/haptics/side.test.ts`: confidence 0.79 gives `'unknown'` and 0.8 gives a side; bearings of -15.01, -15, 0, 15 and 15.01 (`'left'`, `'centre'`, `'centre'`, `'centre'`, `'right'`); sources `'loudness'` and `'none'` with confidence 1 give `'unknown'`; `bearingDeg` null, `NaN`, confidence `NaN`, -0.1, 1.1 and a string give `'unknown'` and do not throw; negative is left and positive is right. Add a stub and confirm failure.
     - _Requirements: 5.1-5.7_
-  - [ ] 3.2 Implement `src/haptics/side.ts` (`sideOf`) as in the design.
+  - [x] 3.2 Implement `src/haptics/side.ts` (`sideOf`) as in the design.
   - **Gate:** `side.test.ts` passes.
 
-- [ ] 4. Priority and settings
-  - [ ] 4.1 Write `tests/haptics/priority.test.ts`: all 18 values as literals (36 down to 11 as in the design table), alarm over vehicle at each urgency, `high` voice over `low` alarm, the class order at one urgency. Add a stub and confirm failure.
+- [x] 4. Priority and settings
+  - [x] 4.1 Write `tests/haptics/priority.test.ts`: all 18 values as literals (36 down to 11 as in the design table), alarm over vehicle at each urgency, `high` voice over `low` alarm, the class order at one urgency. Add a stub and confirm failure.
     - _Requirements: 8.1, 8.2, 8.8_
-  - [ ] 4.2 Implement `src/haptics/priority.ts`.
-  - [ ] 4.3 Write `tests/haptics/settings.test.ts`: defaults as literals (all six on, -50, 1, 3000); `DEFAULT_HAPTIC_SETTINGS` is frozen; `resolveHapticSettings` returns a new object each time; each field with a bad value (`NaN`, `Infinity`, a string, `null`, -1 or 2 for `intensity`, 5 for `minLoudnessDb`, -1 for `rateLimitMs`) falls back alone and leaves the other fields as given; a non-boolean class value falls back to `true`; an unknown class key is ignored; `undefined`, `null`, `'junk'`, `[]` and an object with a throwing getter give the defaults and do not throw. Add a stub and confirm failure.
+  - [x] 4.2 Implement `src/haptics/priority.ts`.
+  - [x] 4.3 Write `tests/haptics/settings.test.ts`: defaults as literals (all six on, -50, 1, 3000); `DEFAULT_HAPTIC_SETTINGS` is frozen; `resolveHapticSettings` returns a new object each time; each field with a bad value (`NaN`, `Infinity`, a string, `null`, -1 or 2 for `intensity`, 5 for `minLoudnessDb`, -1 for `rateLimitMs`) falls back alone and leaves the other fields as given; a non-boolean class value falls back to `true`; an unknown class key is ignored; `undefined`, `null`, `'junk'`, `[]` and an object with a throwing getter give the defaults and do not throw. Add a stub and confirm failure.
     - _Requirements: 10.1-10.5_
-  - [ ] 4.4 Implement `src/haptics/settings.ts`.
+  - [x] 4.4 Implement `src/haptics/settings.ts`.
   - **Gate:** `priority.test.ts` and `settings.test.ts` pass.
 
 - [ ] 5. Command building
