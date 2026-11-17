@@ -73,5 +73,5 @@ export async function runSound(deps: RunnerDeps, clipId: string, side: TrySide):
   }
   times.band = deps.now() - t0;
 
-  return { ok: true, clipId, chosen: side, peaks, seconds: samples.length / YAMNET_RATE, classification, frames: frames.length, bearing, event, bearingConfidence, decision, played, times, at };
+  return { ok: true, clipId, chosen: side, backend: deps.classifier.backend ?? 'unknown', peaks, seconds: samples.length / YAMNET_RATE, classification, frames: frames.length, bearing, event, bearingConfidence, decision, played, times, at };
 }

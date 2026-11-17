@@ -2,11 +2,8 @@ import { patternName, percentOf, pulseCount } from '../band';
 import { CLASS_NAMES } from '../ghosts';
 import { sideOf, type Side } from '../haptics';
 import { STAGES } from './constants';
-import { dropText, formatMs } from './format';
-import type { RunResult, StageName } from './types';
-
-/** A successful run, as `runSound` returns it. */
-type Run = Extract<RunResult, { ok: true }>;
+import { classifyText, dropText, formatMs } from './format';
+import type { RunResultOk as Run, StageName } from './types';
 
 /** What `mountPipelineView` returns. */
 export interface PipelineView {
@@ -118,7 +115,12 @@ export function mountPipelineView(card: HTMLElement): PipelineView {
       shown = true;
       const side = sideOf(r.event, r.bearingConfidence);
       fill('waveform', r.times.waveform, waveformSvg(r.peaks), line(`${r.seconds.toFixed(1)} s`, true), line('16 kHz'));
-      fill('label', r.times.label, line(`${r.classification.label}, ${percentOf(r.classification.confidence)}%`, true), line(`Class: ${CLASS_NAMES[r.classification.class]}`));
+      const backend = line(`Backend: ${r.backend}`);
+      backend.dataset.backend = r.backend;
+      const perWindow = r.times.label / Math.max(1, r.frames);
+      const classify = line(classifyText(perWindow));
+      classify.dataset.classifyMs = String(Math.round(perWindow * 10) / 10);
+      fill('label', r.times.label, line(`${r.classification.label}, ${percentOf(r.classification.confidence)}%`, true), line(`Class: ${CLASS_NAMES[r.classification.class]}`), backend, classify);
       fill('bearing', r.times.bearing, dialSvg(side, r.event.bearingDeg), line(SIDE_TEXT[side], true), line(`Confidence ${percentOf(r.bearingConfidence)}%`));
       if (r.decision.action === 'play') {
         const pulses = pulseCount(r.decision.command.segments);

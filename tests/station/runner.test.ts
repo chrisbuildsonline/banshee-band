@@ -59,7 +59,7 @@ describe('runSound (R10.1 to R10.3, R10.5, R10.7)', () => {
     expect(r.event.t).toBe(30);
     expect(r.event.id).toBe('station-1');
     expect(now.calls).toBe(10);
-    expect([r.clipId, r.chosen, r.at]).toEqual(['knock-01', 'left', 1_763_000_000_000]);
+    expect([r.clipId, r.chosen, r.at, r.backend]).toEqual(['knock-01', 'left', 1_763_000_000_000, 'unknown']);
   });
 
   it('counts runs from 1 in the event id', async () => {
