@@ -39,6 +39,7 @@ export interface DrawState {
 /** Shading offset inside the body, in 24-unit box units: a thin crescent of outline colour along the lower edge. */
 const SHADE_OFFSET = { x: -0.7, y: -1.1 };
 const SHADE_ALPHA = 0.22;
+const UNCERTAIN_TRACE_ALPHA = 0.3;
 const ARROW_LENGTH = 5;
 const ARROW_WIDTH = 6;
 const ARC_SAG = 12;
@@ -164,8 +165,15 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   ctx.lineWidth = l.outlineWidth;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'butt';
-  ctx.setLineDash(l.uncertain ? [...DASH_UNITS] : []);
   ctx.strokeStyle = colours.outline;
+  if (l.uncertain) {
+    // A faint solid trace keeps the silhouette whole; the dashes on top carry the uncertain state.
+    ctx.globalAlpha = alpha * UNCERTAIN_TRACE_ALPHA;
+    ctx.setLineDash([]);
+    ctx.stroke(path);
+    ctx.globalAlpha = alpha;
+  }
+  ctx.setLineDash(l.uncertain ? [...DASH_UNITS] : []);
   ctx.stroke(path);
   ctx.restore();
 

@@ -543,6 +543,81 @@ a {
 .bb-swatch--accent { background-color: var(--bb-color-accent); }
 .bb-swatch--tint { background-color: var(--bb-color-accent-tint); }
 
+/* Ghosts showcase: the field card (min 480px, canvas 560px on desktop) and the glyph grid. */
+.bb-ghosts {
+  display: grid;
+  gap: var(--bb-space-6);
+  margin-top: var(--bb-space-8);
+}
+
+.bb-ghosts__intro {
+  display: grid;
+  gap: var(--bb-space-3);
+}
+
+.bb-ghosts__fieldcard {
+  min-height: calc(var(--bb-space-8) * 7.5);
+}
+
+.bb-ghosts__field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bb-ghosts__field .bb-ghost-field__canvas {
+  height: calc(var(--bb-space-8) * 8.75);
+}
+
+.bb-glyphs {
+  display: grid;
+}
+
+.bb-glyphs__row {
+  display: grid;
+  grid-template-columns: calc(var(--bb-space-8) * 1.5) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--bb-space-4);
+  padding-block: var(--bb-space-4);
+}
+
+.bb-glyphs__row + .bb-glyphs__row {
+  border-top: 1px solid var(--bb-color-surface-raised);
+}
+
+.bb-glyphs__urgency {
+  color: var(--bb-color-text);
+}
+
+.bb-glyphs__cells {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--bb-space-4) var(--bb-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bb-glyphs__cell {
+  display: grid;
+  justify-items: center;
+  gap: var(--bb-space-2);
+  min-width: 0;
+}
+
+.bb-glyphs__tile {
+  display: grid;
+  place-items: center;
+  width: var(--bb-space-7);
+  height: var(--bb-space-7);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-glyphs__name {
+  color: var(--bb-color-text-muted);
+}
+
 /* Theme control: two-option segmented switch */
 .bb-segmented {
   display: inline-flex;
@@ -675,5 +750,27 @@ a {
 
   .bb-segmented__option {
     padding: 0 var(--bb-space-3);
+  }
+
+  .bb-ghosts {
+    gap: var(--bb-space-5);
+    margin-top: var(--bb-space-7);
+  }
+
+  .bb-ghosts__fieldcard {
+    min-height: 0;
+  }
+
+  .bb-ghosts__field .bb-ghost-field__canvas {
+    height: calc(var(--bb-space-7) * 7.5);
+  }
+
+  .bb-glyphs__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--bb-space-3);
+  }
+
+  .bb-glyphs__cells {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
