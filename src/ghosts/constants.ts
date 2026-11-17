@@ -48,8 +48,10 @@ export const FIELD_MIN_HEIGHT_PX = 360;
 export const BEARING_RANGE_DEG = 90;
 /** Inset of the uncertain arc ends from each field edge, px. */
 export const ARC_INSET_PX = 24;
-/** Dash pattern of an uncertain outline, in 24-unit box units. */
-export const DASH_UNITS: readonly number[] = Object.freeze([3, 2]);
+/** Uncertain outline: one dash period per this many outline widths, so the gap (a third of it) is about 2 widths. */
+export const DASH_PERIODS_PER_WIDTH = 6;
+/** Uncertain outline: fewest dashes around the outer outline. */
+export const DASH_MIN_COUNT = 3;
 
 /** Plain class names for the list and the canvas label. */
 export const CLASS_NAMES: Readonly<Record<SoundClass, string>> = Object.freeze({

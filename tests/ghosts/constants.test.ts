@@ -3,7 +3,8 @@ import {
   ARC_INSET_PX,
   BEARING_RANGE_DEG,
   CLASS_NAMES,
-  DASH_UNITS,
+  DASH_MIN_COUNT,
+  DASH_PERIODS_PER_WIDTH,
   DEFAULT_TTL_MS,
   DRIFT_PX,
   FADE_MS,
@@ -54,7 +55,12 @@ describe('field constants (R3.3, R5.2, R5.3, R7.2)', () => {
     expect(LABEL_HEIGHT_PX).toBe(16);
     expect(BEARING_RANGE_DEG).toBe(90);
     expect(ARC_INSET_PX).toBe(24);
-    expect(DASH_UNITS).toEqual([3, 2]);
+  });
+
+  it('derives the uncertain dash from the outline width: 6 periods per width, at least 3 dashes (R15.3)', async () => {
+    expect(DASH_PERIODS_PER_WIDTH).toBe(6);
+    expect(DASH_MIN_COUNT).toBe(3);
+    expect('DASH_UNITS' in (await import('../../src/ghosts/constants'))).toBe(false);
   });
 
   it('derives the label block from the largest glow, the gap and the label line: 12 + 2 + 16 = 30', () => {

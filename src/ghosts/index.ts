@@ -8,6 +8,7 @@
 export type * from './types';
 export * from './constants';
 export { SHAPE_BOX, SHAPES } from './shapes';
+export { dashFor, pathLength, shapeParts } from './outline';
 export { acceptInput } from './input';
 export { ghostBasePx, ghostBlock, labelTop, layoutGhost, layoutGhosts } from './layout';
 export { createGhostSet, resolveTtl, type GhostSet, type LiveGhost } from './life';

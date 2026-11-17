@@ -1,5 +1,6 @@
-import { ARC_INSET_PX, DASH_UNITS, DRIFT_PX, FADE_MS } from './constants';
+import { ARC_INSET_PX, DRIFT_PX, FADE_MS } from './constants';
 import { labelTop } from './layout';
+import { dashFor, pathLength, shapeParts } from './outline';
 import { SHAPE_BOX } from './shapes';
 import type { FieldSize, GhostLayout } from './types';
 
@@ -44,11 +45,12 @@ const ARROW_LENGTH = 5;
 const ARROW_WIDTH = 6;
 const ARC_SAG = 12;
 
-function pathOf(state: DrawState, shape: string): Path2D {
-  let p = state.paths.get(shape);
+/** A cached `Path2D` of `d` under `key` (the shape itself, or the shape with a `|part` suffix). */
+function pathOf(state: DrawState, key: string, d: string = key): Path2D {
+  let p = state.paths.get(key);
   if (!p) {
-    p = new Path2D(shape);
-    state.paths.set(shape, p);
+    p = new Path2D(d);
+    state.paths.set(key, p);
   }
   return p;
 }
@@ -134,7 +136,9 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   ctx.globalAlpha = alpha;
   if (l.uncertain) uncertainArc(ctx, size.width, l.y, colours.border);
 
+  const parts = shapeParts(l.shape);
   const path = pathOf(state, l.shape);
+  const strokePath = pathOf(state, `${l.shape}|stroke`, [parts.outer, ...parts.details].join(' '));
   const k = l.boxPx / SHAPE_BOX;
   ctx.save();
   ctx.translate(l.x, l.y + dy);
@@ -166,15 +170,20 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   ctx.lineJoin = 'round';
   ctx.lineCap = 'butt';
   ctx.strokeStyle = colours.outline;
-  if (l.uncertain) {
-    // A faint solid trace keeps the silhouette whole; the dashes on top carry the uncertain state.
+  // The outline and the details are stroked, never the eyes, so a heavy outline cannot close an eye.
+  ctx.setLineDash([]);
+  if (!l.uncertain) ctx.stroke(strokePath);
+  else {
+    // A faint solid trace keeps the silhouette whole; a few long dashes on the outer outline carry the uncertain
+    // state; the details (the Voice mouth) stay solid, as dashes on a short subpath look striped.
     ctx.globalAlpha = alpha * UNCERTAIN_TRACE_ALPHA;
-    ctx.setLineDash([]);
-    ctx.stroke(path);
+    ctx.stroke(strokePath);
     ctx.globalAlpha = alpha;
+    ctx.setLineDash(dashFor(l.outlineWidth, pathLength(parts.outer)));
+    ctx.stroke(pathOf(state, `${l.shape}|outer`, parts.outer));
+    ctx.setLineDash([]);
+    if (parts.details.length > 0) ctx.stroke(pathOf(state, `${l.shape}|details`, parts.details.join(' ')));
   }
-  ctx.setLineDash(l.uncertain ? [...DASH_UNITS] : []);
-  ctx.stroke(path);
   ctx.restore();
 
   ctx.font = `500 13px ${colours.font}`;

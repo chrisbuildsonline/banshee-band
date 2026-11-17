@@ -63,7 +63,16 @@
   display: block;
   flex: none;
   overflow: visible;
+}
+
+/* The whole shape is filled (the eyes are holes); only the outline and the details are stroked. */
+.bb-ghost-glyph path[data-part="fill"] {
   fill: var(--bb-ghost-fill);
+  stroke: none;
+}
+
+.bb-ghost-glyph path[data-part="stroke"] {
+  fill: none;
   stroke: var(--bb-ghost-outline);
   stroke-linejoin: round;
 }

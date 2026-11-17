@@ -1,9 +1,6 @@
 // Pure helpers for the parts and the dashed outline of a ghost path (absolute M L H V C Q Z only).
+import { DASH_MIN_COUNT, DASH_PERIODS_PER_WIDTH } from './constants';
 
-/** Dash periods per unit of outline width: a period is about 6 widths, so the gap (a third) is about 2 widths. */
-const PERIODS_PER_WIDTH = 6;
-/** Fewest dashes around an outline. */
-const MIN_COUNT = 3;
 /** Steps per curve when measuring. */
 const CURVE_STEPS = 32;
 
@@ -21,8 +18,20 @@ export function shapeParts(path: string): { outer: string; details: string[]; ey
   return { outer: parts[0], details: parts.slice(1, -2), eyes: parts.slice(-2) };
 }
 
+/** Measured lengths by path: the canvas asks for the same few outlines every frame. */
+const lengths = new Map<string, number>();
+
 /** Length of every subpath of `path` in 24-unit box units: curves flattened, closing segments included. */
 export function pathLength(path: string): number {
+  let length = lengths.get(path);
+  if (length === undefined) {
+    length = measure(path);
+    lengths.set(path, length);
+  }
+  return length;
+}
+
+function measure(path: string): number {
   const tokens = path.match(/[A-Za-z]|-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/g) ?? [];
   let i = 0;
   let length = 0;
@@ -79,7 +88,7 @@ export function pathLength(path: string): number {
 export function dashFor(outlineWidth: number, lengthUnits: number): [number, number] {
   const ok = (n: number) => Number.isFinite(n) && n > 0;
   if (!ok(outlineWidth) || !ok(lengthUnits)) return [0, 0];
-  const count = Math.max(MIN_COUNT, Math.round(lengthUnits / (PERIODS_PER_WIDTH * outlineWidth)));
+  const count = Math.max(DASH_MIN_COUNT, Math.round(lengthUnits / (DASH_PERIODS_PER_WIDTH * outlineWidth)));
   const period = lengthUnits / count;
   return [(period * 2) / 3, period / 3];
 }
