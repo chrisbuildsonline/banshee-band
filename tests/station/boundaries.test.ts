@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const SRC = fileURLToPath(new URL('../../src/', import.meta.url));
 const STATION = join(SRC, 'station');
-const PURE = ['wav.ts', 'stereo.ts', 'summary.ts', 'waveform.ts', 'format.ts', 'pipeline.ts', 'runner.ts', 'constants.ts'];
+const PURE = ['wav.ts', 'stereo.ts', 'summary.ts', 'waveform.ts', 'format.ts', 'pipeline.ts', 'runner.ts', 'constants.ts', 'live-gate.ts', 'listen-status.ts'];
 const pureFiles = PURE.filter((f) => existsSync(join(STATION, f))).map((f) => ({ name: f, text: readFileSync(join(STATION, f), 'utf8') }));
 
 const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
@@ -115,6 +115,22 @@ describe('src/station boundaries (R1.1 to R1.4)', () => {
     const offenders = walk(SRC)
       .filter((p) => !p.startsWith(STATION) && relative(SRC, p) !== 'main.ts')
       .filter((p) => importsOf(readFileSync(p, 'utf8')).some((i) => /(^|\/)station(\/|$)/.test(i.spec)));
+    expect(offenders.map((p) => relative(SRC, p))).toEqual([]);
+  });
+
+  it('src/pwa imports nothing from the other modules, and its pure files use no DOM, network or clock', () => {
+    const pwa = join(SRC, 'pwa');
+    for (const p of walk(pwa)) {
+      const text = readFileSync(p, 'utf8');
+      expect(importsOf(text).filter((i) => !/^\.\/[\w-]+$/.test(i.spec)).map((i) => i.spec), relative(SRC, p)).toEqual([]);
+      if (['routes.ts', 'precache.ts', 'manifest.ts', 'icons.ts', 'png.ts'].some((f) => p.endsWith(`/${f}`))) expect(forbiddenUses(text), relative(SRC, p)).toEqual([]);
+    }
+  });
+
+  it('only src/main.ts imports src/pwa', () => {
+    const offenders = walk(SRC)
+      .filter((p) => !p.startsWith(join(SRC, 'pwa')) && relative(SRC, p) !== 'main.ts')
+      .filter((p) => importsOf(readFileSync(p, 'utf8')).some((i) => /(^|\/)pwa(\/|$)/.test(i.spec)));
     expect(offenders.map((p) => relative(SRC, p))).toEqual([]);
   });
 

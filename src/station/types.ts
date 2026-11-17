@@ -7,6 +7,9 @@ import type { Decision, HapticEngine } from '../haptics';
 /** The side the user picks for a clip. An input of the simulation, never a measurement. */
 export type TrySide = 'left' | 'centre' | 'right';
 
+/** What the Listen card's status pill says (`idle`: before the first Start, pill hidden). */
+export type ListenState = 'idle' | 'starting' | 'listening' | 'stopped' | 'blocked' | 'problem';
+
 /** One of the five steps of a run. */
 export type StageName = 'waveform' | 'label' | 'bearing' | 'pattern' | 'band';
 

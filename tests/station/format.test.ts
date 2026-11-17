@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { alertText, dropText, failureText, formatClock, formatMs, sideWord } from '../../src/station/format';
+import { alertText, classifyText, dropText, failureText, formatClock, formatMs, LIVE_FAILURE_TEXT, sideWord } from '../../src/station/format';
+
+describe('classify and live text', () => {
+  it('says the classify time per window and why listening stopped', () => {
+    expect(classifyText(3.14)).toBe('Classify: 3.1 ms per window');
+    expect(classifyText(42.4)).toBe('Classify: 42 ms per window');
+    expect(LIVE_FAILURE_TEXT).toBe('The sound could not be classified. Listening stopped.');
+  });
+});
 
 describe('formatMs (R13.7)', () => {
   it('one decimal below 10, whole from 10, a dash for bad values', () => {
