@@ -24,6 +24,7 @@ src/ghosts/     canvas ghost renderer: shape = class, position = bearing, glow =
   types.ts            GhostInput, GhostLayout, FieldSize, Slot, Block, GhostField
   shapes.ts           SHAPES: one SVG path per class in a 24-unit box (data only)
   input.ts            acceptInput: validator and shape check, never throws
+  outline.ts          shapeParts, pathLength, dashFor: outer/details/eyes split and the uncertain dash pattern (pure)
   layout.ts           layoutGhost, layoutGhosts, ghostBasePx, ghostBlock (pure, uses sideOf)
   life.ts             createGhostSet: newest first, cap 4, expiry (time passed in)
   text.ts             list item text, canvas label summary, data-x

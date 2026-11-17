@@ -31,11 +31,12 @@ src/ghosts/
   constants.ts   GHOST_BOX_MIN_PX, GHOST_BOX_MAX_PX, LABEL_BLOCK_PX, MAX_GHOSTS, DEFAULT_TTL_MS, FADE_MS, DRIFT_PX, margins, URGENCY_STYLE, CLASS_NAMES
   types.ts       GhostInput, GhostLayout, FieldSize, Slot, GhostField, GhostFieldOptions, Block
   shapes.ts      SHAPES, SHAPE_BOX (data only)
+  outline.ts     shapeParts, pathLength, dashFor (pure; outer/details/eyes split, path length, uncertain dash pattern)
   input.ts       acceptInput(value): GhostInput | null   (validator + shape check, never throws)
   layout.ts      layoutGhost, layoutGhosts, ghostBasePx, ghostBlock
   life.ts        createGhostSet(ttlMs): add, prune, items, nextExpiry, clear
   text.ts        listItemText, canvasSummary, EMPTY_TEXT, dataX
-  glyph.ts       glyphSpec (pure), createGlyph (DOM)
+  glyph.ts       glyphSpec (pure; `path` is the whole shape, `strokePath` is outer + details without the eyes), createGlyph (DOM)
   draw.ts        drawField(ctx, state): furniture, arcs, ghosts, labels (canvas only)
   field.ts       mountGhostField
   field.css      field, list and glyph styles, tokens only
@@ -75,7 +76,8 @@ All in `constants.ts`, with doc comments:
 | `LABEL_HEIGHT_PX` | 16 | Height of the label line (13 px text) |
 | `BEARING_RANGE_DEG` | 90 | Bearing mapped to the edge; beyond it clamps |
 | `ARC_INSET_PX` | 24 | Where the uncertain arc starts and ends, from each edge |
-| `DASH_UNITS` | `[3, 2]` | Dash pattern of an uncertain outline, in 24-unit box units |
+| `DASH_PERIODS_PER_WIDTH` | 6 | Uncertain outline: one dash period per this many outline widths of outer length |
+| `DASH_MIN_COUNT` | 3 | Uncertain outline: fewest dashes around the outer outline |
 | `URGENCY_STYLE` | table of R4.1 | Word, scale, outline, glow blur, glow token per urgency |
 | `CLASS_NAMES` | Knock, Doorbell, Alarm, Baby, Vehicle, Voice, Other | List and aria text |
 
@@ -132,12 +134,12 @@ The builder draws the paths. The silhouettes, in unit-box proportions (24 wide, 
 | Baby | Small (about 12 wide, 13 high) round ghost low in the box, one curl rising from the top | The curl |
 | Vehicle | Wide and low (about 20 wide, 11 high), a long trailing hem to one side | Horizontal, with a tail |
 | Voice | Round (about 15 wide, 18 high), open wavy mouth cut as a hole | Mouth hole, wavy bottom of the mouth |
-| Other | Plain round-topped ghost (about 14 wide, 19 high), wavy hem, no feature | No feature at all |
+| Other | Plain round-topped ghost (about 12 wide, 19 high), wavy hem of three dips, eyes only | No detail beyond the eyes |
 
 Rules the builder keeps:
 
 - The outline alone makes the class readable. A hole (the Voice mouth) helps but must not be the only difference, because a hole is lost in a 24 px glyph. Voice therefore also differs by the round, wider head and wavy hem.
-- The ghosts have no eyes. Eyes would be the same on every shape and would add a feature to `Other`, which must have none.
+- Every ghost has two oval eyes, cut as holes: the last two subpaths of each path. Voice also has one mouth detail, the subpath before the eyes. The eyes are the same kind on every shape, so the outline alone still tells the classes apart. `shapeParts` in `src/ghosts/outline.ts` splits a path into `outer` (first subpath), `details` (between) and `eyes` (last two). The eyes are never stroked, so a heavy outline cannot close an eye.
 - Each path is one string of absolute commands `M L H V C Q Z`. Holes are extra subpaths filled with the even-odd rule, so the fill rule is a fixed property of the data: `fill-rule="evenodd"` in SVG and `ctx.fill(path, 'evenodd')` on the canvas. Strokes follow the same path with `lineJoin = 'round'`.
 - Every point, control points included, is in [2, 22]. The stroke is centred on the path, so the widest outline (3.5 units, half 1.75) stays inside the 24-unit box.
 - The 8% distinctness is a floor and not a goal. Aim for well above it: the pairs at risk are Knock vs Other (both tall), Alarm vs Other (both have a flared lower part) and Baby vs Doorbell (both have a top feature). Sizes in the table are chosen so that these pairs differ by their proportions as well as their features.
@@ -275,7 +277,12 @@ destroy: clearTimeout, cancelAnimationFrame, disconnect observers, remove listen
    - `alpha` is 1 under reduce. With motion: `min(1, age / FADE_MS, remaining / FADE_MS)`, with `remaining = Infinity` for an infinite ttl.
    - `dy` is `DRIFT_PX * sin(2 * PI * (now / driftMs + seq * 0.37))` with motion and `driftMs > 0`, else 0. The ghost centre is `(x, y + dy)`. The label and the arc do not drift (only the body moves), so the text stays still and readable.
    - If uncertain: the arc. A quadratic curve from `(24, y)` to `(W - 24, y)` with the control point `(W / 2, y + 12)` (a sag of 6 px), stroked 2 px in `border`, with a filled triangular head (5 px long, 6 px wide) at each end pointing outwards. Drawn first, so the ghost covers the middle.
-   - Ghost: `ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y + dy); const k = layout.boxPx / 24; ctx.scale(k, k); ctx.translate(-12, -12);` then `const p = pathCache.get(shape)` (a `Map<string, Path2D>` per field), then `shadowColor = glow[token]`, `shadowBlur = glowBlur`, fill with `fill` and the even-odd rule. Then `shadowBlur = 0`, `lineWidth = outlineWidth`, `lineJoin = 'round'`, `setLineDash(uncertain ? DASH_UNITS : [])`, stroke in `outline`. `shadowBlur` is in canvas pixels and is not scaled by the transform, so `glowBlur` is in pixels as required, and the shadow offset is 0.
+   - Ghost: `ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y + dy); const k = layout.boxPx / 24; ctx.scale(k, k); ctx.translate(-12, -12);` then take `shapeParts(shape)` and the cached `Path2D` objects (a `Map<string, Path2D>` per field): the whole path, the stroke path (outer + details) and the outer and eyes parts.
+     1. Fill: `shadowColor = glow[token]`, `shadowBlur = glowBlur * dpr`, fill the whole path with `fill` and the even-odd rule. Then `shadowBlur = 0`.
+     2. Eyes: the glow spills into the eye holes, so clear them with `globalCompositeOperation = 'destination-out'` and fill the eyes part, then restore `source-over`. This runs after the glow fill so the card surface shows through the eyes.
+     3. Shade: clip to the whole path (even-odd), fill it with `outline` at low alpha, then fill the stroke path shifted by a small offset in `fill`, which leaves a thin crescent of `outline` along the lower edge.
+     4. Stroke: `lineWidth = outlineWidth`, `lineJoin = 'round'`, `lineCap = 'butt'`, stroke the outer outline and the details only, never the eyes. A certain ghost strokes the stroke path solid. An uncertain ghost strokes the stroke path as a faint solid trace, then dashes only the outer subpath with `setLineDash(dashFor(outlineWidth, pathLength(outer)))` and strokes the details solid. `dashFor` gives `max(DASH_MIN_COUNT, round(length / (DASH_PERIODS_PER_WIDTH * outlineWidth)))` whole periods, a dash of two thirds of a period and a gap of one third; a non-positive or non-finite width or length gives a solid line.
+     `shadowBlur` is in device pixels, so it is scaled by `dpr`, and the shadow offset is 0.
    - Label: `ctx.restore()` first (no transform), font `500 13px <font>`, `text` colour, centre alignment, top baseline at `labelTop`. The text is measured with `measureText`. If wider than `W - 16`, it is cut with an ellipsis until it fits (a binary search on the length). The centre `lx = clamp(x, 8 + w / 2, W - 8 - w / 2)`, so a ghost near an edge keeps its label inside. The label is drawn at full `alpha` of the ghost (the same fade).
 
 The glow is the canvas shadow of the fill. Its visible reach is about `glowBlur` px, which is why the label starts `glowBlur + GLOW_GAP_PX` below the body. The arc of an uncertain ghost is drawn at the body's mid-height, so it never sits in the label area.
