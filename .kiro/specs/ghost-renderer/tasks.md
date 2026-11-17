@@ -104,16 +104,16 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
   - **Gate:** the four screenshots exist and were looked at; `tests/ui` passes; `bun run e2e`, `typecheck` and `test` pass.
 
 - [ ] 10. Review
-  - [ ] 10.1 Check the doc comment of every export of `src/ghosts/` and the module comment of `index.ts` (Requirement 1.7). Check that no copy says the field keeps the user safe, replaces a smoke alarm, or that a sound was heard by a microphone (Requirements 12.5, 15.2), and that the aid sentence, where used, is verbatim.
+  - [x] 10.1 Check the doc comment of every export of `src/ghosts/` and the module comment of `index.ts` (Requirement 1.7). Check that no copy says the field keeps the user safe, replaces a smoke alarm, or that a sound was heard by a microphone (Requirements 12.5, 15.2), and that the aid sentence, where used, is verbatim.
     - _Requirements: 1.7, 12.5, 15.2, 15.4_
-  - [ ] 10.2 Check with `git diff --stat` that `src/events/` and `src/haptics/` are unchanged, and that the only changes outside `src/ghosts/`, `tests/ghosts/`, `e2e/`, `.kiro/specs/ghost-renderer/` are `styleguide.html`, `src/ui/styleguide.ts`, `src/ui/styleguide.css`, `design/DESIGN.md`, `.kiro/steering/structure.md` (and `tests/ui/` or `src/ui/tokens.css` only if a contrast row was needed).
+  - [x] 10.2 Check with `git diff --stat` that `src/events/` and `src/haptics/` are unchanged, and that the only changes outside `src/ghosts/`, `tests/ghosts/`, `e2e/`, `.kiro/specs/ghost-renderer/` are `styleguide.html`, `src/ui/styleguide.ts`, `src/ui/styleguide.css`, `design/DESIGN.md`, `.kiro/steering/structure.md` (and `tests/ui/` or `src/ui/tokens.css` only if a contrast row was needed).
     - _Requirements: 13.5, 16.3, 16.4_
-  - [ ] 10.3 Check privacy and motion: no `fetch`, `console`, storage or network in `src/ghosts/`; the event `id`, `t`, `confidence` and `loudnessDb` appear nowhere in the DOM; no `@keyframes` in `field.css`; no `requestAnimationFrame` reference outside the motion branch of `field.ts`.
+  - [x] 10.3 Check privacy and motion: no `fetch`, `console`, storage or network in `src/ghosts/`; the event `id`, `t`, `confidence` and `loudnessDb` appear nowhere in the DOM; no `@keyframes` in `field.css`; no `requestAnimationFrame` reference outside the motion branch of `field.ts`.
     - _Requirements: 8.6, 10.3, 15.1, 15.3_
   - [ ] 10.4 Update `.kiro/steering/structure.md`: replace the `src/ghosts/` line with the module and its files (`constants.ts`, `types.ts`, `shapes.ts`, `input.ts`, `layout.ts`, `life.ts`, `text.ts`, `glyph.ts`, `draw.ts`, `field.ts`, `field.css`, `index.ts`) in the same style as the `src/band` block, and mention that the styleguide shows the Ghosts section. Keep the Rules section unchanged.
     - _Requirements: 16.5_
 
-- [ ] 11. Gate (last)
-  - [ ] 11.1 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green.
+- [x] 11. Gate (last)
+  - [x] 11.1 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green.
     - _Requirements: 16.1, 16.2, 16.3, 16.4_
   - **Gate:** `typecheck`, `test`, `e2e` and `build` exit 0, and `.gitkeep` is gone from `src/ghosts/`.
