@@ -201,6 +201,7 @@ Ratios are WCAG 2.x, computed from the hex values in `tokens.css` by `tests/ui/t
 | Ghost glow medium on card | `--bb-ghost-glow-2` | `--bb-color-surface` | Day | 5.60 | 3 |
 | Ghost glow urgent on card | `--bb-ghost-glow-3` | `--bb-color-surface` | Day | 9.60 | 3 |
 | Ghost fill on tile | `--bb-ghost-fill` | `--bb-color-surface-raised` | Day | 3.48 | 3 |
+| Bar and lane mark on track | `--bb-color-accent` | `--bb-color-surface-raised` | Day | 6.17 | 3 |
 | Body text on canvas | `--bb-color-text` | `--bb-color-canvas` | Night | 17.05 | 4.5 |
 | Body text on card | `--bb-color-text` | `--bb-color-surface` | Night | 15.54 | 4.5 |
 | Body text on tile | `--bb-color-text` | `--bb-color-surface-raised` | Night | 14.01 | 4.5 |
@@ -230,6 +231,7 @@ Ratios are WCAG 2.x, computed from the hex values in `tokens.css` by `tests/ui/t
 | Ghost glow medium on card | `--bb-ghost-glow-2` | `--bb-color-surface` | Night | 7.73 | 3 |
 | Ghost glow urgent on card | `--bb-ghost-glow-3` | `--bb-color-surface` | Night | 12.89 | 3 |
 | Ghost fill on tile | `--bb-ghost-fill` | `--bb-color-surface-raised` | Night | 12.41 | 3 |
+| Bar and lane mark on track | `--bb-color-accent` | `--bb-color-surface-raised` | Night | 6.97 | 3 |
 
 The Night primary pill fill is near-black on a near-black canvas (about 1.1:1) by design; its boundary is the light `pill-outline`, which is the pair measured above. The Day `pill-outline` is `transparent` and is not measured.
 

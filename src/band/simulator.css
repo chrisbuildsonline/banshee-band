@@ -1,0 +1,231 @@
+/*
+ * Band simulator. Tokens only (design/DESIGN.md); the card recipe comes from the shared .bb-card class.
+ * No @keyframes: the only motion is the bar width transition, and none at all under reduced motion.
+ */
+
+.bb-sim {
+  display: grid;
+  gap: var(--bb-space-5);
+  min-width: 0;
+}
+
+.bb-sim__motors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bb-space-5);
+}
+
+/* Motor card */
+.bb-motor {
+  gap: var(--bb-space-5);
+}
+
+.bb-motor__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bb-space-3);
+}
+
+.bb-motor__title {
+  color: var(--bb-color-text);
+}
+
+.bb-motor__tag {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--bb-space-6);
+  height: var(--bb-space-6);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: 1;
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-sim[data-side="left"] [data-motor="left"] .bb-motor__tag,
+.bb-sim[data-side="right"] [data-motor="right"] .bb-motor__tag {
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-motor__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bb-space-1);
+}
+
+.bb-motor__num {
+  font-size: var(--bb-type-display-size);
+  line-height: var(--bb-type-display-line);
+  font-weight: var(--bb-type-display-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-motor__unit {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+  font-weight: var(--bb-type-caption-weight);
+}
+
+.bb-motor__bar {
+  height: var(--bb-space-3);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+  overflow: hidden;
+}
+
+.bb-motor__fill {
+  height: 100%;
+  max-width: 100%;
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-accent);
+  transition: width var(--bb-motion-fast) linear;
+}
+
+/* Unknown side: a dashed outline inside the card edge, so radius and shadow stay. Not colour alone. */
+.bb-sim[data-side="unknown"] .bb-motor {
+  outline: 2px dashed var(--bb-color-border);
+  outline-offset: calc(-1 * var(--bb-space-2));
+}
+
+/* Pattern timeline */
+.bb-timeline__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bb-space-2) var(--bb-space-4);
+}
+
+.bb-timeline__count {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-timeline__name {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-space-3);
+  min-width: 0;
+  font-size: var(--bb-type-body-size);
+  line-height: var(--bb-type-heading-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-timeline__glyph {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--bb-space-6) + var(--bb-space-2));
+  height: calc(var(--bb-space-6) + var(--bb-space-2));
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text-muted);
+}
+
+.bb-sim[data-side] .bb-timeline__glyph {
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-timeline__glyph svg {
+  width: var(--bb-space-5);
+  height: var(--bb-space-5);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bb-timeline__plot {
+  display: grid;
+  grid-template-columns: var(--bb-space-4) minmax(0, 1fr);
+  gap: var(--bb-space-3);
+}
+
+.bb-timeline__lane-labels {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  row-gap: var(--bb-space-4);
+  align-items: center;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+  text-align: center;
+}
+
+.bb-timeline__lanes {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.bb-lane__track {
+  fill: var(--bb-color-surface-raised);
+}
+
+.bb-lane__mark {
+  fill: var(--bb-color-accent);
+}
+
+.bb-timeline__scale {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bb-space-3);
+  margin-left: calc(var(--bb-space-4) + var(--bb-space-3));
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-timeline__scale[hidden] {
+  display: none;
+}
+
+/* Visually hidden, still read by screen readers. */
+.bb-sim__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reduced motion: the bars change without a transition. */
+@media (prefers-reduced-motion: reduce) {
+  .bb-motor__fill {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .bb-sim,
+  .bb-sim__motors {
+    gap: var(--bb-space-4);
+  }
+
+  .bb-motor {
+    gap: var(--bb-space-4);
+  }
+
+  .bb-motor__tag {
+    display: none;
+  }
+
+  .bb-sim[data-side="unknown"] .bb-motor {
+    outline-offset: calc(-1 * var(--bb-space-1));
+  }
+}

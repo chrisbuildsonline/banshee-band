@@ -63,6 +63,11 @@ describe('contrastRatio', () => {
     );
   });
 
+  it('gives the band simulator bar on its track at least 3:1 (accent on surface-raised, Day and Night)', () => {
+    expect(contrastRatio('#6236E0', '#F4F5F8')).toBeCloseTo(6.17, 2);
+    expect(contrastRatio('#B49CFF', '#241F2E')).toBeCloseTo(6.97, 2);
+  });
+
   it('is exactly 1 for a colour against itself', () => {
     fc.assert(fc.property(hexColour, (a) => contrastRatio(a, a) === 1));
   });
