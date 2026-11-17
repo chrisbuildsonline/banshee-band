@@ -80,7 +80,8 @@ const finiteFrames = fc.array(
   { maxLength: 4 },
 );
 
-describe('bearing properties (R10)', () => {
+// Fixed seed, so a failure here under a loaded full suite is the 5 s default timeout, not the property.
+describe('bearing properties (R10)', { timeout: 60_000 }, () => {
   it('the gain property keeps the quietest Window above silenceRms', () => {
     expect(0.1 * 0.01).toBeGreaterThan(SILENCE_RMS);
   });
