@@ -11,14 +11,14 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
     - _Requirements: 1.1, 1.2, 1.4, 1.8_
   - **Gate:** `constants.test.ts` and `boundaries.test.ts` pass; `typecheck` passes.
 
-- [ ] 2. Silhouettes
-  - [ ] 2.1 Write `tests/ghosts/helpers/raster.ts` and its own tests (`tests/ghosts/raster.test.ts`): tokenise `M L H V C Q Z` (throw on any other command), flatten curves at 16 steps, fill with the even-odd rule at 48 x 48 pixel centres, return a `Uint8Array(2304)` and `differenceRatio(a, b)`. Test it on a square of known area, a square with a square hole, a circle made of `C` curves (area within 1% of pi r^2) and a path with a forbidden command.
+- [x] 2. Silhouettes
+  - [x] 2.1 Write `tests/ghosts/helpers/raster.ts` and its own tests (`tests/ghosts/raster.test.ts`): tokenise `M L H V C Q Z` (throw on any other command), flatten curves at 16 steps, fill with the even-odd rule at 48 x 48 pixel centres, return a `Uint8Array(2304)` and `differenceRatio(a, b)`. Test it on a square of known area, a square with a square hole, a circle made of `C` curves (area within 1% of pi r^2) and a path with a forbidden command.
     - _Requirements: 2.2, 2.6, 14.2_
-  - [ ] 2.2 Write `tests/ghosts/shapes.test.ts` against a stub `SHAPES` that is empty, and confirm the failures. Cases: seven classes exist; the strings are pairwise different; only allowed commands; every point in [2, 22]; filled area between 10% and 80% of the box; all 21 pairs differ in at least 8% of 2304 pixels (print the lowest pair ratio in the failure message).
+  - [x] 2.2 Write `tests/ghosts/shapes.test.ts` against a stub `SHAPES` that is empty, and confirm the failures. Cases: seven classes exist; the strings are pairwise different; only allowed commands; every point in [2, 22]; filled area between 10% and 80% of the box; all 21 pairs differ in at least 8% of 2304 pixels (print the lowest pair ratio in the failure message).
     - _Requirements: 2.1, 2.2, 2.5, 2.6, 14.2_
-  - [ ] 2.3 Implement `src/ghosts/shapes.ts` (`SHAPE_BOX`, `SHAPES`, data only, doc comments). Draw the seven silhouettes by the table of the design: Knock, Alarm, Voice, Vehicle and Baby by the DESIGN.md Ghosts table, Doorbell with the chime knob, Other plain with a wavy hem. Keep the rules of the design (no eyes, outline readable without colour, holes only as extra detail). If a pair is under 8%, change the proportions and not the test.
+  - [x] 2.3 Implement `src/ghosts/shapes.ts` (`SHAPE_BOX`, `SHAPES`, data only, doc comments). Draw the seven silhouettes by the table of the design: Knock, Alarm, Voice, Vehicle and Baby by the DESIGN.md Ghosts table, Doorbell with the chime knob, Other plain with a wavy hem. Keep the rules of the design (no eyes, outline readable without colour, holes only as extra detail). If a pair is under 8%, change the proportions and not the test.
     - _Requirements: 2.1-2.8_
-  - [ ] 2.4 Look at the seven shapes once before moving on: render them with a throwaway Playwright script or a temporary page at 24, 32, 40 and 48 px in outline and fill, check that each is recognisable without colour and does not look like clip art, and fix the paths. Delete the throwaway file. (The final visual check is task 9.)
+  - [x] 2.4 Look at the seven shapes once before moving on: render them with a throwaway Playwright script or a temporary page at 24, 32, 40 and 48 px in outline and fill, check that each is recognisable without colour and does not look like clip art, and fix the paths. Delete the throwaway file. (The final visual check is task 9.)
     - _Requirements: 2.3, 2.4, 2.5, 13.2_
   - **Gate:** `shapes.test.ts` and `raster.test.ts` pass; `typecheck` and `test` pass.
 
