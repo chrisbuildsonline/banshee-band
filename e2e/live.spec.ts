@@ -84,6 +84,9 @@ test.describe('live listening', () => {
     await expect(label.locator('[data-backend]')).toHaveAttribute('data-backend', /^(webgl|cpu)$/);
     const ms = Number(await label.locator('[data-classify-ms]').getAttribute('data-classify-ms'));
     expect(ms).toBeGreaterThan(0);
+    // Shown in the JSON and HTML reports, so a run tells which backend classified and how fast.
+    const backend = await label.locator('[data-backend]').getAttribute('data-backend');
+    test.info().annotations.push({ type: 'classify', description: `${backend}, ${ms} ms per window` });
     await page.screenshot({ path: resolve(SCREENSHOTS, 'live-1440-day.png') });
 
     await stop(page).click();

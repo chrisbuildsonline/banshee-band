@@ -61,13 +61,13 @@ Each task is small steps that end in a test gate. Write the test first, see it f
     - _Requirements: 6.3, 7.4, 8.1-8.3_
   - **Gate:** `bun run e2e` passes in both projects; `typecheck`, `test` and `build` pass.
 
-- [ ] 6. Review and final gate
+- [x] 6. Review and final gate
   - [x] 6.1 Check the copy and the page: the Listen sentence is verbatim (Requirement 2.3); the page never says it protects the user and says nothing reassuring while the status is not Listening; no "simulated" for a live event; the offline line only after readiness; the aid sentence in the footer is unchanged.
     - _Requirements: 2.3, 2.10, 3.10, 7.3_
   - [x] 6.2 Check the diff: `src/audio`, `src/bearing`, `src/haptics`, `src/band`, `src/events` and `src/ghosts` unchanged; `src/classify` changed only by `backend`; `package.json` changed only by the `icons` script; no `console`, storage call, `Math.random` or `Date` (outside `format.ts`) in the new `src/station` and `src/pwa` code; no `@keyframes` outside `prefers-reduced-motion: no-preference`; no external URL anywhere in `src/`, the HTML files and the worker.
     - _Requirements: 1.1-1.5_
   - [x] 6.3 Update `.kiro/steering/structure.md` (`src/pwa/`, the new `src/station` files, `scripts/`, `e2e/live.spec.ts`, `e2e/offline.spec.ts`, the rule that `src/pwa` imports nothing from the project) and `README.md` (the `icons` script, the install and offline note, that the offline test runs against a production build).
     - _Requirements: 1.1, 9.7_
-  - [ ] 6.4 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green. Then write the commit summary: what is built, the changed station specs and why, the measured precache size, the backend the e2e run reported, and the decisions of design.md ("Decisions for the owner") that need a yes or no, plus the Out of scope list.
+  - [x] 6.4 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green. Then write the commit summary: what is built, the changed station specs and why, the measured precache size, the backend the e2e run reported, and the decisions of design.md ("Decisions for the owner") that need a yes or no, plus the Out of scope list.
     - _Requirements: 9.7_
   - **Gate:** `typecheck`, `test`, `e2e` and `build` exit 0; the diff matches 6.2.

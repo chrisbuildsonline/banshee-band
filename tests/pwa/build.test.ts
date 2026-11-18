@@ -45,6 +45,13 @@ describe.runIf(built)('the built service worker (dist/sw.js)', () => {
     expect(total).toBeLessThanOrEqual(40 * MB);
   });
 
+  it('ships the generated manifest and icons unchanged', () => {
+    const pub = resolve(import.meta.dirname, '../../public');
+    for (const f of ['manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png']) {
+      expect(readFileSync(join(DIST, f)).equals(readFileSync(join(pub, f))), f).toBe(true);
+    }
+  });
+
   it('contains no LICENSE.txt, sw.js, checksum file, source map or .md note', () => {
     const list = precacheList();
     expect(list.filter((u) => /\/(LICENSE\.txt|sw\.js|SHA256SUMS)$|\.(map|md)$/.test(u))).toEqual([]);
