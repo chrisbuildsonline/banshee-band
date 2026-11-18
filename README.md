@@ -31,6 +31,10 @@ Needs [bun](https://bun.sh). Install with `bun install`, then:
 
 The station is an installable web app. A production build (`bun run build`) writes a service worker, `dist/sw.js`, that caches the pages, the scripts, the YAMNet model (about 16 MB) and the sample clips at the first visit, about 18 MB in all. After that one online visit the station opens, classifies and listens with no network, and the title block says "Works offline after the first visit." Your browser's install or "Add to Home Screen" option installs it. The dev server never registers the worker, so offline only works from a production build. For the same reason the offline test (`e2e/offline.spec.ts`) runs against the production build on port 5288, and `tests/pwa/build.test.ts` checks `dist/sw.js` after `bun run build` (it is skipped with a message when `dist/` is missing).
 
+### Onboarding
+
+The first visit opens a short three-step intro over the station: what Banshee Band does, that it is an aid and not a safety device, an Allow microphone button that runs the normal Start listening (the sample clips still work if the microphone is blocked or missing), and where alerts buzz (phone, screen or the DIY wristband). Skip intro or Escape closes it; it shows once (flag `banshee-band.onboarded.v1` in `localStorage`), and Settings has "Show intro again".
+
 ### Settings
 
 The Settings pill in the station header opens a sheet: switch each sound class on or off, set how loud it must be to alert (−80 to −10 dB, default −50 dB), and choose where the buzz goes (phone vibration, screen only or the wristband). Changes apply at once, in Try a sound and while listening, and are saved in this browser's `localStorage` only.

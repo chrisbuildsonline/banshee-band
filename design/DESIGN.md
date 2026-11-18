@@ -452,11 +452,11 @@ Regions, in DOM and tab order:
 2. **Sounds** (`h3`, then the muted caption "A sound alerts you when it is on and at least as loud as its level. −80 dB is very quiet, −10 dB is very loud."): one `surface-raised` tile (`radius-control`) per class in the order Knock, Doorbell, Alarm, Baby, Vehicle, Voice, Other. Each tile has the class's 24px low ghost glyph in a round `surface` disc (decorative), the class name, and a **switch**: a real `<input type="checkbox" role="switch">` named by the class name, drawn as a pill track with a round thumb and the visible word "On" or "Off" (on: `accent` track, `on-accent` thumb moved right; off: `surface` track with a 2px `border` outline, `text-muted` thumb on the left). Under it, one line: the visible label "Alerts from", the **level slider** (a native `<input type="range" min="-80" max="-10" step="1">` in `accent`, named "‹Class› Alerts from", with `aria-valuetext` like "−50 dB") and the value as text with tabular figures. A class that is off gets a 1px dashed `border` outline, muted name and value, and a disabled slider, so off reads without colour.
 3. **Buzz on**: a `<fieldset>` with that legend and three native radios drawn as option tiles (`surface-raised`, `radius-control`), each with a round check mark, a name and a muted caption: **Phone vibration** ("The phone buzzes the pattern. The screen shows it too."), **Screen only** ("The pattern plays on the band simulator on this screen.") and **Wristband** ("The band buzzes the pattern, stronger on the side it came from."). The selected tile takes `accent-tint`, `accent-strong` text and a filled check, so selection is more than colour; a disabled tile takes the disabled look of Pills (dashed `border`, `text-muted`). When the browser cannot vibrate, Phone vibration is disabled with the caption "This browser cannot vibrate.", and Screen only shows as selected. When the browser has no Web Bluetooth (Safari, Firefox), Wristband is disabled with the caption "This browser has no Bluetooth. Use Chrome or Edge to connect the band." and the sheet shows no connect row. Where Bluetooth exists, Wristband is enabled and a chosen Wristband stays shown as chosen while the band is not connected (the saved choice is never rewritten); the alerts then use the screen until the band connects. The band simulator on the station always mirrors the pattern; the choice decides whether the phone or the wristband buzzes as well. The header status pill follows the output in use (see Status pills).
 4. **The Wristband connect control** (see Wristband connect control), under the radios inside the Buzz on fieldset, only where the browser has Web Bluetooth. A connect from here also sets Buzz on to Wristband. A lost band leaves Wristband chosen, says so in the status line, and the header pill falls back to Band not connected.
-5. **Reset to defaults**, a secondary pill.
+5. **Reset to defaults**, a secondary pill, then **Show intro again**, a secondary pill that closes the sheet and opens the first-run intro at step 1 (see Onboarding); the foot wraps on a narrow sheet.
 
 This replaces the earlier per-output switches (simulator, vibration fallback), the separate "Connect band" pill and the theme control in Settings: Buzz on is the only output choice, the connect control belongs to it, and the theme control stays in the header.
 
-Tab order: Settings pill; in the sheet Done, then per class the switch and then the slider (a disabled slider is skipped), then the radios as one stop (arrow keys move the choice), then the Connect band (or Disconnect) pill, then Reset to defaults. Every control has the 3px focus ring (on the switch it rings the track) and is at least 44px tall.
+Tab order: Settings pill; in the sheet Done, then per class the switch and then the slider (a disabled slider is skipped), then the radios as one stop (arrow keys move the choice), then the Connect band (or Disconnect) pill, then Reset to defaults, then Show intro again. Every control has the 3px focus ring (on the switch it rings the track) and is at least 44px tall.
 
 What a setting does on the station: a class that is off, or a sound quieter than its level, raises no ghost, no Recent sounds row, no Latest alert and no buzz. The pipeline card still shows the run (its Pattern tile says "This sound is switched off" or "Too quiet to buzz"), and Try a sound says why in its message line: "Knock is switched off in Settings, so it raised no alert." or "Knock was quieter than its Settings level (−40 dB), so it raised no alert." A live window that is muted shows nothing extra.
 
@@ -483,32 +483,65 @@ Phone (390px): a bottom sheet, full width, with rounded top corners, at most the
 
 ### Onboarding
 
-First run. Primary action: **Allow microphone**. The alternative **Use sample clips** is a secondary pill. The microphone permission is asked only after the click.
+A first-run intro over the listening station, not a page of its own (`src/station/onboarding-sheet.ts`, `onboarding.css`). It opens by itself on the first visit only, as a native `<dialog>` with `showModal()` (the station behind is inert), and says in three short steps what Banshee Band is, that it is an aid and not a safety device, why it needs the microphone, and where alerts buzz. **Skip intro** (every step), **Escape** and **Done** close it; each close saves the flag `banshee-band.onboarded.v1` = `done` on this device (its own key, so a corrupt settings value never brings the intro back). A flag with any other value shows the intro once more; a blocked store shows no intro (it could not remember the dismissal) and the footer keeps the aid sentence. **Show intro again** in the Settings sheet opens it at step 1 at any time. The intro's DOM is built at each open and removed at close.
 
-Desktop (1440px):
+Desktop (1440px): a centred floating card, up to 560px wide, `surface`, `radius-card`, `shadow-soft`, 32px padding, the page behind covered by the canvas colour at 80% (as Settings).
 
 ```
 +--------------------------------------------------------------------------------+
-|                                                                                |
+| (dimmed station)                                                               |
 |                  +----------------------------------------+                    |
-|                  |  Welcome to Banshee Band               |                    |
-|                  |  See and feel the sounds around you    |                    |
-|                  |                                        |                    |
-|                  |  1  We listen with your microphone     |                    |
-|                  |  2  Sounds become ghosts and buzzes    |                    |
-|                  |  3  Audio never leaves this device     |                    |
-|                  |                                        |                    |
-|                  |  Banshee Band is an aid, not a safety  |                    |
-|                  |  device. ...                           |                    |
-|                  |                                        |                    |
-|                  |  [ Allow microphone ] [Use sample clips]|                   |
+|                  | Step 1 of 3                [Skip intro]|                    |
+|                  | ▬ ▬ ▬                                  |                    |
+|                  | ((ghost))                              |                    |
+|                  | Welcome to Banshee Band                |                    |
+|                  | Sounds you cannot hear, seen as ghosts |                    |
+|                  | and felt as a buzz.                    |                    |
+|                  | (1) It listens for doorbells, ...      |                    |
+|                  | (2) It shows each sound as a ghost ... |                    |
+|                  | (3) It buzzes a pattern on the phone...|                    |
+|                  | +------------------------------------+ |                    |
+|                  | |(i) Banshee Band is an aid, not a   | |                    |
+|                  | |    safety device. ...              | |                    |
+|                  | +------------------------------------+ |                    |
+|                  |                                 [Next] |                    |
 |                  +----------------------------------------+                    |
 +--------------------------------------------------------------------------------+
 ```
 
-Regions: one centred card, max 560px: `title` heading, muted lede, numbered step list (what the app does, that audio stays on the device), the aid sentence, then the two pills. Tab order: Allow microphone, Use sample clips.
+Every step, in DOM and tab order: the head (the muted caption "Step n of 3" with three short bars, `aria-hidden`, the done ones in `accent` and the rest in `border`; then the **Skip intro** secondary pill), a decorative picture in a 64px `accent-tint` disc, the `title`-step `h2` (it names the dialog and takes the focus, `tabindex="-1"`, no focus ring as it is not a control), a muted lede, the step's content, then the actions. Desktop actions sit in one row on the right with Back on the left; at most one near-black pill shows at a time.
 
-Phone (390px): the card is full width; the two pills stack full width at the bottom, primary first, within thumb reach. Same tab order.
+1. **Welcome to Banshee Band** (the ghost): lede "Sounds you cannot hear, seen as ghosts and felt as a buzz."; three rows, each a 32px `accent` disc with its number in `on-accent` and one sentence (it listens for doorbells, knocks, alarms, a baby, vehicles and voices; it shows each sound as a ghost on the side it came from, with a line of text; it buzzes a pattern on the phone or the wristband, stronger on that side); the aid sentence of Principle 6, word for word, in a `surface-raised` tile with the info glyph. Action: **Next**.
+2. **Turn on the microphone** (a microphone glyph): lede "The microphone is how Banshee Band hears the sounds around you. Your browser asks once."; a `surface-raised` tile with the Listen status pill (`role="status"`, hidden while idle; the same words and glyph shapes as the Listen card: Starting, Listening, Stopped, Mic blocked, Problem) and one polite sentence for the state. Actions: **Back**, **Not now** (to step 3) and **Allow microphone**, which runs the station's own Start listening, so the browser asks only after the press. While it starts, Allow keeps its label with the disabled look (dashed `border`, `text-muted`, `aria-disabled`). After an outcome (Listening, Mic blocked, Problem, or Stopped) Allow and Not now give way to **Next**, which takes the focus if it was on them. Without a microphone API or on an insecure page there is no Allow at all, only Back, Next and why. A blocked or failed microphone says the sample clips still work, and they do.
+3. **Where should alerts buzz?** (a wristband glyph): lede "You can change this any time in Settings."; the three Buzz on option tiles of the Settings sheet (`src/station/output-options.ts`, the same `.bb-option` look), named by the `h2`. A change saves through the Settings sheet at once. The Wristband caption is honest about hardware: "Needs the Banshee Band wristband (DIY hardware, not sold). Connect it in Settings. Until then alerts show on the screen." Without Web Bluetooth (or vibration) the option is disabled with the Settings sheet's reason. No connect button here. Actions: **Back** and **Done**.
+
+Focus: opening focuses the step 1 heading; every step change focuses the new heading. Closing returns the focus to the Settings pill when the intro came from Show intro again, else to the Listen card's visible pill (Start listening, or Stop while listening). Closing never starts or stops the microphone.
+
+Motion: the sheet and each step fade in and rise 12px on `--bb-motion-slow` (`@starting-style` with a transition, no `@keyframes`); under reduced motion the token is 0s and a second rule removes the transition, so nothing moves.
+
+Phone (390px): a bottom sheet, full width, rounded top corners, at most the viewport height minus 24px, scrolling inside. The actions stack full width at the foot of the sheet (sticky), in DOM order, so the primary pill is last and nearest the thumb. No sideways scrolling; every pill and option tile is at least 44px tall.
+
+```
++------------------------------+
+| (dimmed station)             |
+|+----------------------------+|
+|| Step 2 of 3   [Skip intro] ||
+|| ▬ ▬ ▬                      ||
+|| ((mic))                    ||
+|| Turn on the microphone     ||
+|| The microphone is how ...  ||
+|| +------------------------+ ||
+|| | Banshee Band asks for  | ||
+|| | the microphone only ...| ||
+|| +------------------------+ ||
+|| [          Back          ] ||
+|| [        Not now         ] ||
+|| [    Allow microphone    ] ||
+|+----------------------------+|
++------------------------------+
+```
+
+The intro adds no colour pair: it uses text and muted text on the card and on tiles, `accent-strong` on `accent-tint` (the disc pictures, the selected option), `on-accent` on `accent` (the number discs), `accent` and `border` on the card (the step bars, UI marks), the status pill pairs, the primary pill on the card with its Night outline, and the focus ring on the card, all rows of the Contrast table.
 
 ### Band simulator
 
