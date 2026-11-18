@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const SRC = fileURLToPath(new URL('../../src/', import.meta.url));
 const STATION = join(SRC, 'station');
-const PURE = ['wav.ts', 'stereo.ts', 'summary.ts', 'waveform.ts', 'format.ts', 'pipeline.ts', 'runner.ts', 'constants.ts', 'live-gate.ts', 'listen-status.ts', 'settings.ts'];
+const PURE = ['wav.ts', 'stereo.ts', 'summary.ts', 'waveform.ts', 'format.ts', 'pipeline.ts', 'runner.ts', 'constants.ts', 'live-gate.ts', 'listen-status.ts', 'settings.ts', 'latency.ts'];
 const pureFiles = PURE.filter((f) => existsSync(join(STATION, f))).map((f) => ({ name: f, text: readFileSync(join(STATION, f), 'utf8') }));
 
 const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
