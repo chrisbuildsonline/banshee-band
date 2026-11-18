@@ -1,0 +1,274 @@
+/*
+ * First-run intro (src/station/onboarding-sheet.ts). Design tokens only (design/DESIGN.md); the one literal
+ * breakpoint is 720px. Phone first: a bottom sheet with rounded top corners that scrolls inside, with the actions
+ * stacked at its foot within thumb reach; from 720px a centred floating card up to 560px wide. The sheet and each
+ * step fade and rise in on --bb-motion-slow, which is 0s under reduced motion. No @keyframes. The output radios
+ * reuse the .bb-option tiles of settings.css.
+ */
+
+/* The sheet: phone, a bottom sheet */
+.bb-intro {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: calc(100dvh - var(--bb-space-5));
+  margin: 0;
+  padding: var(--bb-space-5) var(--bb-space-5) 0;
+  border: 0;
+  border-radius: var(--bb-radius-card) var(--bb-radius-card) 0 0;
+  background-color: var(--bb-color-surface);
+  color: var(--bb-color-text);
+  box-shadow: var(--bb-shadow-soft);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.bb-intro[open] {
+  display: grid;
+  gap: var(--bb-space-5);
+  align-content: start;
+}
+
+.bb-intro::backdrop {
+  background-color: var(--bb-color-canvas);
+  opacity: 0.8;
+}
+
+/* Entry: a short fade and rise for the sheet and each step; nothing moves when the motion tokens are 0s. */
+.bb-intro[open],
+.bb-intro__step {
+  opacity: 1;
+  translate: 0 0;
+  transition-property: opacity, translate;
+  transition-duration: var(--bb-motion-slow);
+  transition-timing-function: ease-out;
+}
+
+@starting-style {
+  .bb-intro[open],
+  .bb-intro__step {
+    opacity: 0;
+    translate: 0 var(--bb-space-3);
+  }
+}
+
+/* Head: Step n of 3 with three bars, and Skip intro */
+.bb-intro__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bb-space-3);
+}
+
+.bb-intro__progress {
+  display: grid;
+  gap: var(--bb-space-2);
+}
+
+.bb-intro__count {
+  margin: 0;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-intro__bars {
+  display: flex;
+  gap: var(--bb-space-1);
+}
+
+.bb-intro__bar {
+  width: var(--bb-space-5);
+  height: var(--bb-space-1);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-border);
+}
+
+.bb-intro__bar[data-on="true"] {
+  background-color: var(--bb-color-accent);
+}
+
+/* A step */
+.bb-intro__step {
+  display: grid;
+  gap: var(--bb-space-4);
+  align-content: start;
+  min-width: 0;
+}
+
+.bb-intro__step[hidden] {
+  display: none;
+}
+
+.bb-intro__disc {
+  display: grid;
+  place-items: center;
+  width: var(--bb-space-8);
+  height: var(--bb-space-8);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-intro__picture {
+  width: var(--bb-space-6);
+  height: var(--bb-space-6);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bb-intro__title {
+  margin: 0;
+}
+
+/* The heading takes the focus on each step so a screen reader reads it; it is not a control, so no ring. */
+.bb-intro__title:focus {
+  outline: none;
+}
+
+.bb-intro__lede {
+  margin: 0;
+  color: var(--bb-color-text-muted);
+}
+
+/* Step 1: three numbered points and the aid sentence */
+.bb-intro__points {
+  display: grid;
+  gap: var(--bb-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bb-intro__point {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bb-space-3);
+}
+
+.bb-intro__num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--bb-space-6);
+  height: var(--bb-space-6);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-accent);
+  color: var(--bb-color-on-accent);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-intro__point-text {
+  padding-top: var(--bb-space-1);
+}
+
+.bb-intro__aid {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bb-space-3);
+  margin: 0;
+  padding: var(--bb-space-4);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-intro__aid-glyph {
+  flex: none;
+  width: var(--bb-space-5);
+  height: var(--bb-space-5);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
+
+/* Step 2: the outcome of Allow microphone */
+.bb-intro__mic {
+  display: grid;
+  justify-items: start;
+  gap: var(--bb-space-3);
+  padding: var(--bb-space-4);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-intro__mic-text {
+  margin: 0;
+  color: var(--bb-color-text);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+/* Step 3: the .bb-option radio tiles of settings.css, laid out here */
+.bb-intro__options {
+  display: grid;
+  gap: var(--bb-space-2);
+  min-width: 0;
+}
+
+/* Actions: phone, stacked full width at the foot of the sheet, the primary last and nearest the thumb */
+.bb-intro__actions {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  gap: var(--bb-space-2);
+  margin-top: var(--bb-space-2);
+  padding: var(--bb-space-3) 0 var(--bb-space-5);
+  background-color: var(--bb-color-surface);
+}
+
+.bb-intro__actions .bb-pill[hidden] {
+  display: none;
+}
+
+/* Allow microphone while the station starts: the disabled look of Pills, the label unchanged */
+.bb-intro__actions .bb-pill[aria-disabled="true"] {
+  border: 1px dashed var(--bb-color-border);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text-muted);
+  cursor: not-allowed;
+}
+
+/* Desktop: a centred floating card, up to 560px wide; the actions in one row, Back on the left */
+@media (min-width: 720px) {
+  .bb-intro {
+    inset: 0;
+    width: min(calc(var(--bb-space-8) * 9 - var(--bb-space-4)), calc(100vw - var(--bb-space-6) * 2));
+    max-height: calc(100dvh - var(--bb-space-7));
+    margin: auto;
+    padding: var(--bb-space-6) var(--bb-space-6) 0;
+    border-radius: var(--bb-radius-card);
+  }
+
+  .bb-intro__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--bb-space-3);
+    padding-bottom: var(--bb-space-6);
+  }
+
+  .bb-intro__actions [data-intro="back"] {
+    margin-inline-end: auto;
+  }
+}
+
+/* A second guard: the motion tokens are already 0s here. */
+@media (prefers-reduced-motion: reduce) {
+  .bb-intro[open],
+  .bb-intro__step {
+    transition: none;
+  }
+}

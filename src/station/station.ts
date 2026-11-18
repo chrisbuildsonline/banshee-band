@@ -8,13 +8,15 @@ import { failureText, LIVE_FAILURE_TEXT, mutedText } from './format';
 import { mountEventList } from './list';
 import { mountListenCard } from './listen';
 import { createLive, type Live } from './live';
+import { markOnboarded, micSupport, shouldShowIntro } from './onboarding';
+import { mountOnboarding, type Onboarding } from './onboarding-sheet';
 import { mountPipelineView } from './pipeline-view';
 import { runSound } from './runner';
 import { createSettingsEngine, effectiveOutput, isMuted, loadSettings, outputsFor, type StationSettings } from './settings';
 import { browserStorage, mountSettings } from './settings-panel';
 import { mountStatusPill } from './status';
 import { mountTrySound } from './try-sound';
-import type { LiveDeps, RunnerDeps, RunResultOk, TrySide } from './types';
+import type { ListenState, LiveDeps, RunnerDeps, RunResultOk, TrySide } from './types';
 
 const LOADING_MODEL = 'Loading the sound model';
 const LISTENING = 'Listening to the clip';
@@ -226,17 +228,26 @@ export function mountStation(root: HTMLElement): void {
   // Live listening: its own settings engine with the default rate limit, the shared classifier and outputs.
   let live: Live | null = null;
   let starting = false;
+  // The Listen state, kept here too so the intro's microphone step can show the same outcome.
+  let listenState: ListenState = 'idle';
+  const listenWatchers = new Set<(state: ListenState) => void>();
+
+  function setListen(state: ListenState, message: string | null = null): void {
+    listenState = state;
+    listen.setState(state, message);
+    for (const fn of listenWatchers) fn(state);
+  }
 
   async function startListening(): Promise<void> {
     if (starting) return;
     starting = true;
-    listen.setState('starting', classifier ? null : LOADING_MODEL);
+    setListen('starting', classifier ? null : LOADING_MODEL);
     try {
       let c: Classifier;
       try {
         c = await loadClassifier();
       } catch {
-        listen.setState('problem', MODEL_FAILED);
+        setListen('problem', MODEL_FAILED);
         return;
       }
       liveDeps ??= { capture: createCapture(), classifier: c, bearing: createBearingWindow(), engine: createSettingsEngine(settings), outputs, ...clocks };
@@ -244,14 +255,14 @@ export function mountStation(root: HTMLElement): void {
         liveDeps,
         (u) => {
           if (u.kind === 'event') show(u.result);
-          else if (u.kind === 'failure') listen.setState('problem', LIVE_FAILURE_TEXT);
-          else if (u.state !== 'starting') listen.setState(u.state, u.message);
+          else if (u.kind === 'failure') setListen('problem', LIVE_FAILURE_TEXT);
+          else if (u.state !== 'starting') setListen(u.state, u.message);
         },
       );
       try {
         await live.start();
       } catch {
-        listen.setState('problem', CAPTURE_FAILED);
+        setListen('problem', CAPTURE_FAILED);
       }
     } finally {
       starting = false;
@@ -263,7 +274,43 @@ export function mountStation(root: HTMLElement): void {
   const trySound = mountTrySound(tryCard, { onPick: (clip, chosen) => void pick(clip, chosen) });
 
   const settingsTrigger = document.getElementById('settings-open');
-  if (settingsTrigger) mountSettings(settingsTrigger, { settings, phoneAvailable: vibrates, band, onChange: apply });
+  if (settingsTrigger) {
+    let intro: Onboarding | null = null;
+    let openedFrom: HTMLElement | null = null;
+    const panel = mountSettings(settingsTrigger, {
+      settings,
+      phoneAvailable: vibrates,
+      band,
+      onChange: apply,
+      onShowIntro: () => {
+        openedFrom = settingsTrigger;
+        intro?.open(settingsTrigger);
+      },
+    });
+    // The first-run intro: its output choice goes through the Settings sheet, its microphone through Start listening.
+    intro = mountOnboarding({
+      phoneAvailable: vibrates,
+      bandSupported: band.state() !== 'unsupported',
+      micSupport: micSupport({ hasGetUserMedia: typeof navigator.mediaDevices?.getUserMedia === 'function', isSecureContext: window.isSecureContext }),
+      settings: panel.settings,
+      setOutput: panel.setOutput,
+      listen: {
+        state: () => listenState,
+        start: () => void startListening(),
+        subscribe: (fn) => {
+          listenWatchers.add(fn);
+          return () => void listenWatchers.delete(fn);
+        },
+      },
+      onClose: () => {
+        markOnboarded(browserStorage());
+        // The first run: the pill the user needs next, Start listening (or Stop while listening).
+        if (!openedFrom) listenCard.querySelector<HTMLElement>('[data-listen]:not([hidden])')?.focus();
+        openedFrom = null;
+      },
+    });
+    if (shouldShowIntro(browserStorage())) intro.open(null);
+  }
 
   loadManifest().then(
     (clips) => trySound.setClips(clips),
