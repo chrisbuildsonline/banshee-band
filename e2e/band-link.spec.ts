@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // The wristband over Web Bluetooth, with a mocked navigator.bluetooth: no hardware. The mock records every
 // requestDevice call and every frame written to the command characteristic.

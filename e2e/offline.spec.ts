@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const MODEL_TIMEOUT = 120_000;
 /** Chromium's GPU driver note when TF.js WebGL reads scores back (see e2e/station.spec.ts). */

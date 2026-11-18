@@ -204,6 +204,10 @@
   background-color: var(--bb-color-surface-raised);
 }
 
+.bb-intro__mic .bb-status[hidden] {
+  display: none;
+}
+
 .bb-intro__mic-text {
   margin: 0;
   color: var(--bb-color-text);

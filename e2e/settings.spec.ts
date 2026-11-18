@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const SCREENSHOTS = resolve(import.meta.dirname, 'screenshots');
 const KNOCK_WAV = resolve(import.meta.dirname, '../public/clips/knock-01.wav');
@@ -135,13 +136,13 @@ test.describe('settings sheet', () => {
     expect(problems, problems.join('\n')).toEqual([]);
   });
 
-  test('tab order inside the sheet: Done, then switch and slider per class, the radios as one stop, then Reset', async ({ page }) => {
+  test('tab order inside the sheet: Done, then switch and slider per class, the radios as one stop, then Reset and Show intro again', async ({ page }) => {
     await page.goto('/');
     await openSheet(page);
     await toggle(page, 'Voice').click(); // a disabled slider is skipped
     await sheet(page).getByRole('button', { name: 'Done' }).focus();
     const names: string[] = [];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 16; i++) {
       await page.keyboard.press('Tab');
       names.push(
         await page.evaluate(() => {
@@ -163,7 +164,20 @@ test.describe('settings sheet', () => {
       'switch:Other', 'range:Other Alerts from',
       'radio:phone',
       'button:Reset to defaults',
+      'button:Show intro again',
     ]);
+  });
+
+  test('the sheet foot: Reset to defaults then Show intro again, both secondary, and still no primary pill', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(Navigator.prototype, 'bluetooth', { configurable: true, get: () => undefined });
+    });
+    await page.goto('/');
+    await openSheet(page);
+    const foot = sheet(page).locator('.bb-settings__foot .bb-pill');
+    await expect(foot).toHaveText(['Reset to defaults', 'Show intro again']);
+    for (const name of ['Reset to defaults', 'Show intro again']) await expect(sheet(page).getByRole('button', { name })).toHaveClass(/bb-pill--secondary/);
+    await expect(sheet(page).locator('.bb-pill--primary')).toHaveCount(0);
   });
 
   test('a corrupt saved value opens with the defaults and no console output', async ({ page }) => {

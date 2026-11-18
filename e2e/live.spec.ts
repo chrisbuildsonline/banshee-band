@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const KNOCK_WAV = resolve(import.meta.dirname, '../public/clips/knock-01.wav');
 const SCREENSHOTS = resolve(import.meta.dirname, 'screenshots');

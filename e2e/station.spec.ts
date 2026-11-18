@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const SCREENSHOTS = resolve(import.meta.dirname, 'screenshots');
 /** The first run loads the sound model in the browser, which can take a while. */
