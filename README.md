@@ -85,6 +85,19 @@ Run it with `bun run mcp:banshee-log`. In Kiro it is already registered in `.kir
 
 `tests/mcp/banshee-log.test.ts` spawns the server over stdio and calls every tool, including the bad-input cases; `tests/mcp/log.test.ts` covers the log file itself.
 
+## Kiro hooks
+
+Four agent hooks in `.kiro/hooks/` run a check when a matching file is saved in Kiro. Each one runs a bun script through `package.json`, so you can run the same check by hand. A script prints every problem it finds and exits 1 when there is one.
+
+| Hook | Runs on save of | Command | What it checks |
+|---|---|---|---|
+| Pattern distinctiveness on save | `src/haptics/patterns.json`, `patterns.ts`, `distinct.ts` | `bun run hooks:patterns` | Every vibration pattern keeps the pattern language limits, and no two patterns feel too alike (`checkDistinctiveness`). Takes an optional file path. |
+| Every spec requirement has a test | spec `requirements.md` and `tasks.md`, `scripts/hooks/spec-gaps.json`, test files | `bun run hooks:spec-tests` | Every `### Requirement N` of each spec in `.kiro/specs/` is listed by a task that names a test file that exists. The 13 known gaps (review steps, gate commands, mutation scripts) are listed with their reasons in `scripts/hooks/spec-gaps.json`. A known gap that later gets a test also fails the check, so the list stays accurate. |
+| No colour-only alerts | `src/station/status.ts`, `listen-status.ts`, `src/ghosts/constants.ts`, `src/band/labels.ts`, `connect.ts`, `connect.css` | `bun run hooks:colour` | The station pill, the Listen pill, the ghost urgencies and the wristband row never tell two states apart by colour alone. Each state has a word, and two states with different colours also differ in word and, where they have one, in shape. |
+| Regenerate fixtures | `public/clips/*.wav`, `public/clips/manifest.json`, `src/classify/*.ts`, `src/bearing/*.ts` | `bun run hooks:fixtures` | Reruns `classify:report`, `bearing:report` and `log:seed` in order, and stops at the first one that fails. |
+
+The scripts are in `scripts/hooks/` and their tests are in `tests/scripts/hooks/`.
+
 ## License
 
 MIT, see LICENSE.
