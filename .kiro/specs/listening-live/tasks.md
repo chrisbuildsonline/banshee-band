@@ -62,9 +62,9 @@ Each task is small steps that end in a test gate. Write the test first, see it f
   - **Gate:** `bun run e2e` passes in both projects; `typecheck`, `test` and `build` pass.
 
 - [ ] 6. Review and final gate
-  - [ ] 6.1 Check the copy and the page: the Listen sentence is verbatim (Requirement 2.3); the page never says it protects the user and says nothing reassuring while the status is not Listening; no "simulated" for a live event; the offline line only after readiness; the aid sentence in the footer is unchanged.
+  - [x] 6.1 Check the copy and the page: the Listen sentence is verbatim (Requirement 2.3); the page never says it protects the user and says nothing reassuring while the status is not Listening; no "simulated" for a live event; the offline line only after readiness; the aid sentence in the footer is unchanged.
     - _Requirements: 2.3, 2.10, 3.10, 7.3_
-  - [ ] 6.2 Check the diff: `src/audio`, `src/bearing`, `src/haptics`, `src/band`, `src/events` and `src/ghosts` unchanged; `src/classify` changed only by `backend`; `package.json` changed only by the `icons` script; no `console`, storage call, `Math.random` or `Date` (outside `format.ts`) in the new `src/station` and `src/pwa` code; no `@keyframes` outside `prefers-reduced-motion: no-preference`; no external URL anywhere in `src/`, the HTML files and the worker.
+  - [x] 6.2 Check the diff: `src/audio`, `src/bearing`, `src/haptics`, `src/band`, `src/events` and `src/ghosts` unchanged; `src/classify` changed only by `backend`; `package.json` changed only by the `icons` script; no `console`, storage call, `Math.random` or `Date` (outside `format.ts`) in the new `src/station` and `src/pwa` code; no `@keyframes` outside `prefers-reduced-motion: no-preference`; no external URL anywhere in `src/`, the HTML files and the worker.
     - _Requirements: 1.1-1.5_
   - [ ] 6.3 Update `.kiro/steering/structure.md` (`src/pwa/`, the new `src/station` files, `scripts/`, `e2e/live.spec.ts`, `e2e/offline.spec.ts`, the rule that `src/pwa` imports nothing from the project) and `README.md` (the `icons` script, the install and offline note, that the offline test runs against a production build).
     - _Requirements: 1.1, 9.7_

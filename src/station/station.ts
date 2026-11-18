@@ -121,6 +121,8 @@ export function mountStation(root: HTMLElement): void {
   const simulator = mountBandSimulator(simHost);
   const outputs: HapticOutput[] = vibrates ? [simulator.output, phone] : [simulator.output];
   const engine = createHapticEngine({ rateLimitMs: 0 });
+  /** The clocks both paths share: a monotonic one for stage times and the wall clock for event times. */
+  const clocks = { now: () => performance.now(), epoch: () => Date.now() };
 
   let classifier: Classifier | null = null;
   let loading: Promise<Classifier> | null = null;
@@ -166,7 +168,7 @@ export function mountStation(root: HTMLElement): void {
       }
       trySound.setBusy(LISTENING, clip.id);
       // One deps object for the page, so the runner numbers its events station-1, station-2, ...
-      deps ??= { loadClip: (id) => fetchClip(id), classifier: c, engine, outputs, now: () => performance.now(), epoch: () => Date.now() };
+      deps ??= { loadClip: (id) => fetchClip(id), classifier: c, engine, outputs, ...clocks };
       const result = await runSound(deps, clip.id, chosen);
       trySound.setBusy(null);
       if (!result.ok) {
@@ -197,7 +199,7 @@ export function mountStation(root: HTMLElement): void {
         return;
       }
       live ??= createLive(
-        { capture: createCapture(), classifier: c, bearing: createBearingWindow(), engine: createHapticEngine(), outputs, now: () => performance.now(), epoch: () => Date.now() },
+        { capture: createCapture(), classifier: c, bearing: createBearingWindow(), engine: createHapticEngine(), outputs, ...clocks },
         (u) => {
           if (u.kind === 'event') show(u.result);
           else if (u.kind === 'failure') listen.setState('problem', LIVE_FAILURE_TEXT);
