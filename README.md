@@ -43,6 +43,28 @@ Parts, wiring, flashing and the byte protocol are in [firmware/README.md](firmwa
 
 The design system lives in `design/DESIGN.md` and `src/ui/tokens.css`. See it at http://localhost:5173/styleguide.html.
 
+## Latency
+
+The pipeline card shows **Onset to output**: the measured time from the start of a sound to the moment its vibration pattern is handed to the outputs. It is read from `performance.now()` in the page, not estimated.
+
+Measured with `e2e/latency.spec.ts` (Knock, one test at a time, `--repeat-each=5 --workers=1`) in headless Chromium from Playwright, dev server, on the development PC under WSL2; TensorFlow.js reported the `webgl` backend:
+
+| Path | Five runs (ms) | Median |
+|---|---|---|
+| Try a sound, `knock-01.wav` (6.3 s clip) | 795.8, 899, 813.8, 828.8, 743.6 | 814 ms |
+| Listening, fake microphone playing the same clip | 57.1, 58.6, 77.4, 74.3, 69.8 | 70 ms |
+
+With the whole e2e suite running in parallel the same tests read about 1130 ms and 110 to 130 ms. A phone will differ.
+
+What onset means:
+
+- **Try a sound**: the start of the run, right after the chip press once the model is loaded. It counts fetching the clip and classifying every 0.975 s window of it (11 for this clip), then the side, the pattern and the output. The clip is processed faster than real time, so this is processing time on a whole clip, not a live delay. The one-time model load on the first press is not counted.
+- **Listening**: the moment a 0.975 s microphone window reaches the page, which is the end of that window. It counts any wait behind a classification still running, then classify, side, pattern and output.
+
+Output is the moment the last output's `play()` returned: the band simulator and phone vibration start then; for the wristband the frame has been queued for the Bluetooth write.
+
+Not counted: the model load; the microphone, operating system and Web Audio buffering before a window reaches the page; the time the sound sat inside its window before the window ended (up to 0.975 s); the screen paint; the Bluetooth radio time and the motor spin-up. When nothing buzzed (the sound was muted in Settings or has no pattern) the card says so and shows no number.
+
 ## License
 
 MIT, see LICENSE.
