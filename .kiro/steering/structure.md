@@ -74,16 +74,21 @@ src/ui/         settings, controls, text alerts, layout
   theme.ts            shared Day and Night theme control
   band-page.ts        band simulator page script: status pill, Connect band card, Feel a pattern card (also plays on the wristband when it is connected)
   styleguide.ts       styleguide page script: theme control, Ghosts section (field and glyph grid)
-mcp/            banshee-log MCP server (recent_events, event_stats, replay_clip)
+mcp/            banshee-log MCP server over stdio (recent_events, event_stats, replay_clip), run with bun
+  log.ts              logPath, parseLog, readLog, appendRecord, recentEvents, eventStats: the JSONL sound log (parse and queries pure)
+  replay.ts           listClips, replayClip: runs a clip headless through the real pipeline (runner, YAMNet on TF.js CPU, bearing, haptic engine, no outputs)
+  vite-shim.ts        Bun plugin that loads Vite `?worker&url` imports as an empty string; imported before replay.ts
+  banshee-log.ts      the server entry: the three tools and the stdio transport; loads replay.ts on the first replay_clip call
 firmware/       ESP32 Arduino C++ for the two-motor band
   banshee-band/banshee-band.ino  BLE service, frame parser (same rules as decodeFrame), non-blocking two-motor PWM player
   README.md           parts list, wiring table, how to flash, the byte protocol with a worked example frame
-scripts/        build-time scripts: make-icons.ts (bun run icons) writes public/icons/*.png and public/manifest.webmanifest
+scripts/        build-time scripts: make-icons.ts (bun run icons) writes public/icons/*.png and public/manifest.webmanifest; log-clips.ts (bun run log:seed) replays every clip through the pipeline and appends the events to the sound log
 tests/          Vitest unit and property tests
   tests/ghosts/       unit, property, shape raster
   tests/band/         protocol unit and property, ble-output with a fake BluetoothLike, firmware sync (sketch and README against protocol.ts)
   tests/station/      unit, property, real clip side table, settings unit, property and styles tests
   tests/pwa/          manifest, icons, routes, precache, and the built dist/sw.js check (runs after bun run build)
+  tests/mcp/          log unit and stdio integration tests
 e2e/            Playwright tests
   e2e/ghosts.spec.ts  ghost field e2e
   e2e/station.spec.ts listening station e2e and screenshots
@@ -105,7 +110,7 @@ design/DESIGN.md  UI source of truth
 - `src/band` exposes one output interface. The Bluetooth band, simulator and vibrate fallback implement it, so `haptics` never knows which is active.
 - Modules take plain data in and return plain data out where possible, so they can be tested without a browser.
 - Tests mirror source paths, for example `tests/bearing/gcc-phat.test.ts`.
-- `mcp/` has no imports from `src/` except shared event types.
-- `src/station` sits with `ui` at the top of the flow: it may import the other modules, and nothing but `src/main.ts` imports it.
+- `mcp/` reads and writes the log with `src/events` only; `mcp/replay.ts` is the one file that may also import the real pipeline (`src/station/runner.ts`, `src/classify`, `src/haptics`) to run a clip headless. Nothing in `src/` imports `mcp/`.
+- `src/station` sits with `ui` at the top of the flow: it may import the other modules, and nothing but `src/main.ts` (and `mcp/replay.ts`, for `runner.ts`) imports it.
 - `src/pwa/` imports nothing from the other project modules. Only `src/main.ts` imports `src/pwa/register.ts`.
 - The pure files of `src/station` and `src/pwa` (`live-gate.ts`, `live.ts`, `latency.ts`, `settings.ts`, `precache.ts`, `routes.ts`, `manifest.ts`, `icons.ts`) use no `document`, `window`, `navigator`, `localStorage`, `fetch`, `caches`, `console`, `Math.random` or `Date`; `tests/station/boundaries.test.ts` checks this.

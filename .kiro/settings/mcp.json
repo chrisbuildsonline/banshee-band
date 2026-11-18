@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "banshee-log": {
+      "command": "bun",
+      "args": ["run", "mcp:banshee-log"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": ["recent_events", "event_stats"]
+    }
+  }
+}
