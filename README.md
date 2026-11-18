@@ -29,6 +29,10 @@ Needs [bun](https://bun.sh). Install with `bun install`, then:
 
 The station is an installable web app. A production build (`bun run build`) writes a service worker, `dist/sw.js`, that caches the pages, the scripts, the YAMNet model (about 16 MB) and the sample clips at the first visit, about 18 MB in all. After that one online visit the station opens, classifies and listens with no network, and the title block says "Works offline after the first visit." Your browser's install or "Add to Home Screen" option installs it. The dev server never registers the worker, so offline only works from a production build. For the same reason the offline test (`e2e/offline.spec.ts`) runs against the production build on port 5288, and `tests/pwa/build.test.ts` checks `dist/sw.js` after `bun run build` (it is skipped with a message when `dist/` is missing).
 
+### Settings
+
+The Settings pill in the station header opens a sheet: switch each sound class on or off, set how loud it must be to alert (−80 to −10 dB, default −50 dB), and choose where the buzz goes (phone vibration or screen only; the wristband option waits for the Bluetooth link). Changes apply at once, in Try a sound and while listening, and are saved in this browser's `localStorage` only.
+
 The design system lives in `design/DESIGN.md` and `src/ui/tokens.css`. See it at http://localhost:5173/styleguide.html.
 
 ## License

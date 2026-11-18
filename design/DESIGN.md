@@ -284,7 +284,7 @@ Desktop (1440px), a 12-column grid with 24px gaps:
 
 ```
 +--------------------------------------------------------------------------------+
-| Banshee Band                [Band simulator] [▲ Phone vibration fallback] Day|Night |
+| Banshee Band   [Band simulator] [⚙ Settings] [▲ Phone vibration fallback] Day|Night |
 |                                                                                |
 | Try it with sample clips                                                       |
 | Listening station                         Choose a sound and see it become a   |
@@ -312,7 +312,7 @@ Desktop (1440px), a 12-column grid with 24px gaps:
 ```
 
 Regions in DOM order (the tab order follows it):
-1. Header: brand link, "Band simulator" secondary pill link, the status pill (Band not connected, or Phone vibration fallback when the phone can vibrate; Problem when the sound model fails), the Day/Night control.
+1. Header: brand link, "Band simulator" secondary pill link, the "Settings" secondary pill with a gear glyph (opens the Settings sheet, see Settings), the status pill (Phone vibration fallback when the phone can vibrate and Buzz on is Phone vibration, otherwise Band not connected; Problem when the sound model fails), the Day/Night control.
 2. Title block: the eyebrow, `display` "Listening station" and the lede beside it on the right (under it near 720px). The lede says the sounds are sample clips, no microphone is used and no band is connected.
 3. Listen card, all 12 columns: `heading` "Listen" and the muted sentence on the left; the Start listening primary pill (or Stop) and the Listen status pill on the right; a polite message line under them (the model loading, or the plain reason the microphone could not start). Then the Try a sound card, all 12 columns: heading, the muted simulated-side sentence, the Left/Centre/Right segmented control (default Centre), one secondary pill chip per clip with a 24px low ghost glyph, and a polite message line.
 4. Ghost field card, 7 columns, at least 480px: the canvas (448px on desktop) on thin `accent-tint` sonar rings around the listener mark, "All quiet" over an empty field, the "Now:" list as its DOM text equivalent, and an urgency key (the same ghost at Low, Medium and Urgent). It keeps its own height and sticks inside its grid row while the right column, which grows with every row, scrolls past.
@@ -325,7 +325,7 @@ Phone (390px):
 ```
 +------------------------------+
 | Banshee Band       Day|Night |
-| [Band simulator] [▲ Phone..] |
+| [Band sim..] [⚙ Settings] [▲]|
 | Listening station            |
 | Choose a sound and see ...   |
 | +--------------------------+ |
@@ -373,29 +373,66 @@ Phone (390px): the same four cards stacked in order, full width, with a thin acc
 
 ### Settings
 
-Changes apply at once. **No primary action** (no Save button).
+A sheet over the listening station, not a page of its own, so a change can be tried on the next sound (or the next live window) without leaving the station. The **Settings** secondary pill in the station header (a small gear glyph, `aria-haspopup="dialog"`) opens it as a native `<dialog>` with `showModal()`, labelled by its `h2` "Settings". Changes apply at once and are saved on this device (`localStorage`, key `banshee-band.settings.v1`); a missing, corrupt or blocked store gives the defaults (every class on at −50 dB, Phone vibration) and no error. **No primary action** (no Save button, no near-black pill); Done and Escape close it, and the focus goes back to the Settings pill.
 
-Desktop (1440px):
+Desktop (1440px): a side sheet floating at the right edge, 16px in from the viewport edges, up to 480px wide, `surface` fill, `radius-card`, `shadow-soft`. The page behind is covered by the canvas colour at 80% opacity, so the sheet is the only bright surface. The sheet scrolls inside.
 
 ```
 +--------------------------------------------------------------------------------+
-| Banshee Band          [● Listening] [○ Band not connected]                     |
-| Settings                                                                       |
-| Changes apply right away                                                       |
-| +--------------------------------------+ +-----------------------------------+ |
-| | Sounds                               | | Output                            | |
-| | Knock        [on ]  Loudness [==o] 60| | Band       [Connect band]  ○ Not  | |
-| | Alarm        [on ]  Loudness [=o=] 40| | Simulator  [on ]                  | |
-| | Voice        [off]  Loudness [o==] 20| | Phone vibration fallback [on ]    | |
-| | Vehicle      [on ]  ...              | | Theme      [Day | Night]          | |
-| | Baby         [on ]  ...              | +-----------------------------------+ |
-| +--------------------------------------+                                       |
+| Banshee Band   [Band simulator] [⚙ Settings] [▲ Ph+-------------------------------+ |
+|                                                  | Settings                [Done]| |
+| Listening station   (dimmed)                     | Changes apply right away and  | |
+|                                                  | stay on this device.          | |
+|                                                  | Sounds                        | |
+|                                                  | A sound alerts you when ...   | |
+|                                                  | +---------------------------+ | |
+|                                                  | |(g) Knock        (o  ) Off | | |
+|                                                  | | Alerts from [==o====] −50 | | |
+|                                                  | +---------------------------+ | |
+|                                                  | | (g) Doorbell    (  o) On  | | |
+|                                                  | |  ... seven tiles ...      | | |
+|                                                  | Buzz on                       | |
+|                                                  | (✓) Phone vibration           | |
+|                                                  | ( ) Screen only               | |
+|                                                  | (:) Wristband  (disabled)     | |
+|                                                  | [Reset to defaults]           | |
+|                                                  +-------------------------------+ |
 +--------------------------------------------------------------------------------+
 ```
 
-Regions: header; title block; Sounds card (left, wider): one row per class with an on/off switch, a loudness slider and a numeric field bound to it; Output card (right): band connection (Connect band is a secondary pill), simulator switch, vibration fallback switch, theme control. Each switch is a real checkbox or `role="switch"` with a visible label; the slider and number field share one label. Tab order: per class row, switch then slider then number; then the Output card top to bottom.
+Regions, in DOM and tab order:
 
-Phone (390px): one column, Sounds then Output, same order. Rows stack: class name and switch on one line, slider and number below.
+1. Head: `h2` "Settings", the muted caption "Changes apply right away and stay on this device.", and the **Done** secondary pill (focused when the sheet opens).
+2. **Sounds** (`h3`, then the muted caption "A sound alerts you when it is on and at least as loud as its level. −80 dB is very quiet, −10 dB is very loud."): one `surface-raised` tile (`radius-control`) per class in the order Knock, Doorbell, Alarm, Baby, Vehicle, Voice, Other. Each tile has the class's 24px low ghost glyph in a round `surface` disc (decorative), the class name, and a **switch**: a real `<input type="checkbox" role="switch">` named by the class name, drawn as a pill track with a round thumb and the visible word "On" or "Off" (on: `accent` track, `on-accent` thumb moved right; off: `surface` track with a 2px `border` outline, `text-muted` thumb on the left). Under it, one line: the visible label "Alerts from", the **level slider** (a native `<input type="range" min="-80" max="-10" step="1">` in `accent`, named "‹Class› Alerts from", with `aria-valuetext` like "−50 dB") and the value as text with tabular figures. A class that is off gets a 1px dashed `border` outline, muted name and value, and a disabled slider, so off reads without colour.
+3. **Buzz on**: a `<fieldset>` with that legend and three native radios drawn as option tiles (`surface-raised`, `radius-control`), each with a round check mark, a name and a muted caption: **Phone vibration** ("The phone buzzes the pattern. The screen shows it too."), **Screen only** ("The pattern plays on the band simulator on this screen.") and **Wristband**, disabled until the Bluetooth link, with the caption "Needs the wristband (coming with the Bluetooth link)". The selected tile takes `accent-tint`, `accent-strong` text and a filled check, so selection is more than colour; a disabled tile takes the disabled look of Pills (dashed `border`, `text-muted`). When the browser cannot vibrate, Phone vibration is disabled too with the caption "This browser cannot vibrate.", and Screen only shows as selected. The band simulator on the station always mirrors the pattern; the choice decides whether the phone buzzes as well. The header status pill follows it: "Phone vibration fallback" when the phone is in use, otherwise "Band not connected".
+4. **Reset to defaults**, a secondary pill.
+
+This replaces the earlier per-output switches (simulator, vibration fallback), the "Connect band" pill and the theme control in Settings: until the Bluetooth link (F11) the only output choice is Buzz on, and the theme control stays in the header.
+
+Tab order: Settings pill; in the sheet Done, then per class the switch and then the slider (a disabled slider is skipped), then the radios as one stop (arrow keys move the choice), then Reset to defaults. Every control has the 3px focus ring (on the switch it rings the track) and is at least 44px tall.
+
+What a setting does on the station: a class that is off, or a sound quieter than its level, raises no ghost, no Recent sounds row, no Latest alert and no buzz. The pipeline card still shows the run (its Pattern tile says "This sound is switched off" or "Too quiet to buzz"), and Try a sound says why in its message line: "Knock is switched off in Settings, so it raised no alert." or "Knock was quieter than its Settings level (−40 dB), so it raised no alert." A live window that is muted shows nothing extra.
+
+The sheet's colour pairs are all rows of the Contrast table already (text and muted text on card and tile, accent text and muted text on the accent tint, text on the accent fill, the accent mark and the border on the tile, the focus ring on the card).
+
+Phone (390px): a bottom sheet, full width, with rounded top corners, at most the viewport height minus 24px, scrolling inside; the same order. Each tile keeps the name and the switch on the first line and the label, slider and value on the second. No sideways scrolling.
+
+```
++------------------------------+
+| (dimmed station)             |
+|+----------------------------+|
+|| Settings            [Done] ||
+|| Changes apply right away...||
+|| Sounds                     ||
+|| A sound alerts you when ...||
+|| +------------------------+ ||
+|| |(g) Knock    (  o) On   | ||
+|| |Alerts from [==o==] −50 | ||
+|| +------------------------+ ||
+||  ... scrolls inside ...    ||
+|+----------------------------+|
++------------------------------+
+```
 
 ### Onboarding
 
