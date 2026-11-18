@@ -5,12 +5,33 @@ inclusion: always
 # Structure
 
 ```
-index.html, styleguide.html, band.html   page shells (index.html: listening station page; band.html: band simulator page)
+index.html, styleguide.html, band.html, capture-harness.html   page shells (index.html: listening station page; band.html: band simulator page; capture-harness.html: test-only page for the audio capture e2e test (e2e/audio-capture.spec.ts, script src/audio/harness.ts), not linked from the app)
 src/events/     SoundEvent contract: type, class constants, validator
 src/audio/      microphone and clip input, stereo capture, framing
 src/classify/   YAMNet loading and inference, label-to-class mapping
+  constants.ts        FRAME_SIZE (15600), SCORE_COUNT (521), DEFAULT_THRESHOLD (0.15), CLASS_PRIORITY (tie-break order)
+  types.ts            ClassMapEntry, LabelMap, Classification, ClassifierOptions, Classifier (with `backend`), ClassifyErrorCode
+  classmap.ts         parseClassMap: the 521-row yamnet_class_map.csv text to entries, throws with the line number (pure)
+  rules.ts            RULES: the exact AudioSet display names per specific class (data only)
+  labelmap.ts         buildLabelMap: rules and class map to a frozen LabelMap, throws on an unknown, repeated or double-claimed name (pure)
+  aggregate.ts        aggregateScores: 521 scores to one Classification, max per class, threshold, priority on ties (pure)
+  errors.ts           ClassifyError with a fixed plain-language message per code (pure)
+  classifier.ts       createClassifier: loads the class map and the model, warm-up, one frame at a time; the only file that imports TensorFlow.js (dynamic import)
+  vite-env.d.ts       Vite client types for import.meta.env.BASE_URL
+  index.ts            public exports
 src/bearing/    GCC-PHAT bearing estimation
 src/haptics/    priority engine and vibration pattern language
+  constants.ts        pattern limits (pulse, gap, cycle, total, repeat pause), distinctness ms, bearing confidence and centre zone, rate limit, other-motor factor, default loudness, PATTERN_CLASSES, URGENCY_BASE_LEVEL, URGENCY_RANK, CLASS_WEIGHT
+  types.ts            HapticClass, Side, Pulse, Repeat, Pattern, Segment, HapticCommand, HapticInput, HapticSettings, DropReason, Decision, Violation, HapticEngine
+  patterns.json       the rhythm of each of the six pattern classes (data only)
+  patterns.ts         validatePatternData, loadPatterns: the bundled patterns checked against the language rules (pure)
+  distinct.ts         cycleMs, totalMs, patternDistance, limitViolations, checkDistinctiveness (pure)
+  priority.ts         priorityOf: urgency rank and class weight to one number (pure)
+  settings.ts         DEFAULT_HAPTIC_SETTINGS, resolveHapticSettings: any input to complete valid settings (pure)
+  side.ts             sideOf: event and bearing confidence to left, right, centre or unknown (pure)
+  command.ts          buildCommand: pattern, side, urgency and intensity to a HapticCommand with segments and a vibrate list (pure)
+  engine.ts           createHapticEngine: decide() to play or drop (class off, too quiet, rate limit, lower priority), time passed in (pure)
+  index.ts            public exports
 src/band/       haptic outputs: one HapticOutput interface, segment player, phone vibrate, band simulator, Bluetooth wristband link
   types.ts            HapticOutput interface
   segment-player.ts   timed motor levels from a HapticCommand (injected scheduler)
@@ -101,6 +122,8 @@ tests/          Vitest unit and property tests
   tests/scripts/hooks/  the four hook scripts: unit tests and a run of each script
 e2e/            Playwright tests
   e2e/ghosts.spec.ts  ghost field e2e
+  e2e/audio-capture.spec.ts the capture harness: microphone and clip input, frame sizes and timing
+  e2e/a11y.spec.ts    axe audits of every screen in Day and Night, keyboard, reduced motion, announcements
   e2e/station.spec.ts listening station e2e and screenshots
   e2e/live.spec.ts    Start listening with a fake microphone: Knock row, backend, Stop, Mic blocked
   e2e/settings.spec.ts Settings sheet: keyboard, persistence after reload, corrupt or blocked storage, muted Try a sound and live runs, Screen only, screenshots
@@ -110,7 +133,11 @@ e2e/            Playwright tests
   e2e/fixtures.ts     shared test fixture: marks the intro as seen unless test.use({ onboarded: false })
   e2e/onboarding.spec.ts first-run intro: 1440 and 390, Day and Night, allow, denied and missing microphone, skip, Escape, shown once, corrupt or blocked storage, Show intro again, keyboard, reduced motion, screenshots
   e2e/latency.spec.ts  onset to output figure: Try a sound (1440 Day) and fake-microphone live run (390 Night) read a measured number, a muted run shows none, screenshots
-public/         clips/ (CC0 fallback clips with licence notes), models/, icons/ and manifest.webmanifest
+public/         static files served as they are
+  public/clips/                six CC0 or public-domain 16 kHz mono WAV fallback clips, manifest.json, LICENSE.txt (source, author and licence per clip)
+  public/models/yamnet/        YAMNet TF.js graph model (model.json, four group1-shard*of4.bin), yamnet_class_map.csv, LICENSE.txt, SHA256SUMS; unmodified, checked by tests/classify/model-files.test.ts; about 16 MB
+  public/icons/                the app icons, generated by bun run icons
+  public/manifest.webmanifest  the web manifest, generated by bun run icons
 vite.config.ts  banshee-pwa plugin: injects the precache list and cache name into /sw.js, fails over 40 MB or on a missing file
 design/DESIGN.md  UI source of truth
 .kiro/hooks/     Kiro agent hooks: on save, run bun run hooks:patterns, hooks:spec-tests, hooks:colour and hooks:fixtures
