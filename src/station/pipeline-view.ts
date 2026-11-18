@@ -2,16 +2,16 @@ import { patternName, percentOf, pulseCount } from '../band';
 import { CLASS_NAMES } from '../ghosts';
 import { sideOf, type Side } from '../haptics';
 import { STAGES } from './constants';
-import { classifyText, dropText, formatMs, outputName } from './format';
+import { classifyText, dropText, formatMs, latencyNumber, outputName } from './format';
 import type { RunResultOk as Run, StageName } from './types';
 
 /** What `mountPipelineView` returns. */
 export interface PipelineView {
-  /** Fills the five stages from a run and keeps them until the next one. */
+  /** Fills the latency figure and the five stages from a run and keeps them until the next one. */
   show(result: Run): void;
-  /** A run gave no valid event: keeps the previous result, or says "Not played" when there was none. */
+  /** A run gave no valid event: keeps the previous result (figure included), or says "Not played" when there was none. */
   failed(): void;
-  /** Back to the empty stages ("— ms"). */
+  /** Back to the empty figure and stages ("— ms"). */
   clear(): void;
 }
 
@@ -62,11 +62,46 @@ function dialSvg(side: Side, bearingDeg: number | null): SVGSVGElement {
   return box;
 }
 
+/** What the latency note says: before a run, after a clip or live run with a number, and when nothing buzzed. */
+const LATENCY_NOTES = {
+  none: 'Run a sound to measure it.',
+  clip: 'From the press to the buzz: fetch, classify, side, pattern and output. The one-time model load and the screen paint are not counted.',
+  live: 'From the end of a 0.975 s microphone window to the buzz. Microphone buffering, and the time the sound sat in the window, are not counted.',
+  nothing: 'Nothing buzzed this time, so there is no output to time.',
+} as const;
+
 /**
- * Mounts the pipeline card's five stages into `card`: Waveform, Label, Bearing, Pattern and Band, each a
- * `<section data-stage>` tile with its stage time ("— ms" before the first run, then `formatMs` with the
- * number in `data-ms`). Bars and the dial are `aria-hidden`; their values are in the text beside them. No
- * focusable element and no live region (the Latest alert is the one announcement). Shows no degrees.
+ * The latency figure: a muted label, the number in display type with its muted unit, and a muted note. The
+ * figure's text reads as one sentence ("Onset to output: 41 ms", the colon visually hidden); `data-latency-ms`
+ * holds the number to one decimal while there is one, and the wrapper's `data-latency-source` says `clip` or
+ * `live` after a run. Not a live region, not focusable.
+ */
+function mountLatency(): { root: HTMLDivElement; set(ms: number | null, source: 'clip' | 'live' | null): void } {
+  const root = el('div', 'bb-latency');
+  const figure = el('p', 'bb-latency__figure');
+  const number = el('span', 'bb-latency__number');
+  figure.append(el('span', 'bb-latency__label', 'Onset to output'), el('span', 'bb-station-sr', ': '), number, document.createTextNode(' '), el('span', 'bb-latency__unit', 'ms'));
+  const note = el('p', 'bb-latency__note');
+  root.append(figure, note);
+  return {
+    root,
+    set(ms, source) {
+      const measured = typeof ms === 'number' && latencyNumber(ms) !== '—';
+      number.textContent = latencyNumber(measured ? ms : null);
+      if (measured) figure.dataset.latencyMs = String(Math.round(ms * 10) / 10);
+      else figure.removeAttribute('data-latency-ms');
+      if (source) root.dataset.latencySource = source;
+      else root.removeAttribute('data-latency-source');
+      note.textContent = source === null ? LATENCY_NOTES.none : measured ? LATENCY_NOTES[source] : LATENCY_NOTES.nothing;
+    },
+  };
+}
+
+/**
+ * Mounts the pipeline card's latency figure and five stages into `card`: Waveform, Label, Bearing, Pattern and
+ * Band, each a `<section data-stage>` tile with its stage time ("— ms" before the first run, then `formatMs`
+ * with the number in `data-ms`). Bars and the dial are `aria-hidden`; their values are in the text beside them.
+ * No focusable element and no live region (the Latest alert is the one announcement). Shows no degrees.
  */
 export function mountPipelineView(card: HTMLElement): PipelineView {
   const row = el('div', 'bb-stages');
@@ -84,7 +119,8 @@ export function mountPipelineView(card: HTMLElement): PipelineView {
     row.append(section);
     parts.set(stage, { time, body });
   });
-  card.append(row);
+  const latency = mountLatency();
+  card.append(latency.root, row);
   let shown = false;
 
   function line(text: string, strong = false): HTMLParagraphElement {
@@ -101,6 +137,7 @@ export function mountPipelineView(card: HTMLElement): PipelineView {
 
   function clear(): void {
     shown = false;
+    latency.set(null, null);
     fill('waveform', null, line('No clip yet'));
     fill('label', null, line('No label yet'));
     fill('bearing', null, line('No side yet'));
@@ -130,6 +167,7 @@ export function mountPipelineView(card: HTMLElement): PipelineView {
       }
       const played = r.played.map(outputName);
       fill('band', r.times.band, ...(played.length > 0 ? played.map((p, i) => line(p, i === 0)) : [line('No buzz', true)]));
+      latency.set(r.latencyMs, r.onset);
     },
     failed() {
       if (!shown) parts.get('pattern')!.body.replaceChildren(line('Not played', true));

@@ -448,6 +448,48 @@ html:not([data-offline-ready]) .bb-station-title__offline {
   line-height: var(--bb-type-caption-line);
 }
 
+/*
+ * Latency figure: onset to output, a big number with its muted unit, a muted label over it and a muted note
+ * under it. It sits on the card surface: no tile, no border, no new colour. Under the heading on the phone.
+ */
+.bb-latency {
+  display: grid;
+  gap: var(--bb-space-1);
+  min-width: 0;
+}
+
+.bb-latency__figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--bb-space-2);
+}
+
+.bb-latency__label {
+  flex: 1 0 100%;
+  font-weight: var(--bb-type-label-weight);
+}
+
+.bb-latency__number {
+  color: var(--bb-color-text);
+  font-size: var(--bb-type-display-size);
+  line-height: var(--bb-type-display-line);
+  font-weight: var(--bb-type-display-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-latency__label,
+.bb-latency__unit,
+.bb-latency__note {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-latency__note {
+  max-inline-size: calc(var(--bb-space-8) * 6);
+}
+
 /* Latest alert and Recent sounds */
 .bb-station-side-column {
   display: flex;
@@ -912,5 +954,43 @@ html:not([data-offline-ready]) .bb-station-title__offline {
 
   .bb-stages {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  /*
+   * The pipeline card's head: the heading and its note on the left, the latency figure on the right across
+   * both rows, the stage tiles under them across the card. The note's row takes the spare height, so the
+   * note stays right under the heading.
+   */
+  /*
+   * The sticky ghost field is not held inside its grid row, so when the page scrolls to the pipeline card the
+   * card has to paint over it, not under it.
+   */
+  .bb-station-pipeline {
+    position: relative;
+    z-index: 1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    column-gap: var(--bb-space-6);
+  }
+
+  .bb-station-pipeline > .bb-heading,
+  .bb-station-pipeline__note {
+    grid-column: 1;
+    align-self: start;
+  }
+
+  .bb-latency {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    justify-items: end;
+    text-align: end;
+  }
+
+  .bb-latency__figure {
+    justify-content: flex-end;
+  }
+
+  .bb-station-pipeline > .bb-stages {
+    grid-column: 1 / -1;
   }
 }
