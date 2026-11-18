@@ -20,38 +20,38 @@ Each task is small steps that end in a test gate. Write the test first, see it f
     - _Requirements: 1.3, 4.5, 5.3, 6.1, 12.2_
   - **Gate:** `settings`, `format`, `runner`, `live` and `boundaries` tests pass; `typecheck` and `test` pass.
 
-- [ ] 3. The Settings sheet and its styles
-  - [ ] 3.1 Write `tests/station/settings-styles.test.ts` against a missing `settings.css` (tokens only: no hex, `rgb`, `hsl`, `oklch`, `color-mix`; pixel literals 1 to 3 px only; the 720 px breakpoint; no `@keyframes`; no remote resource; the scanner catches literals), then write `src/station/settings.css` by `design.md` (Styles). Link it from `index.html` and add the "Settings" pill with the gear glyph and `aria-haspopup="dialog"` to the header meta row.
+- [x] 3. The Settings sheet and its styles
+  - [x] 3.1 Write `tests/station/settings-styles.test.ts` against a missing `settings.css` (tokens only: no hex, `rgb`, `hsl`, `oklch`, `color-mix`; pixel literals 1 to 3 px only; the 720 px breakpoint; no `@keyframes`; no remote resource; the scanner catches literals), then write `src/station/settings.css` by `design.md` (Styles). Link it from `index.html` and add the "Settings" pill with the gear glyph and `aria-haspopup="dialog"` to the header meta row.
     - _Requirements: 7.1, 7.3, 11.1, 11.3_
-  - [ ] 3.2 Build `src/station/settings-panel.ts` (`mountSettings`, `browserStorage`): the dialog, head, seven tiles with switch and slider, the Buzz on fieldset with the disabled Wristband option and the phone-unavailable case, Reset to defaults, focus return, effective output shown as selected. Every change saves and calls `onChange`. Use `dbText` for the value text.
+  - [x] 3.2 Build `src/station/settings-panel.ts` (`mountSettings`, `browserStorage`): the dialog, head, seven tiles with switch and slider, the Buzz on fieldset with the disabled Wristband option and the phone-unavailable case, Reset to defaults, focus return, effective output shown as selected. Every change saves and calls `onChange`. Use `dbText` for the value text.
     - _Requirements: 3.4, 5.5, 7.2, 7.4-7.6, 8.1-8.5, 9.1-9.5, 10.1-10.3_
-  - [ ] 3.3 Look at the sheet: `bun run dev`, Day and Night at 1440 and 390 px. Backdrop tokens resolve in `::backdrop`, no horizontal scroll at 390 px, every target at least 44 px, focus ring visible, disabled tile and Wristband option readable, selected option marked by more than colour. Add any new colour pair to the contrast table of `design/DESIGN.md` and to `tests/ui`.
+  - [x] 3.3 Look at the sheet: `bun run dev`, Day and Night at 1440 and 390 px. Backdrop tokens resolve in `::backdrop`, no horizontal scroll at 390 px, every target at least 44 px, focus ring visible, disabled tile and Wristband option readable, selected option marked by more than colour. Add any new colour pair to the contrast table of `design/DESIGN.md` and to `tests/ui`.
     - _Requirements: 7.3, 7.6, 11.2_
   - **Gate:** `settings-styles` test, `tests/ui`, `typecheck` and `test` pass; `bun run build` passes.
 
-- [ ] 4. Station wiring
-  - [ ] 4.1 Add `setFallback(active)` to `status.ts` (the base state changes, "Problem" still wins until `reset()`), with a test through the existing status checks or a small DOM-free case where the file has none.
+- [x] 4. Station wiring
+  - [x] 4.1 Add `setFallback(active)` to `status.ts` (the base state changes, "Problem" still wins until `reset()`), with a test through the existing status checks or a small DOM-free case where the file has none.
     - _Requirements: 5.4_
-  - [ ] 4.2 In `station.ts`: read storage once at mount with a `try` (`browserStorage()`), `loadSettings`, and call `apply(settings)` before the first run. `apply` sets `engine` and `outputs` of both deps objects in place (live deps become a named `liveDeps` object), stops outputs no longer chosen, and calls `status.setFallback`. Mount the panel on the Settings pill. `show(result)` shows only the pipeline for a muted run and `pick` sets `mutedText` in the Try message; live shows nothing extra.
+  - [x] 4.2 In `station.ts`: read storage once at mount with a `try` (`browserStorage()`), `loadSettings`, and call `apply(settings)` before the first run. `apply` sets `engine` and `outputs` of both deps objects in place (live deps become a named `liveDeps` object), stops outputs no longer chosen, and calls `status.setFallback`. Mount the panel on the Settings pill. `show(result)` shows only the pipeline for a muted run and `pick` sets `mutedText` in the Try message; live shows nothing extra.
     - _Requirements: 3.3, 4.5, 4.6, 5.3, 5.4, 6.1-6.4_
-  - [ ] 4.3 Update the existing station and live e2e checks that list the header controls or count pills, if any, for the new Settings pill (it is a secondary pill; the primary pill count stays 1). Run `bun run e2e`.
+  - [x] 4.3 Update the existing station and live e2e checks that list the header controls or count pills, if any, for the new Settings pill (it is a secondary pill; the primary pill count stays 1). Run `bun run e2e`.
     - _Requirements: 12.3_
   - **Gate:** `typecheck`, `test`, `bun run build` and the existing `bun run e2e` specs pass.
 
-- [ ] 5. Playwright e2e and screenshots
-  - [ ] 5.1 Write `e2e/settings.spec.ts` with the eight cases of `design.md` (Playwright): open from the header and change by keyboard then reload; corrupt storage (two cases); Knock off then back on; Knock at −10 dB; Screen only; the Wristband option; live with Knock off and the fake microphone; Escape and focus return; the four screenshots. Each case fails first on the missing Settings pill, then passes after tasks 3 and 4 are in.
+- [x] 5. Playwright e2e and screenshots
+  - [x] 5.1 Write `e2e/settings.spec.ts` with the eight cases of `design.md` (Playwright): open from the header and change by keyboard then reload; corrupt storage (two cases); Knock off then back on; Knock at −10 dB; Screen only; the Wristband option; live with Knock off and the fake microphone; Escape and focus return; the four screenshots. Each case fails first on the missing Settings pill, then passes after tasks 3 and 4 are in.
     - _Requirements: 3.5, 4.5, 4.6, 5.3, 6.2, 7.4, 9.2, 10.1, 12.3_
-  - [ ] 5.2 Fix what the test finds in the page. Do not change a test to fit the code unless the test is wrong; if a requirement is wrong, change it in this spec in the same change.
+  - [x] 5.2 Fix what the test finds in the page. Do not change a test to fit the code unless the test is wrong; if a requirement is wrong, change it in this spec in the same change.
   - **Gate:** `bun run e2e` passes with no console error or warning in any settings case; four screenshots exist in `e2e/screenshots/`.
 
-- [ ] 6. Docs
-  - [ ] 6.1 Rewrite the Settings screen section of `design/DESIGN.md` for the sheet: desktop 1440 and phone 390 sketches, the regions, the tab order, the disabled Wristband option, and the note that the old per-output switches and "Connect band" are replaced by "Buzz on" until F11. Add the Settings pill to the Listening station header region. Add one line about Settings to `README.md`. Leave `.kiro/steering/structure.md` alone.
+- [x] 6. Docs
+  - [x] 6.1 Rewrite the Settings screen section of `design/DESIGN.md` for the sheet: desktop 1440 and phone 390 sketches, the regions, the tab order, the disabled Wristband option, and the note that the old per-output switches and "Connect band" are replaced by "Buzz on" until F11. Add the Settings pill to the Listening station header region. Add one line about Settings to `README.md`. Leave `.kiro/steering/structure.md` alone.
     - _Requirements: 12.4_
   - **Gate:** `tests/ui` (which reads DESIGN.md) and `typecheck` pass.
 
-- [ ] 7. Review and final gate
-  - [ ] 7.1 Check the diff: `src/audio`, `src/classify`, `src/bearing`, `src/haptics`, `src/band`, `src/events` and `src/ghosts` unchanged; `runner.ts` and `live.ts` unchanged; `package.json` unchanged; the only storage key is `banshee-band.settings.v1`; no `console`, `Math.random` or `Date` in the new code; no `@keyframes` in `settings.css`; no external URL; the footer's aid sentence unchanged.
+- [x] 7. Review and final gate
+  - [x] 7.1 Check the diff: `src/audio`, `src/classify`, `src/bearing`, `src/haptics`, `src/band`, `src/events` and `src/ghosts` unchanged; `runner.ts` and `live.ts` unchanged; `package.json` unchanged; the only storage key is `banshee-band.settings.v1`; no `console`, `Math.random` or `Date` in the new code; no `@keyframes` in `settings.css`; no external URL; the footer's aid sentence unchanged.
     - _Requirements: 1.1-1.5_
-  - [ ] 7.2 Run `bun run typecheck`, `bun run test`, `bun run build` and `bun run e2e`. All four must be green. Write the commit summary: what is built, the changed e2e checks, and the choices listed under "Choices of this design" in `design.md` that need a yes or no.
+  - [x] 7.2 Run `bun run typecheck`, `bun run test`, `bun run build` and `bun run e2e`. All four must be green. Write the commit summary: what is built, the changed e2e checks, and the choices listed under "Choices of this design" in `design.md` that need a yes or no.
     - _Requirements: 12.5_
   - **Gate:** all four commands exit 0; the diff matches 7.1.
