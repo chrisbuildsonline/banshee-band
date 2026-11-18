@@ -82,6 +82,31 @@ const headerPill = (page: Page) => page.locator('#station-status [role="status"]
 const stage = (page: Page, name: string) => page.locator(`[data-card="pipeline"] section[data-stage="${name}"]`);
 const rows = (page: Page) => page.getByRole('list', { name: 'Recent sounds' }).getByRole('listitem');
 
+/** WCAG relative luminance of a computed `rgb()`/`rgba()` colour. */
+function luminance(css: string): number {
+  const [r, g, b] = (css.match(/[\d.]+/g) ?? []).slice(0, 3).map((v) => {
+    const c = Number(v) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** The connect row's status line and its pill each reach 4.5:1 against what they sit on. */
+async function expectReadable(page: Page): Promise<void> {
+  const pairs = await connectRow(page).evaluate((row) => {
+    const status = getComputedStyle(row.querySelector('.bb-connect__status')!);
+    const action = getComputedStyle(row.querySelector('.bb-connect__action')!);
+    return [
+      [status.color, getComputedStyle(row).backgroundColor],
+      [action.color, action.backgroundColor],
+    ];
+  });
+  for (const [fg, bg] of pairs) {
+    const [hi, lo] = [luminance(fg), luminance(bg)].sort((a, b) => b - a);
+    expect((hi + 0.05) / (lo + 0.05), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+  }
+}
+
 async function openSheet(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(sheet(page)).toBeVisible();
@@ -160,8 +185,62 @@ test.describe('wristband link', () => {
     await page.goto('/band.html');
     await expect(connectStatus(page)).toHaveText(UNSUPPORTED);
     await expect(page.getByRole('button', { name: 'Connect band' })).toHaveCount(0);
-    await connectRow(page).scrollIntoViewIfNeeded();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    expect(problems, problems.join('\n')).toEqual([]);
+  });
+
+  test('the Settings sheet by keyboard at 390 px in Night: Wristband, Connect band, Reset, and Enter connects', async ({ page }) => {
+    const problems = watch(page);
+    await mockBluetooth(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    // The theme is set on the page that is shot.
+    await page.getByRole('button', { name: 'Night', exact: true }).click();
+    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('night');
+    await openSheet(page);
+    expect(luminance(await sheet(page).evaluate((d) => getComputedStyle(d).backgroundColor))).toBeLessThan(0.2);
+
+    // The checked radio is the group's tab stop; the arrows move the choice down to the Wristband.
+    await radio(page, 'Phone vibration').focus();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(radio(page, 'Wristband')).toBeFocused();
+    await expect(radio(page, 'Wristband')).toBeChecked();
+    const connect = sheet(page).getByRole('button', { name: 'Connect band' });
+    const reset = sheet(page).getByRole('button', { name: 'Reset to defaults' });
+    await page.keyboard.press('Tab');
+    await expect(connect).toBeFocused();
+    const ring = await connect.evaluate((b) => {
+      const s = getComputedStyle(b);
+      return { outline: s.outlineStyle, width: parseFloat(s.outlineWidth), shadow: s.boxShadow };
+    });
+    expect((ring.outline !== 'none' && ring.width >= 3) || ring.shadow !== 'none', JSON.stringify(ring)).toBe(true);
+    await page.keyboard.press('Tab');
+    await expect(reset).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(connect).toBeFocused();
+
+    // Idle: the state is in words and the band glyph, readable in Night, every target at least 44 px.
+    await expect(connectStatus(page)).toHaveText('No band connected.');
+    await expect(connectRow(page).locator('.bb-connect__glyph svg')).toBeVisible();
+    await expectReadable(page);
+    for (const target of [connect, sheet(page).locator('.bb-option[data-output="band"]'), reset]) {
+      expect((await target.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+
+    await page.keyboard.press('Enter');
+    await expect(connectStatus(page)).toHaveText('Connected to Banshee Band.');
+    expect((await band(page)).requests).toEqual([{ filters: [{ services: [SERVICE] }] }]);
+    await expect(radio(page, 'Wristband')).toBeChecked();
+    await expect(headerPill(page)).toHaveText('Band connected');
+    const disconnect = sheet(page).getByRole('button', { name: 'Disconnect' });
+    await expect(disconnect).toBeVisible();
+    expect((await disconnect.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await expectReadable(page);
+
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    expect(await sheet(page).evaluate((d) => d.scrollWidth - d.clientWidth)).toBeLessThanOrEqual(0);
+    await connectRow(page).scrollIntoViewIfNeeded();
     await page.screenshot({ path: resolve(SCREENSHOTS, 'band-link-390-night.png') });
     expect(problems, problems.join('\n')).toEqual([]);
   });
