@@ -1,17 +1,25 @@
 import { describe, expect, it } from 'vitest';
+import type { Decision, DropReason } from '../../src/haptics';
 import {
   DEFAULT_SETTINGS,
   MIN_DB_CEILING,
   MIN_DB_FLOOR,
   OUTPUT_CHOICES,
   SETTINGS_STORAGE_KEY,
+  createSettingsEngine,
+  effectiveOutput,
+  isMuted,
   loadSettings,
+  outputsFor,
   parseSettings,
   resolveSettings,
   saveSettings,
   serializeSettings,
+  settingsVerdict,
+  type OutputChoice,
   type StationSettings,
 } from '../../src/station/settings';
+import { makeInput } from '../haptics/helpers/events';
 
 const CLASSES = ['knock', 'doorbell', 'alarm', 'baby', 'vehicle', 'voice', 'other'] as const;
 const on50 = () => ({ on: true, minDb: -50 });
@@ -156,5 +164,108 @@ describe('loadSettings and saveSettings (R3.1, R3.2)', () => {
   it('returns false for null or throwing storage, and never throws', () => {
     expect(saveSettings(null, DEFAULTS)).toBe(false);
     expect(saveSettings({ getItem: () => null, setItem: () => { throw new DOMException('full', 'QuotaExceededError'); } }, DEFAULTS)).toBe(false);
+  });
+});
+
+describe('settingsVerdict (R4.1)', () => {
+  it('alerts at the level, is too quiet one dB below, and off wins', () => {
+    const s = withClass('knock', { on: true, minDb: -40 });
+    expect(settingsVerdict(s, { class: 'knock', loudnessDb: -40 })).toBe('alert');
+    expect(settingsVerdict(s, { class: 'knock', loudnessDb: -12 })).toBe('alert');
+    expect(settingsVerdict(s, { class: 'knock', loudnessDb: -41 })).toBe('too-quiet');
+    expect(settingsVerdict(withClass('knock', { on: false, minDb: -40 }), { class: 'knock', loudnessDb: -60 })).toBe('off');
+    expect(settingsVerdict(withClass('knock', { on: false, minDb: -40 }), { class: 'knock', loudnessDb: 0 })).toBe('off');
+  });
+
+  it('reads each class alone, all seven', () => {
+    for (const cls of CLASSES) {
+      const s = withClass(cls, { on: false, minDb: -50 });
+      for (const other of CLASSES) expect(settingsVerdict(s, { class: other, loudnessDb: -20 }), `${cls} off, ${other}`).toBe(other === cls ? 'off' : 'alert');
+    }
+  });
+});
+
+describe('createSettingsEngine (R4.2, R4.3)', () => {
+  const play = (d: Decision) => d.action === 'play';
+
+  it('plays what the settings allow, as the haptic engine does', () => {
+    const e = createSettingsEngine(resolveSettings(undefined), { rateLimitMs: 0 });
+    const d = e.decide(makeInput({ class: 'knock', loudnessDb: -45 }), 0);
+    expect(d.action).toBe('play');
+    if (d.action === 'play') expect(d.command.class).toBe('knock');
+  });
+
+  it('drops a switched-off class and a too-quiet sound without touching the inner engine', () => {
+    const base = withClass('knock', { on: false, minDb: -50 });
+    const e = createSettingsEngine({ ...base, sounds: { ...base.sounds, alarm: { on: true, minDb: -20 } } });
+    expect(e.decide(makeInput({ class: 'knock', loudnessDb: -10 }), 0)).toEqual({ action: 'drop', reason: 'disabled-class' });
+    expect(e.decide(makeInput({ class: 'alarm', loudnessDb: -21 }), 0)).toEqual({ action: 'drop', reason: 'too-quiet' });
+    // The inner engine saw neither: an alarm at the same moment still plays (no rate limit, nothing playing).
+    expect(play(e.decide(makeInput({ class: 'alarm', loudnessDb: -20 }), 0))).toBe(true);
+  });
+
+  it('gives the inner engine the lowest level, so a quiet sound the settings allow still buzzes', () => {
+    const e = createSettingsEngine(withClass('voice', { on: true, minDb: -75 }), { rateLimitMs: 0 });
+    expect(play(e.decide(makeInput({ class: 'voice', urgency: 'low', loudnessDb: -70 }), 0))).toBe(true);
+    // Another class keeps its own -50 level.
+    expect(e.decide(makeInput({ class: 'knock', loudnessDb: -70 }), 10_000)).toEqual({ action: 'drop', reason: 'too-quiet' });
+  });
+
+  it('keeps the inner rate limit: 3000 ms by default, none with rateLimitMs 0', () => {
+    const live = createSettingsEngine(resolveSettings(undefined));
+    expect(play(live.decide(makeInput({ class: 'knock' }), 0))).toBe(true);
+    expect(live.decide(makeInput({ class: 'knock' }), 2999)).toEqual({ action: 'drop', reason: 'rate-limited' });
+    expect(play(live.decide(makeInput({ class: 'knock' }), 3000))).toBe(true);
+    const tryEngine = createSettingsEngine(resolveSettings(undefined), { rateLimitMs: 0 });
+    expect(play(tryEngine.decide(makeInput({ class: 'knock' }), 0))).toBe(true);
+    expect(play(tryEngine.decide(makeInput({ class: 'knock' }), 5000))).toBe(true);
+  });
+
+  it('drops other as off, too quiet, or as having no pattern', () => {
+    expect(createSettingsEngine(withClass('other', { on: false, minDb: -50 })).decide(makeInput({ class: 'other' }), 0)).toEqual({ action: 'drop', reason: 'disabled-class' });
+    expect(createSettingsEngine(withClass('other', { on: true, minDb: -10 })).decide(makeInput({ class: 'other', loudnessDb: -20 }), 0)).toEqual({ action: 'drop', reason: 'too-quiet' });
+    expect(createSettingsEngine(resolveSettings(undefined)).decide(makeInput({ class: 'other' }), 0)).toEqual({ action: 'drop', reason: 'no-pattern' });
+  });
+
+  it('throws RangeError for a non-finite time first, even for a switched-off class', () => {
+    const e = createSettingsEngine(withClass('knock', { on: false, minDb: -50 }));
+    for (const t of [Number.NaN, Infinity, -Infinity]) expect(() => e.decide(makeInput({ class: 'knock' }), t), String(t)).toThrow(RangeError);
+  });
+
+  it('reads the settings once: a later change of the passed object has no effect', () => {
+    const s = resolveSettings(undefined);
+    const e = createSettingsEngine(s, { rateLimitMs: 0 });
+    s.sounds.knock.on = false;
+    expect(play(e.decide(makeInput({ class: 'knock' }), 0))).toBe(true);
+  });
+});
+
+describe('isMuted (R4.4)', () => {
+  it('is true exactly for disabled-class and too-quiet', () => {
+    const reasons: DropReason[] = ['disabled-class', 'no-pattern', 'too-quiet', 'rate-limited', 'lower-priority'];
+    expect(reasons.filter((reason) => isMuted({ action: 'drop', reason }))).toEqual(['disabled-class', 'too-quiet']);
+    const d = createSettingsEngine(resolveSettings(undefined)).decide(makeInput(), 0);
+    expect(d.action).toBe('play');
+    expect(isMuted(d)).toBe(false);
+  });
+});
+
+describe('effectiveOutput and outputsFor (R5.1, R5.2)', () => {
+  it('keeps an available choice and falls back to the simulator', () => {
+    const table: [OutputChoice, boolean, boolean, OutputChoice][] = [
+      ['phone', true, false, 'phone'], ['phone', false, false, 'simulator'], ['phone', true, true, 'phone'],
+      ['simulator', true, true, 'simulator'], ['simulator', false, false, 'simulator'], ['simulator', true, false, 'simulator'],
+      ['band', true, false, 'simulator'], ['band', false, false, 'simulator'], ['band', false, true, 'band'],
+    ];
+    for (const [choice, phone, band, want] of table) expect(effectiveOutput(choice, { phone, band }), `${choice} ${phone} ${band}`).toBe(want);
+  });
+
+  it('always gives the simulator first, and the phone only for phone', () => {
+    const simulator = { kind: 'simulator' as const, available: () => true, play: () => undefined, stop: () => undefined };
+    const phone = { ...simulator, kind: 'phone' as const };
+    expect(outputsFor('phone', { simulator, phone })).toEqual([simulator, phone]);
+    expect(outputsFor('simulator', { simulator, phone })).toEqual([simulator]);
+    expect(outputsFor('band', { simulator, phone })).toEqual([simulator]);
+    expect(outputsFor('phone', { simulator, phone })).not.toBe(outputsFor('phone', { simulator, phone }));
   });
 });

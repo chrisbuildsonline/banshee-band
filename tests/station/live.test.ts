@@ -6,6 +6,7 @@ import { createBearingWindow } from '../../src/bearing';
 import type { Classification } from '../../src/classify';
 import { createHapticEngine } from '../../src/haptics';
 import { createLive } from '../../src/station/live';
+import { createSettingsEngine, isMuted, outputsFor, resolveSettings } from '../../src/station/settings';
 import type { LiveDeps, LiveUpdate } from '../../src/station/types';
 
 type L<T> = ((v: T) => void)[];
@@ -61,7 +62,7 @@ function setup(classifier: LiveDeps['classifier']) {
   const outputs = [output('simulator'), output('phone')];
   const deps: LiveDeps = { capture: cap.capture, classifier, bearing: createBearingWindow(), engine: createHapticEngine(), outputs, now: () => (t += 10), epoch: () => 1_763_000_000_000 };
   const live = createLive(deps, (u) => updates.push(u));
-  return { cap, updates, live, outputs, events: () => updates.filter((u) => u.kind === 'event'), states: () => updates.filter((u) => u.kind === 'state').map((u) => (u.kind === 'state' ? u.state : '')) };
+  return { cap, updates, live, outputs, deps, events:() => updates.filter((u) => u.kind === 'event'), states: () => updates.filter((u) => u.kind === 'state').map((u) => (u.kind === 'state' ? u.state : '')) };
 }
 
 describe('createLive', () => {
@@ -153,5 +154,61 @@ describe('createLive', () => {
     s.cap.emit({ status: 'error', error: { code: 'permission-denied', message: CAPTURE_MESSAGES['permission-denied'] } });
     expect(s.updates.at(-1)).toEqual({ kind: 'state', state: 'blocked', message: CAPTURE_MESSAGES['permission-denied'] });
     expect(s.cap.listeners()).toBe(0);
+  });
+});
+
+describe('createLive with the settings engine (settings R4.5, R5.3, R6.1, R6.2, R12.2)', () => {
+  /** Starts listening, sends window `i` and classifies it as `cls`; returns the run results so far. */
+  async function window(s: ReturnType<typeof setup>, h: ReturnType<typeof heldClassifier>, i: number, cls: Classification['class'], amp?: number) {
+    s.cap.mono(i, amp);
+    h.calls[h.calls.length - 1].resolve(c(cls, cls));
+    await tick();
+    return s.events().map((u) => (u.kind === 'event' ? u.result : null));
+  }
+
+  it('a switched-off class gives a muted result and plays on no output, while the microphone stays on', async () => {
+    const h = heldClassifier();
+    const s = setup(h.classifier);
+    const off = resolveSettings(undefined);
+    off.sounds.knock.on = false;
+    s.deps.engine = createSettingsEngine(off);
+    await s.live.start();
+    const [r] = await window(s, h, 0, 'knock');
+    expect(r?.decision).toEqual({ action: 'drop', reason: 'disabled-class' });
+    expect(isMuted(r!.decision)).toBe(true);
+    expect(r?.played).toEqual([]);
+    for (const o of s.outputs) expect(o.play).not.toHaveBeenCalled();
+    expect(s.cap.capture.stop).not.toHaveBeenCalled();
+  });
+
+  it('a window under its class level is muted', async () => {
+    const h = heldClassifier();
+    const s = setup(h.classifier);
+    const quiet = resolveSettings(undefined);
+    quiet.sounds.doorbell.minDb = -20; // the window is about -63 dBFS
+    s.deps.engine = createSettingsEngine(quiet);
+    await s.live.start();
+    const [r] = await window(s, h, 0, 'doorbell', 0.001);
+    expect(r?.decision).toEqual({ action: 'drop', reason: 'too-quiet' });
+    for (const o of s.outputs) expect(o.play).not.toHaveBeenCalled();
+  });
+
+  it('an engine and outputs set while listening apply to the next window', async () => {
+    const h = heldClassifier();
+    const s = setup(h.classifier);
+    const [simulator, phone] = s.outputs;
+    s.deps.outputs = outputsFor('simulator', { simulator, phone });
+    await s.live.start();
+    const first = await window(s, h, 0, 'knock');
+    expect(first[0]?.played).toEqual(['simulator']);
+    const off = resolveSettings(undefined);
+    off.sounds.alarm.on = false;
+    s.deps.engine = createSettingsEngine(off);
+    s.deps.outputs = outputsFor('phone', { simulator, phone });
+    const second = await window(s, h, 1, 'alarm');
+    expect(second[1]?.decision).toEqual({ action: 'drop', reason: 'disabled-class' });
+    const third = await window(s, h, 2, 'doorbell');
+    expect(third[2]?.played).toEqual(['simulator', 'phone']);
+    expect(third.map((r) => r?.event.id)).toEqual(['live-1', 'live-2', 'live-3']);
   });
 });

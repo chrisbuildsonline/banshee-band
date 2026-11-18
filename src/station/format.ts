@@ -58,6 +58,17 @@ const FAILURE_TEXT: Readonly<Record<RunFailure, string>> = {
   'event-invalid': 'The sound could not be turned into an alert.',
 };
 
+/** A settings level as text with a real minus sign (U+2212): "−50 dB". */
+export function dbText(db: number): string {
+  return `${db < 0 ? '−' : ''}${Math.abs(db)} dB`;
+}
+
+/** The Try a sound line for a run the settings stopped: the class is off, or it was under its level `minDb`. */
+export function mutedText(cls: SoundClass, verdict: 'off' | 'too-quiet', minDb: number): string {
+  const name = CLASS_NAMES[cls];
+  return verdict === 'off' ? `${name} is switched off in Settings, so it raised no alert.` : `${name} was quieter than its Settings level (${dbText(minDb)}), so it raised no alert.`;
+}
+
 /** Why a run failed, in plain words, with no URL, stack or raw error. */
 export function failureText(code: RunFailure): string {
   return FAILURE_TEXT[code];

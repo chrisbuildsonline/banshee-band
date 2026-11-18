@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { OUTPUT_CHOICES, parseSettings, resolveSettings, serializeSettings, type StationSettings } from '../../src/station/settings';
+import { OUTPUT_CHOICES, parseSettings, resolveSettings, serializeSettings, settingsVerdict, type StationSettings } from '../../src/station/settings';
 
 const RUNS = { seed: 20261118, numRuns: 300 };
 const CLASSES = ['knock', 'doorbell', 'alarm', 'baby', 'vehicle', 'voice', 'other'] as const;
@@ -85,6 +85,17 @@ describe('parseSettings never throws and always gives valid settings (R2.3, R2.6
 describe('resolveSettings and the round trip (R2.3, R2.7)', () => {
   it('resolves anything to valid settings', () => {
     fc.assert(fc.property(fc.anything(), (value) => isValid(resolveSettings(value))), RUNS);
+  });
+
+  it('settingsVerdict is monotonic in loudness: a louder sound never alerts less', () => {
+    const rank = { off: 0, 'too-quiet': 1, alert: 2 } as const;
+    fc.assert(
+      fc.property(validSettings, fc.constantFrom(...CLASSES), fc.double({ min: -200, max: 0, noNaN: true }), fc.double({ min: -200, max: 0, noNaN: true }), (s, cls, a, b) => {
+        const [quiet, loud] = a <= b ? [a, b] : [b, a];
+        return rank[settingsVerdict(s, { class: cls, loudnessDb: quiet })] <= rank[settingsVerdict(s, { class: cls, loudnessDb: loud })];
+      }),
+      RUNS,
+    );
   });
 
   it('round-trips every valid settings object', () => {

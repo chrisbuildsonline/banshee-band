@@ -5,6 +5,7 @@ import type { Classification } from '../../src/classify';
 import type { SoundClass } from '../../src/events';
 import { createHapticEngine, type HapticEngine } from '../../src/haptics';
 import { runSound } from '../../src/station/runner';
+import { createSettingsEngine, isMuted, outputsFor, resolveSettings } from '../../src/station/settings';
 import { buildStereo, toStereoFrames } from '../../src/station/stereo';
 import type { RunnerDeps, RunResult } from '../../src/station/types';
 import { decodePcm16kWav } from '../../src/station/wav';
@@ -162,5 +163,62 @@ describe('runSound (R10.1 to R10.3, R10.5, R10.7)', () => {
     expect(await runSound(d, 'x', 'left')).toEqual({ ok: false, code: 'event-invalid' });
     expect(decide).not.toHaveBeenCalled();
     expect(sim.play).not.toHaveBeenCalled();
+  });
+});
+
+describe('runSound with the settings engine (settings R4.5, R5.3, R6.1, R12.2)', () => {
+  const defaults = () => resolveSettings(undefined);
+  const knockOff = () => {
+    const s = defaults();
+    s.sounds.knock.on = false;
+    return s;
+  };
+
+  it('a switched-off class gives a muted decision and plays on no output', async () => {
+    const sim = output('simulator');
+    const phone = output('phone');
+    const { d } = deps({ engine: createSettingsEngine(knockOff(), { rateLimitMs: 0 }), outputs: [sim, phone] });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.event.class).toBe('knock');
+    expect(r.decision).toEqual({ action: 'drop', reason: 'disabled-class' });
+    expect(isMuted(r.decision)).toBe(true);
+    expect(r.played).toEqual([]);
+    expect(sim.play).not.toHaveBeenCalled();
+    expect(phone.play).not.toHaveBeenCalled();
+  });
+
+  it('a sound under its class level gives a muted decision and plays on no output', async () => {
+    const s = defaults();
+    s.sounds.knock.minDb = -10; // the noise clip is about -12 dBFS at its loudest
+    const sim = output('simulator');
+    const { d } = deps({ engine: createSettingsEngine(s, { rateLimitMs: 0 }), outputs: [sim] });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.event.loudnessDb).toBeLessThan(-10);
+    expect(r.decision).toEqual({ action: 'drop', reason: 'too-quiet' });
+    expect(sim.play).not.toHaveBeenCalled();
+  });
+
+  it('Screen only plays on the simulator alone', async () => {
+    const simulator = output('simulator');
+    const phone = output('phone');
+    const { d } = deps({ engine: createSettingsEngine(defaults(), { rateLimitMs: 0 }), outputs: outputsFor('simulator', { simulator, phone }) });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.played).toEqual(['simulator']);
+    expect(simulator.play).toHaveBeenCalledTimes(1);
+    expect(phone.play).not.toHaveBeenCalled();
+  });
+
+  it('a new engine and outputs set on the same deps take effect at the next run, and the numbering goes on', async () => {
+    const simulator = output('simulator');
+    const phone = output('phone');
+    const { d } = deps({ engine: createSettingsEngine(knockOff(), { rateLimitMs: 0 }), outputs: outputsFor('simulator', { simulator, phone }) });
+    const first = ok(await runSound(d, 'knock-01', 'left'));
+    expect(isMuted(first.decision)).toBe(true);
+    d.engine = createSettingsEngine(defaults(), { rateLimitMs: 0 });
+    d.outputs = outputsFor('phone', { simulator, phone });
+    const second = ok(await runSound(d, 'knock-01', 'left'));
+    expect([first.event.id, second.event.id]).toEqual(['station-1', 'station-2']);
+    expect(second.decision.action).toBe('play');
+    expect(second.played).toEqual(['simulator', 'phone']);
   });
 });
