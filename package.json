@@ -16,7 +16,11 @@
     "bearing:mutate": "bun run tests/bearing/mutate.ts",
     "haptics:mutate": "bun run tests/haptics/mutate.ts",
     "mcp:banshee-log": "bun mcp/banshee-log.ts",
-    "log:seed": "bun scripts/log-clips.ts"
+    "log:seed": "bun scripts/log-clips.ts",
+    "hooks:patterns": "bun scripts/hooks/patterns.ts",
+    "hooks:spec-tests": "bun scripts/hooks/spec-tests.ts",
+    "hooks:colour": "bun scripts/hooks/colour-alerts.ts",
+    "hooks:fixtures": "bun scripts/hooks/fixtures.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
