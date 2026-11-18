@@ -1,0 +1,74 @@
+/* The Wristband connect row (src/band/connect.ts): a raised tile with a glyph, the heading, the status line
+   and one pill. Design tokens only; the state is in words, never colour alone. */
+
+.bb-connect {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bb-space-3);
+  padding: var(--bb-space-4);
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text);
+}
+
+.bb-connect__glyph {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--bb-target-min);
+  height: var(--bb-target-min);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface);
+  color: var(--bb-color-text-muted);
+}
+
+.bb-connect__glyph svg {
+  width: var(--bb-space-5);
+  height: var(--bb-space-5);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bb-connect[data-state='connected'] .bb-connect__glyph {
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-connect__text {
+  display: grid;
+  flex: 1 1 0;
+  gap: var(--bb-space-1);
+  min-width: 0;
+}
+
+.bb-connect__title {
+  margin: 0;
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-connect__status {
+  margin: 0;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-connect[data-state='connected'] .bb-connect__status {
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-connect__action {
+  flex: none;
+}
+
+@media (max-width: 720px) {
+  .bb-connect__action {
+    flex: 1 1 100%;
+  }
+}

@@ -9,5 +9,6 @@ export { browserScheduler, createSegmentPlayer, type Levels, type Scheduler, typ
 export { createPhoneOutput } from './phone-output';
 export { bandStatusText, classLabel, patternName, percentOf, pulseCount, sideText } from './labels';
 export { createBandLink, type BluetoothLike } from './ble-output';
+export { mountBandConnect, type BandConnect } from './connect';
 export * from './protocol';
 export { mountBandSimulator, type BandSimulator } from './simulator';

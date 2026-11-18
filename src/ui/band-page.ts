@@ -1,7 +1,7 @@
 // Band simulator page: the phone status pill, the Feel a pattern card, and the wiring from a chosen sound
-// through the real haptics engine to the simulator and, when it can vibrate, the phone.
-// No microphone, no clip, no log, no network, no permission.
-import { classLabel, createPhoneOutput, mountBandSimulator } from '../band';
+// through the real haptics engine to the simulator, the phone when it can vibrate, and the wristband when it
+// is connected (Web Bluetooth, only after a press of Connect band). No microphone, clip, log or network.
+import { classLabel, createBandLink, createPhoneOutput, mountBandConnect, mountBandSimulator } from '../band';
 import type { SoundEvent, Urgency } from '../events';
 import { PATTERN_CLASSES, createHapticEngine, loadPatterns, type HapticClass, type HapticCommand, type Side } from '../haptics';
 import { initThemeControl } from './theme';
@@ -88,6 +88,8 @@ function start(): void {
   document.getElementById('phone-status-slot')!.append(statusPill(vibrates));
 
   const simulator = mountBandSimulator(document.getElementById('band-simulator')!);
+  const band = createBandLink();
+  mountBandConnect(document.getElementById('band-connect')!, band);
   const message = document.querySelector<HTMLElement>('.bb-feel__message')!;
   const chips = document.getElementById('sound-chips')!;
   const selectedSide = (): Side => (document.querySelector<HTMLInputElement>('input[name="side"]:checked')?.value ?? 'centre') as Side;
@@ -107,6 +109,7 @@ function start(): void {
       message.textContent = '';
       simulator.output.play(command);
       if (phone.available()) phone.play(command);
+      if (band.output.available()) band.output.play(command);
     });
     chips.append(chip);
   }

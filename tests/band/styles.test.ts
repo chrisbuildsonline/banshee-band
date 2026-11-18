@@ -6,7 +6,7 @@ const root = resolve(import.meta.dirname, '../..');
 const read = (path: string) => readFileSync(resolve(root, path), 'utf8');
 
 // The simulator styles and the band page layout (R6.4-R6.6, R9.1).
-const sheets = { 'src/band/simulator.css': read('src/band/simulator.css'), 'src/ui/band-page.css': read('src/ui/band-page.css') };
+const sheets = { 'src/band/simulator.css': read('src/band/simulator.css'), 'src/ui/band-page.css': read('src/ui/band-page.css'), 'src/band/connect.css': read('src/band/connect.css') };
 const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 
 /** Colour and size literals outside var(--bb-*), as tests/ui/tokens.test.ts checks styleguide.css. */
