@@ -3,6 +3,7 @@ import type { HapticOutput } from '../band';
 import { createBearingWindow } from '../bearing';
 import type { Classification } from '../classify';
 import { PEAK_BUCKETS } from './constants';
+import { latencyMs } from './latency';
 import { processEvent } from './pipeline';
 import { buildStereo, toStereoFrames } from './stereo';
 import { loudestRmsDb, summariseClassifications } from './summary';
@@ -18,7 +19,9 @@ const runCounts = new WeakMap<RunnerDeps, number>();
  * summary), `bearing` (stereo pair for the chosen side into the real estimator), `pattern` (loudness, event,
  * engine decision) and `band` (play the command on every available output). Each stage reads `deps.now()` once
  * before and once after its work, and nothing else reads it; the event's `t` is the read at the start of
- * `pattern`. Returns plain data or `{ ok: false, code }`. No DOM.
+ * `pattern`. `latencyMs` is the last read minus the first (onset: the start of the run, before the clip loads;
+ * output: right after the last available output was handed the pattern), or null when nothing played.
+ * Returns plain data or `{ ok: false, code }`. No DOM.
  */
 export async function runSound(deps: RunnerDeps, clipId: string, side: TrySide): Promise<RunResult> {
   const n = (runCounts.get(deps) ?? 0) + 1;
@@ -26,7 +29,9 @@ export async function runSound(deps: RunnerDeps, clipId: string, side: TrySide):
   const at = deps.epoch();
   const times = {} as StageTimes;
 
-  let t0 = deps.now();
+  // The onset of a clip run: its first clock read, before the clip is loaded.
+  const onsetMs = deps.now();
+  let t0 = onsetMs;
   let bytes: ArrayBuffer;
   try {
     bytes = await deps.loadClip(clipId);
@@ -71,7 +76,10 @@ export async function runSound(deps: RunnerDeps, clipId: string, side: TrySide):
       played.push(o.kind);
     }
   }
-  times.band = deps.now() - t0;
+  // The output: the last read, right after the last available output was handed the pattern.
+  const outputMs = deps.now();
+  times.band = outputMs - t0;
+  const latency = played.length > 0 ? latencyMs(onsetMs, outputMs) : null;
 
-  return { ok: true, clipId, chosen: side, backend: deps.classifier.backend ?? 'unknown', peaks, seconds: samples.length / YAMNET_RATE, classification, frames: frames.length, bearing, event, bearingConfidence, decision, played, times, at };
+  return { ok: true, clipId, chosen: side, backend: deps.classifier.backend ?? 'unknown', peaks, seconds: samples.length / YAMNET_RATE, classification, frames: frames.length, bearing, event, bearingConfidence, decision, played, times, latencyMs: latency, onset: 'clip', at };
 }

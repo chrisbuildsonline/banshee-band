@@ -212,3 +212,74 @@ describe('createLive with the settings engine (settings R4.5, R5.3, R6.1, R6.2, 
     expect(third.map((r) => r?.event.id)).toEqual(['live-1', 'live-2', 'live-3']);
   });
 });
+
+describe('createLive onset to output (latency R4.5 to R4.7)', () => {
+  /** A live loop on a clock the test sets: `at(ms)` moves it. */
+  function timed() {
+    const h = heldClassifier();
+    const s = setup(h.classifier);
+    let t = 0;
+    s.deps.now = () => t;
+    const result = (i: number) => {
+      const u = s.events()[i];
+      if (u?.kind !== 'event') throw new Error(`no event ${i}`);
+      return u.result;
+    };
+    return { h, s, result, at: (ms: number) => (t = ms) };
+  }
+
+  it('runs from the arrival of the window to the end of the band stage, including a held classification', async () => {
+    const { h, s, result, at } = timed();
+    await s.live.start();
+    at(1000);
+    s.cap.mono(0);
+    at(1250);
+    h.calls[0].resolve(c('knock', 'Knock', 0.7));
+    await tick();
+    const r = result(0);
+    expect(r.latencyMs).toBe(250);
+    expect(r.onset).toBe('live');
+    expect(r.played).toEqual(['simulator', 'phone']);
+  });
+
+  it('uses the newest waiting window’s own arrival time', async () => {
+    const { h, s, result, at } = timed();
+    await s.live.start();
+    at(1000);
+    s.cap.mono(0);
+    at(1100);
+    s.cap.mono(1);
+    at(1200);
+    s.cap.mono(2);
+    at(1300);
+    h.calls[0].resolve(c('other', 'Silence'));
+    await tick();
+    expect(s.live.dropped).toBe(1);
+    expect(h.calls.length).toBe(2);
+    at(1500);
+    h.calls[1].resolve(c('knock', 'Knock', 0.7));
+    await tick();
+    expect(result(0).latencyMs).toBe(300);
+  });
+
+  it('is null when the settings drop the event, and the clock rule of the gate is unchanged', async () => {
+    const { h, s, result, at } = timed();
+    const off = resolveSettings(undefined);
+    off.sounds.knock.on = false;
+    s.deps.engine = createSettingsEngine(off);
+    await s.live.start();
+    at(1000);
+    s.cap.mono(0);
+    h.calls[0].resolve(c('knock', 'Knock', 0.7));
+    await tick();
+    expect(result(0).decision.action).toBe('drop');
+    expect(result(0).latencyMs).toBeNull();
+    expect(result(0).onset).toBe('live');
+    // A doorbell 1 s later is not held back by the knock's cooldown.
+    at(2000);
+    s.cap.mono(1);
+    h.calls[1].resolve(c('doorbell', 'Doorbell', 0.7));
+    await tick();
+    expect(result(1).latencyMs).toBe(0);
+  });
+});

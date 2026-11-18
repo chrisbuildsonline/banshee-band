@@ -86,6 +86,13 @@ export type RunResult =
       /** Band stage: the kinds of the outputs that were called. */
       played: HapticOutput['kind'][];
       times: StageTimes;
+      /**
+       * Onset to output in ms (`latencyMs`): from the onset to the clock read right after the last available
+       * output was handed the pattern. Null when no output played (a drop, or no output available).
+       */
+      latencyMs: number | null;
+      /** Where the onset was read: the start of a clip run, or the arrival of a microphone window. */
+      onset: 'clip' | 'live';
       /** Epoch ms of the run, for the list time. */
       at: number;
     };

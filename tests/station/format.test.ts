@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { alertText, classifyText, dbText, dropText, failureText, formatClock, formatMs, LIVE_FAILURE_TEXT, mutedText, outputName, sideWord } from '../../src/station/format';
+import { alertText, classifyText, dbText, dropText, failureText, formatClock, formatMs, latencyNumber, latencyText, LIVE_FAILURE_TEXT, mutedText, outputName, sideWord } from '../../src/station/format';
+
+describe('latencyNumber and latencyText (latency R5.1, R5.2)', () => {
+  it('says the onset to output time by the formatMs rules', () => {
+    expect(latencyText(41.2)).toBe('Onset to output: 41 ms');
+    expect(latencyText(3.46)).toBe('Onset to output: 3.5 ms');
+    expect(latencyText(0)).toBe('Onset to output: 0.0 ms');
+    expect(latencyNumber(41.2)).toBe('41');
+    expect(latencyNumber(3.46)).toBe('3.5');
+  });
+
+  it.each([null, Number.NaN, -1, Number.POSITIVE_INFINITY])('gives a dash for %s', (ms) => {
+    expect(latencyText(ms)).toBe('Onset to output: — ms');
+    expect(latencyNumber(ms)).toBe('—');
+  });
+});
 
 describe('outputName (band-ble-protocol R6.7)', () => {
   it('names every output kind for the pipeline Band tile', () => {

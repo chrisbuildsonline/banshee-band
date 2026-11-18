@@ -222,3 +222,60 @@ describe('runSound with the settings engine (settings R4.5, R5.3, R6.1, R12.2)',
     expect(second.played).toEqual(['simulator', 'phone']);
   });
 });
+
+describe('runSound onset to output (latency R4.1 to R4.4)', () => {
+  it('is the last clock read minus the first, with no extra read', async () => {
+    const now = scriptedClock(CLOCK);
+    const { d } = deps({ now });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.latencyMs).toBe(40.5);
+    expect(r.onset).toBe('clip');
+    expect(r.times.band).toBe(0.5);
+    expect(now.calls).toBe(10);
+  });
+
+  it('includes the wait for a slow clip load and classifier', async () => {
+    let t = 0;
+    const { d } = deps({
+      now: () => t,
+      loadClip: async () => {
+        t += 120;
+        return WAV.slice().buffer;
+      },
+      classifier: {
+        classify: async () => {
+          t += 30;
+          return c('knock', 'Knock', 0.7);
+        },
+      },
+    });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.latencyMs).toBe(120 + 4 * 30);
+  });
+
+  it('is null when a switched-off class drops the event', async () => {
+    const s = resolveSettings(undefined);
+    s.sounds.knock.on = false;
+    const { d } = deps({ engine: createSettingsEngine(s, { rateLimitMs: 0 }) });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.decision.action).toBe('drop');
+    expect(r.latencyMs).toBeNull();
+    expect(r.onset).toBe('clip');
+  });
+
+  it('is null when no output was available', async () => {
+    const off = { ...output('simulator'), available: () => false };
+    const { d } = deps({ outputs: [off] });
+    const r = ok(await runSound(d, 'knock-01', 'left'));
+    expect(r.decision.action).toBe('play');
+    expect(r.played).toEqual([]);
+    expect(r.latencyMs).toBeNull();
+  });
+
+  it('is null when the output read is before the onset or not a number, never a made-up number', async () => {
+    const back = deps({ now: scriptedClock([...CLOCK.slice(0, 9), -1]) });
+    expect(ok(await runSound(back.d, 'knock-01', 'left')).latencyMs).toBeNull();
+    const nan = deps({ now: scriptedClock([...CLOCK.slice(0, 9), Number.NaN]) });
+    expect(ok(await runSound(nan.d, 'knock-01', 'left')).latencyMs).toBeNull();
+  });
+});

@@ -18,7 +18,17 @@ export function formatMs(ms: number): string {
   return r >= 10 ? `${Math.round(r)} ms` : `${r.toFixed(1)} ms`;
 }
 
-const PER_FRAME = ' per ' + 'win' + 'dow'; // split so the boundaries scan does not read it as the DOM global
+/** The number of the latency figure by the `formatMs` rules, without the unit: "41", "3.5", or "—" for null or an invalid value. */
+export function latencyNumber(ms: number | null): string {
+  return typeof ms === 'number' ? formatMs(ms).replace(/ ms$/, '') : '—';
+}
+
+/** The latency figure as one sentence: "Onset to output: 41 ms", "Onset to output: 3.5 ms", "Onset to output: — ms". */
+export function latencyText(ms: number | null): string {
+  return `Onset to output: ${latencyNumber(ms)} ms`;
+}
+
+const PER_FRAME =' per ' + 'win' + 'dow'; // split so the boundaries scan does not read it as the DOM global
 
 /** The Label tile's classify line: "Classify: 3.1 ms per window", by the `formatMs` rules. */
 export function classifyText(ms: number): string {

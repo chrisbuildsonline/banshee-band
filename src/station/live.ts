@@ -2,6 +2,7 @@ import type { MonoFrame } from '../audio';
 import type { HapticOutput } from '../band';
 import { PEAK_BUCKETS } from './constants';
 import { listenStateFor } from './listen-status';
+import { latencyMs } from './latency';
 import { createLiveGate } from './live-gate';
 import { processEvent } from './pipeline';
 import { rmsDb } from './summary';
@@ -26,13 +27,16 @@ export interface Live {
  * and while one runs only the newest waiting window is kept. A window the gate lets through (not `other`, at
  * most once per class every 3 s) becomes an event through `processEvent` with the id `live-<n>`, plays on every
  * available output and is sent as a run result with `chosen: 'live'`. After each classified window the bearing
- * window is emptied, so a bearing covers the sound since the last window. Five failed classifications in a row
+ * window is emptied, so a bearing covers the sound since the last window. `latencyMs` runs from the clock read
+ * when a window reaches the loop (its end, as the page sees it) to right after the last available output was
+ * handed the pattern; a waiting window keeps its own arrival time, so a wait shows in the number. Five failed classifications in a row
  * send a failure and stop. A result that finishes after `stop()` is ignored. No DOM.
  */
 export function createLive(deps: LiveDeps, onUpdate: (u: LiveUpdate) => void): Live {
   const gate = createLiveGate();
   let unsubs: (() => void)[] = [];
-  let pending: MonoFrame | null = null;
+  /** The newest waiting window and its arrival time (its onset). */
+  let pending: { frame: MonoFrame; arrivedMs: number } | null = null;
   let running = false;
   let generation = 0;
   let failures = 0;
@@ -55,7 +59,7 @@ export function createLive(deps: LiveDeps, onUpdate: (u: LiveUpdate) => void): L
     detach();
   }
 
-  function play(window: Float32Array, cls: Awaited<ReturnType<LiveDeps['classifier']['classify']>>, ms: number): void {
+  function play(window: Float32Array, cls: Awaited<ReturnType<LiveDeps['classifier']['classify']>>, ms: number, arrivedMs: number): void {
     const times = { waveform: 0, label: ms, bearing: 0, pattern: 0, band: 0 };
     let t0 = deps.now();
     const peaks = waveformPeaks(window, PEAK_BUCKETS);
@@ -78,9 +82,12 @@ export function createLive(deps: LiveDeps, onUpdate: (u: LiveUpdate) => void): L
         played.push(o.kind);
       }
     }
-    times.band = deps.now() - t0;
+    // The output: right after the last available output was handed the pattern.
+    const outputMs = deps.now();
+    times.band = outputMs - t0;
+    const latency = played.length > 0 ? latencyMs(arrivedMs, outputMs) : null;
     const seconds = window.length / 16000;
-    const result = { ok: true as const, clipId: 'live', chosen: 'live' as const, backend: deps.classifier.backend, peaks, seconds, classification: cls, frames: 1, bearing, event, bearingConfidence, decision, played, times, at: deps.epoch() };
+    const result = { ok: true as const, clipId: 'live', chosen: 'live' as const, backend: deps.classifier.backend, peaks, seconds, classification: cls, frames: 1, bearing, event, bearingConfidence, decision, played, times, latencyMs: latency, onset: 'live' as const, at: deps.epoch() };
     onUpdate({ kind: 'event', result });
   }
 
@@ -88,7 +95,7 @@ export function createLive(deps: LiveDeps, onUpdate: (u: LiveUpdate) => void): L
     running = true;
     try {
       while (pending && gen === generation) {
-        const frame = pending;
+        const { frame, arrivedMs } = pending;
         pending = null;
         const t0 = deps.now();
         let cls;
@@ -106,7 +113,7 @@ export function createLive(deps: LiveDeps, onUpdate: (u: LiveUpdate) => void): L
         if (gen !== generation) return;
         failures = 0;
         const ms = deps.now() - t0;
-        if (gate.accept(cls.class, t0)) play(frame.samples, cls, ms);
+        if (gate.accept(cls.class, t0)) play(frame.samples, cls, ms, arrivedMs);
         deps.bearing.reset();
       }
     } finally {
@@ -129,7 +136,8 @@ export function createLive(deps: LiveDeps, onUpdate: (u: LiveUpdate) => void): L
         deps.capture.onStereoFrame((frame) => deps.bearing.push(frame)),
         deps.capture.onMonoFrame((frame) => {
           if (pending) dropped++;
-          pending = frame;
+          // The onset of a live run: the window has just ended and reached the page.
+          pending = { frame, arrivedMs: deps.now() };
           if (!running) void pump(gen);
         }),
       ];
