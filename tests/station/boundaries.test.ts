@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const SRC = fileURLToPath(new URL('../../src/', import.meta.url));
 const STATION = join(SRC, 'station');
-const PURE = ['wav.ts', 'stereo.ts', 'summary.ts', 'waveform.ts', 'format.ts', 'pipeline.ts', 'runner.ts', 'constants.ts', 'live-gate.ts', 'listen-status.ts', 'settings.ts', 'latency.ts'];
+const PURE = ['wav.ts', 'stereo.ts', 'summary.ts', 'waveform.ts', 'format.ts', 'pipeline.ts', 'runner.ts', 'constants.ts', 'live-gate.ts', 'listen-status.ts', 'settings.ts', 'latency.ts', 'onboarding.ts'];
 const pureFiles = PURE.filter((f) => existsSync(join(STATION, f))).map((f) => ({ name: f, text: readFileSync(join(STATION, f), 'utf8') }));
 
 const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
@@ -134,6 +134,20 @@ describe('src/station boundaries (R1.1 to R1.4)', () => {
       .filter((p) => importsOf(readFileSync(p, 'utf8')).some((i) => /(^|\/)settings-panel$/.test(i.spec)));
     expect(offenders.map((p) => relative(SRC, p))).toEqual([]);
     expect(importsOf(readFileSync(join(STATION, 'station.ts'), 'utf8')).some((i) => i.spec === './settings-panel')).toBe(true);
+  });
+
+  it('only station.ts imports the intro sheet (onboarding R1.2)', () => {
+    const offenders = walk(SRC)
+      .filter((p) => !p.endsWith(join('station', 'station.ts')))
+      .filter((p) => importsOf(readFileSync(p, 'utf8')).some((i) => /(^|\/)onboarding-sheet$/.test(i.spec)));
+    expect(offenders.map((p) => relative(SRC, p))).toEqual([]);
+    expect(importsOf(readFileSync(join(STATION, 'station.ts'), 'utf8')).some((i) => i.spec === './onboarding-sheet')).toBe(true);
+  });
+
+  it('only the Settings sheet and the intro sheet import the output options (onboarding R1.2)', () => {
+    const allowed = [join('station', 'settings-panel.ts'), join('station', 'onboarding-sheet.ts')];
+    const importers = walk(SRC).filter((p) => importsOf(readFileSync(p, 'utf8')).some((i) => /(^|\/)output-options$/.test(i.spec)));
+    expect(importers.map((p) => relative(SRC, p)).sort()).toEqual(allowed.sort());
   });
 
   it('only src/main.ts imports src/pwa', () => {
