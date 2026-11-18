@@ -39,11 +39,11 @@ Each task is small steps that end in a test gate. Write the check first, see it 
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
   - **Gate:** the reduced-motion and announcement checks of `e2e/a11y.spec.ts` pass; `bun run hooks:colour`, `typecheck`, `test` and `bun run e2e` pass.
 
-- [ ] 6. README and final gate
-  - [ ] 6.1 Add the Accessibility section to `README.md` as Requirement 6 says: what runs automatically and how to run it, and the honest limits (axe finds only part of WCAG; no screen-reader or Deaf and hard-of-hearing user testing yet; the canvas ghosts rely on the DOM text equivalent). No claim of conformance or certification. Add the README requirement (spec#6 of this spec) to `scripts/hooks/spec-gaps.json` with its reason (a documentation requirement, no test), and update the count of known gaps in the README's Kiro hooks table.
+- [x] 6. README and final gate
+  - [x] 6.1 Add the Accessibility section to `README.md` as Requirement 6 says: what runs automatically and how to run it, and the honest limits (axe finds only part of WCAG; no screen-reader or Deaf and hard-of-hearing user testing yet; the canvas ghosts rely on the DOM text equivalent). No claim of conformance or certification. Add the README requirement (spec#6 of this spec) to `scripts/hooks/spec-gaps.json` with its reason (a documentation requirement, no test), and update the count of known gaps in the README's Kiro hooks table.
     - _Requirements: 6.1, 6.2, 6.3_
-  - [ ] 6.2 Check the diff: only `package.json`, the lock file, `e2e/a11y.spec.ts`, the fixes of task 3 to 5, the Contrast table if a token changed, `README.md` and `scripts/hooks/spec-gaps.json` changed; `scripts/hooks/colour-alerts.ts` and its test unchanged; no rule disabled and no exclusion without a named reason; `.kiro/steering/structure.md` untouched.
+  - [x] 6.2 Check the diff: only `package.json`, the lock file, `e2e/a11y.spec.ts`, the fixes of task 3 to 5, the Contrast table if a token changed, `README.md` and `scripts/hooks/spec-gaps.json` changed; `scripts/hooks/colour-alerts.ts` and its test unchanged; no rule disabled and no exclusion without a named reason; `.kiro/steering/structure.md` untouched.
     - _Requirements: 1.5, 5.1, 6.3_
-  - [ ] 6.3 Run `bun run typecheck`, `bun run test`, `bun run build`, `bun run e2e` and `bun run hooks:colour` and `bun run hooks:spec-tests`. All must be green. Write the commit summary: the violations found and fixed, any token change, and the choices of `design.md` that need a yes or no.
+  - [x] 6.3 Run `bun run typecheck`, `bun run test`, `bun run build`, `bun run e2e` and `bun run hooks:colour` and `bun run hooks:spec-tests`. All must be green. Write the commit summary: the violations found and fixed, any token change, and the choices of `design.md` that need a yes or no.
     - _Requirements: 1.2, 5.1_
   - **Gate:** all six commands exit 0 and the diff matches 6.2; `bun run hooks:spec-tests` passes for the accessibility spec.

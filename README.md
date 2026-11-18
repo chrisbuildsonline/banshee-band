@@ -49,6 +49,19 @@ Parts, wiring, flashing and the byte protocol are in [firmware/README.md](firmwa
 
 The design system lives in `design/DESIGN.md` and `src/ui/tokens.css`. See it at http://localhost:5173/styleguide.html.
 
+## Accessibility
+
+The people this is for are Deaf and hard of hearing, so accessibility is checked on every run of the end-to-end tests. `e2e/a11y.spec.ts` checks:
+
+- an axe audit (`@axe-core/playwright`, the `wcag2a`, `wcag2aa` and `wcag21aa` rules, none turned off) of the station empty, the station with events, ghosts and the pipeline card, the Settings sheet, each of the three intro steps, `band.html` and `styleguide.html`, in Day and in Night. A violation fails the test. In Night the page is checked a second time with the background glow flattened to its brightest colour, because axe cannot measure text over a gradient;
+- the keyboard: the Tab order of the station, a visible focus ring on every stop, Tab and Shift+Tab staying inside the Settings sheet and the intro, Escape closing them and returning the focus, Start listening with Enter and Space, a Settings switch with Space and a loudness slider with the arrow keys;
+- reduced motion: with `prefers-reduced-motion: reduce`, no animation or transition on the ghost field, the status pills, the Settings sheet or the intro;
+- announcements: each new sound is said once, politely, by the Latest alert, with its class, side and urgency in words, and nothing on the station or `band.html` is `assertive` or `role="alert"`.
+
+`bun run hooks:colour` checks that no state is told apart by colour alone. Run everything with `bun run e2e`, or only these checks with `bunx playwright test e2e/a11y.spec.ts`.
+
+Limits, honestly: axe finds only part of the WCAG problems, and a passing audit is not a claim of WCAG conformance or of any certification. There has been no testing with screen-reader users yet, and no testing with Deaf or hard-of-hearing users. The ghosts are drawn on a canvas, so axe checks only the canvas's name; a screen reader gets them through the "Now:" list and the canvas label instead. And as the station says, Banshee Band is an aid, not a safety device.
+
 ## Latency
 
 The pipeline card shows **Onset to output**: the measured time from the start of a sound to the moment its vibration pattern is handed to the outputs. It is read from `performance.now()` in the page, not estimated.
