@@ -1,0 +1,372 @@
+/*
+ * Settings sheet (src/station/settings-panel.ts). Design tokens only (design/DESIGN.md); the one literal
+ * breakpoint is 720px. Phone first: a bottom sheet with rounded top corners that scrolls inside; from 720px a
+ * side sheet floating at the right edge. No @keyframes; hover and press use the motion tokens, which are zero
+ * under reduced motion.
+ */
+
+/* The header pill that opens the sheet */
+.bb-settings-trigger__glyph {
+  flex: none;
+  width: var(--bb-space-4);
+  height: var(--bb-space-4);
+}
+
+/* The sheet: phone, a bottom sheet */
+.bb-settings {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: calc(100dvh - var(--bb-space-5));
+  margin: 0;
+  padding: var(--bb-space-4);
+  border: 0;
+  border-radius: var(--bb-radius-card) var(--bb-radius-card) 0 0;
+  background-color: var(--bb-color-surface);
+  color: var(--bb-color-text);
+  box-shadow: var(--bb-shadow-soft);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.bb-settings[open] {
+  display: grid;
+  gap: var(--bb-space-5);
+  align-content: start;
+}
+
+.bb-settings::backdrop {
+  background-color: var(--bb-color-canvas);
+  opacity: 0.8;
+}
+
+.bb-settings__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bb-space-3);
+}
+
+.bb-settings__titles {
+  display: grid;
+  gap: var(--bb-space-1);
+  min-width: 0;
+}
+
+.bb-settings__titles .bb-heading {
+  margin: 0;
+}
+
+.bb-settings__note {
+  margin: 0;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-settings__section {
+  display: grid;
+  gap: var(--bb-space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.bb-settings__h3 {
+  margin: 0;
+  padding: 0;
+  font-size: var(--bb-type-body-size);
+  line-height: var(--bb-type-body-line);
+  font-weight: var(--bb-type-heading-weight);
+  color: var(--bb-color-text);
+}
+
+/* Sounds: one surface-raised tile per class */
+.bb-settings__tiles {
+  display: grid;
+  gap: var(--bb-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bb-settings-tile {
+  display: grid;
+  padding: var(--bb-space-1) var(--bb-space-3);
+  border: 1px solid transparent;
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+}
+
+.bb-settings-tile__top {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-space-3);
+  min-height: var(--bb-target-min);
+}
+
+.bb-settings-tile__glyph {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--bb-space-6);
+  height: var(--bb-space-6);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface);
+}
+
+.bb-settings-tile__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: var(--bb-type-heading-weight);
+}
+
+/* One line under the name: the label, the slider, the value */
+.bb-settings-tile__level {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) calc(var(--bb-space-7) + var(--bb-space-2));
+  grid-template-areas: "from range value";
+  align-items: center;
+  column-gap: var(--bb-space-3);
+}
+
+.bb-settings-tile__from {
+  grid-area: from;
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-settings-tile__value {
+  grid-area: value;
+  text-align: end;
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-settings-tile__range {
+  grid-area: range;
+  width: 100%;
+  min-height: var(--bb-target-min);
+  margin: 0;
+  accent-color: var(--bb-color-accent);
+  cursor: pointer;
+}
+
+.bb-settings-tile__range:disabled {
+  cursor: not-allowed;
+}
+
+/* A class that is off: muted words and a dashed outline, so it reads as off without colour */
+.bb-settings-tile[data-on="false"] {
+  border: 1px dashed var(--bb-color-border);
+}
+
+.bb-settings-tile[data-on="false"] .bb-settings-tile__name,
+.bb-settings-tile[data-on="false"] .bb-settings-tile__value {
+  color: var(--bb-color-text-muted);
+}
+
+/* Switch: a real checkbox over a track and thumb, with the word On or Off beside it */
+.bb-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bb-space-2);
+  min-height: var(--bb-target-min);
+  min-width: var(--bb-target-min);
+  cursor: pointer;
+}
+
+/* Above the track (which is positioned for its thumb), so the whole switch takes the click. */
+.bb-switch__input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bb-switch__track {
+  position: relative;
+  flex: none;
+  width: calc(var(--bb-space-7) - var(--bb-space-1));
+  height: calc(var(--bb-space-5) + var(--bb-space-1));
+  border: 2px solid var(--bb-color-border);
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-surface);
+  transition-property: background-color, border-color;
+  transition-duration: var(--bb-motion-fast);
+}
+
+.bb-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(var(--bb-space-5) - var(--bb-space-1));
+  height: calc(var(--bb-space-5) - var(--bb-space-1));
+  border-radius: var(--bb-radius-pill);
+  background-color: var(--bb-color-text-muted);
+  transition-property: transform;
+  transition-duration: var(--bb-motion-fast);
+}
+
+.bb-switch__word {
+  min-width: calc(var(--bb-space-5) + var(--bb-space-1));
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-label-weight);
+}
+
+.bb-switch:has(.bb-switch__input:checked) .bb-switch__track {
+  border-color: var(--bb-color-accent);
+  background-color: var(--bb-color-accent);
+}
+
+.bb-switch:has(.bb-switch__input:checked) .bb-switch__thumb {
+  background-color: var(--bb-color-on-accent);
+  transform: translateX(var(--bb-space-4));
+}
+
+.bb-switch:has(.bb-switch__input:checked) .bb-switch__word {
+  color: var(--bb-color-text);
+}
+
+.bb-switch:has(.bb-switch__input:focus-visible) .bb-switch__track {
+  outline: 3px solid var(--bb-color-focus);
+  outline-offset: 2px;
+}
+
+/* Buzz on: native radios as option tiles */
+.bb-settings__output legend {
+  margin-bottom: var(--bb-space-3);
+}
+
+.bb-settings__options {
+  display: grid;
+  gap: var(--bb-space-2);
+}
+
+.bb-option {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bb-space-3);
+  min-height: var(--bb-target-min);
+  padding: var(--bb-space-3);
+  border: 1px solid transparent;
+  border-radius: var(--bb-radius-control);
+  background-color: var(--bb-color-surface-raised);
+  color: var(--bb-color-text);
+  cursor: pointer;
+}
+
+/* The radio covers its tile, so the focused element is the whole target. */
+.bb-option__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bb-option__check {
+  flex: none;
+  width: var(--bb-space-4);
+  height: var(--bb-space-4);
+  margin-top: 2px;
+  border: 2px solid var(--bb-color-border);
+  border-radius: var(--bb-radius-pill);
+  fill: none;
+  stroke: transparent;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bb-option__text {
+  display: grid;
+  gap: var(--bb-space-1);
+  min-width: 0;
+}
+
+.bb-option__name {
+  font-size: var(--bb-type-label-size);
+  line-height: var(--bb-type-label-line);
+  font-weight: var(--bb-type-heading-weight);
+}
+
+.bb-option__caption {
+  color: var(--bb-color-text-muted);
+  font-size: var(--bb-type-caption-size);
+  line-height: var(--bb-type-caption-line);
+}
+
+.bb-option:has(.bb-option__input:checked) {
+  background-color: var(--bb-color-accent-tint);
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-option:has(.bb-option__input:checked) .bb-option__check {
+  border-color: var(--bb-color-accent-strong);
+  stroke: currentColor;
+}
+
+.bb-option:has(.bb-option__input:checked) .bb-option__caption {
+  color: var(--bb-color-accent-strong);
+}
+
+.bb-option:has(.bb-option__input:focus-visible) {
+  outline: 3px solid var(--bb-color-focus);
+  outline-offset: 2px;
+}
+
+.bb-option:has(.bb-option__input:disabled) {
+  border: 1px dashed var(--bb-color-border);
+  color: var(--bb-color-text-muted);
+  cursor: not-allowed;
+}
+
+.bb-option:has(.bb-option__input:disabled) .bb-option__input {
+  cursor: not-allowed;
+}
+
+.bb-option:has(.bb-option__input:disabled) .bb-option__check {
+  border-style: dashed;
+}
+
+.bb-settings__foot {
+  display: flex;
+  justify-content: flex-start;
+  padding-bottom: var(--bb-space-2);
+}
+
+/* Desktop: a side sheet floating at the right edge, 16px in from the viewport, up to 480px wide */
+@media (min-width: 720px) {
+  .bb-settings {
+    inset: var(--bb-space-4) var(--bb-space-4) var(--bb-space-4) auto;
+    width: min(calc(var(--bb-space-7) * 10), calc(100vw - var(--bb-space-4) * 2));
+    height: auto;
+    max-height: none;
+    padding: var(--bb-space-5);
+    border-radius: var(--bb-radius-card);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-switch__track,
+  .bb-switch__thumb {
+    transition: none;
+  }
+}

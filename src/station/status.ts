@@ -2,8 +2,10 @@
 export interface StatusPill {
   /** "Problem" with the cross glyph and the strong tint: the sound model could not be loaded. */
   setProblem(): void;
-  /** Back to the state read at load ("Band not connected" or "Phone vibration fallback"). */
+  /** Back to the base state ("Band not connected" or "Phone vibration fallback"). */
   reset(): void;
+  /** Sets the base state: "Phone vibration fallback" when the phone is the output in use, else "Band not connected". "Problem" stays until `reset`. */
+  setFallback(active: boolean): void;
 }
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -52,10 +54,10 @@ export function renderPill(pill: HTMLElement, look: PillLook): void {
  * Mounts the station's status pill (`role="status"`, polite) into `container`. `vibrates` is
  * `createPhoneOutput().available()`, read once at load: true gives "Phone vibration fallback" (triangle),
  * false "Band not connected" (open circle), both in the neutral tint. The text changes only through
- * `setProblem` and `reset`.
+ * `setProblem`, `reset` and `setFallback` (the settings' output choice).
  */
 export function mountStatusPill(container: HTMLElement, vibrates: boolean): StatusPill {
-  const first: State = vibrates ? 'fallback' : 'band-off';
+  let first: State = vibrates ? 'fallback' : 'band-off';
   const pill = document.createElement('span');
   pill.setAttribute('role', 'status');
   container.append(pill);
@@ -71,5 +73,9 @@ export function mountStatusPill(container: HTMLElement, vibrates: boolean): Stat
   return {
     setProblem: () => render('problem'),
     reset: () => render(first),
+    setFallback(active) {
+      first = active ? 'fallback' : 'band-off';
+      if (current !== 'problem') render(first);
+    },
   };
 }

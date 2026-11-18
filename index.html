@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/src/ui/tokens.css" />
     <link rel="stylesheet" href="/src/ui/styleguide.css" />
     <link rel="stylesheet" href="/src/station/station.css" />
+    <link rel="stylesheet" href="/src/station/settings.css" />
   </head>
   <body class="bb-page bb-station-page">
     <header class="bb-topbar bb-station-topbar">
@@ -19,6 +20,10 @@
       </a>
       <div class="bb-station-topbar__meta">
         <a class="bb-pill bb-pill--secondary bb-station-topbar__link" href="/band.html">Band simulator</a>
+        <button type="button" class="bb-pill bb-pill--secondary bb-station-topbar__link" id="settings-open" aria-haspopup="dialog">
+          <svg class="bb-settings-trigger__glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-dasharray="2.2 2.2" /><circle cx="8" cy="8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6" /><circle cx="8" cy="8" r="1.5" fill="currentColor" /></svg>
+          Settings
+        </button>
         <p class="bb-station-topbar__status" id="station-status"></p>
       </div>
       <div class="bb-segmented" role="group" aria-label="Theme">

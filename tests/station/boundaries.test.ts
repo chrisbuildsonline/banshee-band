@@ -128,6 +128,14 @@ describe('src/station boundaries (R1.1 to R1.4)', () => {
     }
   });
 
+  it('only station.ts imports the Settings sheet (settings R1.2)', () => {
+    const offenders = walk(SRC)
+      .filter((p) => !p.endsWith(join('station', 'station.ts')))
+      .filter((p) => importsOf(readFileSync(p, 'utf8')).some((i) => /(^|\/)settings-panel$/.test(i.spec)));
+    expect(offenders.map((p) => relative(SRC, p))).toEqual([]);
+    expect(importsOf(readFileSync(join(STATION, 'station.ts'), 'utf8')).some((i) => i.spec === './settings-panel')).toBe(true);
+  });
+
   it('only src/main.ts imports src/pwa', () => {
     const offenders = walk(SRC)
       .filter((p) => !p.startsWith(join(SRC, 'pwa')) && relative(SRC, p) !== 'main.ts')
