@@ -83,12 +83,18 @@ firmware/       ESP32 Arduino C++ for the two-motor band
   banshee-band/banshee-band.ino  BLE service, frame parser (same rules as decodeFrame), non-blocking two-motor PWM player
   README.md           parts list, wiring table, how to flash, the byte protocol with a worked example frame
 scripts/        build-time scripts: make-icons.ts (bun run icons) writes public/icons/*.png and public/manifest.webmanifest; log-clips.ts (bun run log:seed) replays every clip through the pipeline and appends the events to the sound log
+  scripts/hooks/patterns.ts      bun run hooks:patterns: a pattern file (default src/haptics/patterns.json) against the pattern language limits and checkDistinctiveness
+  scripts/hooks/spec-tests.ts    bun run hooks:spec-tests: every spec requirement is listed by a task that names an existing test file, or is a known gap in spec-gaps.json
+  scripts/hooks/spec-gaps.json   the known requirement gaps (spec#N) with their reasons
+  scripts/hooks/colour-alerts.ts bun run hooks:colour: no state of the station pill, Listen pill, ghost urgency or wristband row differs by colour alone
+  scripts/hooks/fixtures.ts      bun run hooks:fixtures: reruns classify:report, bearing:report and log:seed in order
 tests/          Vitest unit and property tests
   tests/ghosts/       unit, property, shape raster
   tests/band/         protocol unit and property, ble-output with a fake BluetoothLike, firmware sync (sketch and README against protocol.ts)
   tests/station/      unit, property, real clip side table, settings unit, property and styles tests
   tests/pwa/          manifest, icons, routes, precache, and the built dist/sw.js check (runs after bun run build)
   tests/mcp/          log unit and stdio integration tests
+  tests/scripts/hooks/  the four hook scripts: unit tests and a run of each script
 e2e/            Playwright tests
   e2e/ghosts.spec.ts  ghost field e2e
   e2e/station.spec.ts listening station e2e and screenshots
@@ -101,6 +107,7 @@ e2e/            Playwright tests
 public/         clips/ (CC0 fallback clips with licence notes), models/, icons/ and manifest.webmanifest
 vite.config.ts  banshee-pwa plugin: injects the precache list and cache name into /sw.js, fails over 40 MB or on a missing file
 design/DESIGN.md  UI source of truth
+.kiro/hooks/     Kiro agent hooks: on save, run bun run hooks:patterns, hooks:spec-tests, hooks:colour and hooks:fixtures
 ```
 
 ## Rules
