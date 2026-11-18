@@ -57,9 +57,13 @@ src/station/    listening station (index.html): microphone or sample clip to gho
   list.ts             mountEventList: Latest alert and Recent sounds
   pipeline-view.ts    mountPipelineView: five stage tiles with times; Label tile shows backend and classify ms; the latency figure ("Onset to output" number with a note on what is and is not counted, `data-latency-ms`, `data-latency-source`)
   settings.ts         StationSettings: per-class on/off and level (-80 to -10 dB), Buzz on output; resolveSettings, parseSettings, load and save with injected storage (key `banshee-band.settings.v1`), settingsVerdict, createSettingsEngine, isMuted, effectiveOutput, outputsFor (pure)
-  settings-panel.ts   mountSettings: the Settings sheet (native dialog) with a switch and level slider per class, Buzz on radios (Wristband enabled when the browser has Web Bluetooth, disabled with an honest caption when not; the connect row sits under the radios and a connect from there sets the output to the wristband) and Reset; browserStorage
+  settings-panel.ts   mountSettings: the Settings sheet (native dialog) with a switch and level slider per class, Buzz on radios (Wristband enabled when the browser has Web Bluetooth, disabled with an honest caption when not; the connect row sits under the radios and a connect from there sets the output to the wristband) and Reset; the Buzz on radios come from output-options.ts; settings(), setOutput() and the Show intro again pill; browserStorage
   settings.css        Settings sheet styles: side sheet from 720px, bottom sheet below, design tokens only
-  station.ts          mountStation: builds the page, applies the saved settings (new settings engines and outputs on each change), runs a pick and starts or stops listening; creates the wristband link and re-applies the outputs on every link change
+  output-options.ts   the Buzz on option list, PHONE_OFF, BAND_OFF, shownOutput and mountOutputOptions: the three radio tiles shared by the Settings sheet and the intro
+  onboarding.ts       first-run flag (key `banshee-band.onboarded.v1`, value `done`) with injected storage: isOnboarded, shouldShowIntro, markOnboarded; INTRO_STEPS, micSupport, micStepView (the microphone step for each Listen state) (pure)
+  onboarding-sheet.ts mountOnboarding: the first-run intro (native dialog built at each open): Welcome with the aid sentence, Microphone through the station's Start listening, Where should alerts buzz? through the Settings sheet; Skip intro, Escape and Done mark it seen
+  onboarding.css      intro styles: centred card from 720px, bottom sheet below, design tokens only
+  station.ts          mountStation: builds the page, applies the saved settings (new settings engines and outputs on each change), runs a pick and starts or stops listening; keeps the Listen state for the intro and opens the intro on the first visit; creates the wristband link and re-applies the outputs on every link change
   station.css         station layout and card styles, design tokens only
   index.ts            public exports
 src/pwa/        offline install: web manifest, generated icons, service worker
@@ -91,7 +95,7 @@ scripts/        build-time scripts: make-icons.ts (bun run icons) writes public/
 tests/          Vitest unit and property tests
   tests/ghosts/       unit, property, shape raster
   tests/band/         protocol unit and property, ble-output with a fake BluetoothLike, firmware sync (sketch and README against protocol.ts)
-  tests/station/      unit, property, real clip side table, settings unit, property and styles tests
+  tests/station/      unit, property, real clip side table, settings unit, property and styles tests, onboarding unit, property and styles tests, output-options test
   tests/pwa/          manifest, icons, routes, precache, and the built dist/sw.js check (runs after bun run build)
   tests/mcp/          log unit and stdio integration tests
   tests/scripts/hooks/  the four hook scripts: unit tests and a run of each script
@@ -103,6 +107,8 @@ e2e/            Playwright tests
   e2e/offline.spec.ts offline after one visit, against a production build (vite preview on 5288)
   e2e/band.spec.ts    band simulator page e2e and screenshots
   e2e/band-link.spec.ts Bluetooth band link with a mocked navigator.bluetooth: connect, written bytes, lost, cancelled, unsupported, band.html, screenshots
+  e2e/fixtures.ts     shared test fixture: marks the intro as seen unless test.use({ onboarded: false })
+  e2e/onboarding.spec.ts first-run intro: 1440 and 390, Day and Night, allow, denied and missing microphone, skip, Escape, shown once, corrupt or blocked storage, Show intro again, keyboard, reduced motion, screenshots
   e2e/latency.spec.ts  onset to output figure: Try a sound (1440 Day) and fake-microphone live run (390 Night) read a measured number, a muted run shows none, screenshots
 public/         clips/ (CC0 fallback clips with licence notes), models/, icons/ and manifest.webmanifest
 vite.config.ts  banshee-pwa plugin: injects the precache list and cache name into /sw.js, fails over 40 MB or on a missing file
@@ -120,4 +126,4 @@ design/DESIGN.md  UI source of truth
 - `mcp/` reads and writes the log with `src/events` only; `mcp/replay.ts` is the one file that may also import the real pipeline (`src/station/runner.ts`, `src/classify`, `src/haptics`) to run a clip headless. Nothing in `src/` imports `mcp/`.
 - `src/station` sits with `ui` at the top of the flow: it may import the other modules, and nothing but `src/main.ts` (and `mcp/replay.ts`, for `runner.ts`) imports it.
 - `src/pwa/` imports nothing from the other project modules. Only `src/main.ts` imports `src/pwa/register.ts`.
-- The pure files of `src/station` and `src/pwa` (`live-gate.ts`, `live.ts`, `latency.ts`, `settings.ts`, `precache.ts`, `routes.ts`, `manifest.ts`, `icons.ts`) use no `document`, `window`, `navigator`, `localStorage`, `fetch`, `caches`, `console`, `Math.random` or `Date`; `tests/station/boundaries.test.ts` checks this.
+- The pure files of `src/station` and `src/pwa` (`live-gate.ts`, `live.ts`, `latency.ts`, `settings.ts`, `onboarding.ts`, `precache.ts`, `routes.ts`, `manifest.ts`, `icons.ts`) use no `document`, `window`, `navigator`, `localStorage`, `fetch`, `caches`, `console`, `Math.random` or `Date`; `tests/station/boundaries.test.ts` checks this.
