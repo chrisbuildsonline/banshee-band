@@ -334,7 +334,9 @@ Desktop (1440px), a 12-column grid with 24px gaps:
 |                                              | Pattern: Knock, left stronger | |
 |                                              +-------------------------------+ |
 | +----------------------------------------------------------------------------+ |
-| | Pipeline  [1 Waveform] [2 Label] [3 Bearing] [4 Pattern] [5 Band]          | |
+| | Pipeline                                           Onset to output 1135 ms | |
+| | Each step of a run and how long it took.         From the press to the ... | |
+| | [1 Waveform] [2 Label] [3 Bearing] [4 Pattern] [5 Band]                    | |
 | +----------------------------------------------------------------------------+ |
 | Banshee Band is an aid, not a safety device. ...                  Styleguide  |
 +--------------------------------------------------------------------------------+
@@ -346,7 +348,18 @@ Regions in DOM order (the tab order follows it):
 3. Listen card, all 12 columns: `heading` "Listen" and the muted sentence on the left; the Start listening primary pill (or Stop) and the Listen status pill on the right; a polite message line under them (the model loading, or the plain reason the microphone could not start). Then the Try a sound card, all 12 columns: heading, the muted simulated-side sentence, the Left/Centre/Right segmented control (default Centre), one secondary pill chip per clip with a 24px low ghost glyph, and a polite message line.
 4. Ghost field card, 7 columns, at least 480px: the canvas (448px on desktop) on thin `accent-tint` sonar rings around the listener mark, "All quiet" over an empty field, the "Now:" list as its DOM text equivalent, and an urgency key (the same ghost at Low, Medium and Urgent). It keeps its own height and sticks inside its grid row while the right column, which grows with every row, scrolls past.
 5. Right column, 5 columns: the Latest alert and Recent sounds card (the `aria-live` region, class in `display`, side and urgency below; up to 10 rows), then the band simulator (two motor cards and the pattern card).
-6. Pipeline card, all 12 columns: five `surface-raised` stage tiles in a row (stacked on the phone), Waveform (bars), Label, Bearing (a dial), Pattern and Band, each with an accent step number, its value as text and its time ("— ms" before the first run). The four-card Pipeline view below is the later live screen.
+6. Pipeline card, all 12 columns: the heading and a one-line note on the left and, on desktop, the latency figure on the right (under the heading on the phone), then five `surface-raised` stage tiles in a row (stacked on the phone), Waveform (bars), Label, Bearing (a dial), Pattern and Band, each with an accent step number, its value as text and its time ("— ms" before the first run). The four-card Pipeline view below is the later live screen.
+
+   **Latency figure** (`pipeline-view.ts`): the measured time from a sound's onset to the moment its pattern is handed to the outputs. It sits on the card surface, no tile and no border: a muted `caption` label "Onset to output", the number in `display` with `tabular-nums` and its unit "ms" in muted `caption` beside it, and one muted `caption` note under it (wrapping at 384px, right aligned on desktop). The figure's text reads as one sentence, "Onset to output: 41 ms" (the colon is visually hidden), and its number follows the stage-time rules ("— ms" when there is none). It is not a live region and not focusable; the Latest alert stays the one announcement. The note says what the number means:
+
+   | State | Note |
+   |---|---|
+   | Before any run | Run a sound to measure it. |
+   | After a Try a sound run | From the press to the buzz: fetch, classify, side, pattern and output. The one-time model load and the screen paint are not counted. |
+   | After a live window | From the end of a 0.975 s microphone window to the buzz. Microphone buffering, and the time the sound sat in the window, are not counted. |
+   | Nothing buzzed (dropped, muted, no output) | Nothing buzzed this time, so there is no output to time. |
+
+   Only `text` and `text-muted` on `surface` are used, pairs already in the Contrast table. On desktop the card is two columns (heading and note, then the figure across both rows) with the stage tiles across the card, and it paints above the sticky ghost field when the page scrolls to it.
 7. Footer: the aid sentence, muted, and the Styleguide link.
 
 Phone (390px):
@@ -363,7 +376,7 @@ Phone (390px):
 | +--------------------------+ |
 | Latest alert, Recent sounds  |
 | Band simulator               |
-| Pipeline (tiles stacked)     |
+| Pipeline (latency, tiles)    |
 | Footer                       |
 |+----------------------------+|
 || Try a sound  The side ...  ||  <- bar fixed to the bottom
