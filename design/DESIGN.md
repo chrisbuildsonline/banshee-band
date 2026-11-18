@@ -101,7 +101,7 @@ Short, tinted, `radius-pill`, `label` type, min height 32px (status pills are no
 |---|---|---|---|
 | Listening | Listening | ● filled circle | accent |
 | Paused | Paused | ❚❚ pause bars | neutral |
-| Band connected | Band connected | ◆ diamond | accent |
+| Band connected | Band connected | ● filled dot | accent |
 | Band not connected | Band not connected | ○ open circle | neutral |
 | Fallback active | Phone vibration fallback | ▲ triangle | neutral |
 | Error | Problem | ✕ cross | strong |
@@ -112,6 +112,31 @@ Short, tinted, `radius-pill`, `label` type, min height 32px (status pills are no
 | Phone cannot vibrate (band simulator page) | No phone vibration here | ○ open circle | neutral |
 
 The two band simulator rows say what the device can do (whether `navigator.vibrate` exists), not that a fallback is active or a band is missing, so they reuse the triangle and open-circle shapes with their own labels. The page reads this once at load.
+
+The station header pill (`src/station/status.ts`) follows the output in use, not only the choice: **Band connected** (filled dot, accent tint) when Buzz on is Wristband and the band is connected; **Phone vibration fallback** when the phone is in use; otherwise **Band not connected**. A chosen Wristband that is not connected (never connected, or lost) is not in use, so the pill says Band not connected and the screen takes over at once. Problem wins until the page resets it. Band connected shares the filled dot with Listening, but the two never sit side by side (Listening is in the Listen card, Band connected in the header) and the word carries the meaning.
+
+### Wristband connect control
+
+`mountBandConnect` (`src/band/connect.ts`, `connect.css`): one row that links the wristband over Web Bluetooth. It sits in the Settings sheet under Buzz on and in the Feel a pattern card of the band simulator page.
+
+```
+[(band glyph)]  Wristband                              [ Connect band ]
+                No band connected.
+```
+
+A `surface-raised` tile (`radius-control`, 16px padding): a 44px round `surface` disc with a small wristband glyph (strap, case and two motor dots, `aria-hidden`), the `label`-step heading "Wristband" in `text`, a muted `caption` status line (`role="status"`, `aria-live="polite"`), and one pill on the right. Under 720px the pill wraps to its own full-width line. The state is always in the words of the status line and the pill, never colour alone.
+
+| State | Status line | Pill | Look |
+|---|---|---|---|
+| Unsupported (no Web Bluetooth) | "This browser has no Bluetooth link (Safari and Firefox do not have Web Bluetooth). Alerts use the phone or the screen. Chrome or Edge can connect the band." | none | No button at all, not a hidden or disabled one. Only on the band page; the Settings sheet shows no row (the Wristband caption says it). |
+| Idle | "No band connected." | **Connect band**, primary | Muted line, `text-muted` glyph on `surface`. |
+| Connecting | "Connecting…" | "Connecting…", disabled | The disabled pill look (dashed `border`, `text-muted`). |
+| Connected | "Connected to ‹name›." (the device name, else "Banshee Band") | **Disconnect**, secondary | The glyph disc takes `accent-tint` with an `accent-strong` glyph, and the status line turns `accent-strong`. |
+| Lost (the band dropped) | "The band disconnected. Alerts use the phone or the screen until it is back." | **Connect band**, primary | As Idle. |
+| Cancelled (chooser closed) | "No band was chosen." | **Connect band**, primary | As Idle. |
+| Failed | "Could not connect. Check the band is on and close, then try again." | **Connect band**, primary | As Idle. |
+
+The press calls the link's `connect()` inside the click, because the browser's device chooser needs a user gesture; nothing asks for Bluetooth before the press. Disconnect writes nothing to the band (the band stops its own motors when the link drops). **Connect band is a primary pill**, an owner's decision that amends the one-primary rule for this control alone: on the band page it is the page's only primary pill, and in the Settings sheet the page behind the modal is inert, so Start listening is not reachable while it shows.
 
 The listening dot may breathe slowly (one cycle every 6s) when motion is allowed. Under reduced motion it is a static filled circle.
 
@@ -223,6 +248,8 @@ Ratios are WCAG 2.x, computed from the hex values in `tokens.css` by `tests/ui/t
 | Muted text on field ring | `--bb-color-text-muted` | `--bb-color-accent-tint` | Day | 5.21 | 4.5 |
 | Ghost fill on field ring | `--bb-ghost-fill` | `--bb-color-accent-tint` | Day | 3.14 | 3 |
 | Ghost outline on field ring | `--bb-ghost-outline` | `--bb-color-accent-tint` | Day | 7.92 | 3 |
+| Accent text on tile (band connected) | `--bb-color-accent-strong` | `--bb-color-surface-raised` | Day | 8.81 | 4.5 |
+| Primary pill on tile (Connect band) | `--bb-color-pill-bg` | `--bb-color-surface-raised` | Day | 17.04 | 3 |
 | Body text on canvas | `--bb-color-text` | `--bb-color-canvas` | Night | 17.05 | 4.5 |
 | Body text on card | `--bb-color-text` | `--bb-color-surface` | Night | 15.54 | 4.5 |
 | Body text on tile | `--bb-color-text` | `--bb-color-surface-raised` | Night | 14.01 | 4.5 |
@@ -259,6 +286,8 @@ Ratios are WCAG 2.x, computed from the hex values in `tokens.css` by `tests/ui/t
 | Muted text on field ring | `--bb-color-text-muted` | `--bb-color-accent-tint` | Night | 5.86 | 4.5 |
 | Ghost fill on field ring | `--bb-ghost-fill` | `--bb-color-accent-tint` | Night | 11.25 | 3 |
 | Ghost outline on field ring | `--bb-ghost-outline` | `--bb-color-accent-tint` | Night | 6.32 | 3 |
+| Accent text on tile (band connected) | `--bb-color-accent-strong` | `--bb-color-surface-raised` | Night | 10.71 | 4.5 |
+| Primary pill outline on tile (Connect band) | `--bb-color-pill-outline` | `--bb-color-surface-raised` | Night | 9.60 | 3 |
 
 The Night primary pill fill is near-black on a near-black canvas (about 1.1:1) by design; its boundary is the light `pill-outline`, which is the pair measured above. The Day `pill-outline` is `transparent` and is not measured.
 
@@ -270,7 +299,7 @@ Common rules for every screen:
 
 - One `<main>`, one `<h1>`, headings in order.
 - A header with the brand, the status pills (listening state and band state) and a link to Settings. On phones the header shows the status pills only, and navigation moves to a bottom tab bar (Listen, Pipeline, Band, Settings).
-- At most one primary pill. Screens without a primary action do not use the near-black pill.
+- At most one primary pill. Screens without a primary action do not use the near-black pill. The one exception is Connect band (see Wristband connect control): it is the band page's only primary pill, and in the Settings sheet the station behind the modal is inert.
 - One `aria-live="polite"` region holds the latest text alert: "Knock, left side, urgent".
 - Tab order follows reading order: header, then the regions in the order listed, then the footer. The sticky phone action bar comes last in the DOM order of `<main>` content so it is reached after the content it acts on, but is placed visually at the bottom within thumb reach.
 - Canvas content always has a DOM text equivalent.
@@ -278,7 +307,7 @@ Common rules for every screen:
 
 ### Listening station
 
-The home screen (`index.html`). It runs the whole chain live from the microphone or on recorded sample clips; no band is connected. **Primary action: Start listening**, the one near-black pill of the screen, in the Listen card first in the main content. While listening it is replaced by a **Stop** secondary pill, and the Listen card's own status pill says Starting, Listening, Stopped, Mic blocked or Problem (see Status pills). The microphone is asked for only after the press, and the card says in one muted sentence that the sound is processed on the device and never recorded or sent. The Try a sound card (sound chips and a side control) stays as the second way in.
+The home screen (`index.html`). It runs the whole chain live from the microphone or on recorded sample clips. The band simulator always shows each pattern; a wristband connected in Settings (Web Bluetooth, Chrome or Edge) buzzes it too. **Primary action: Start listening**, the one near-black pill of the screen, in the Listen card first in the main content. While listening it is replaced by a **Stop** secondary pill, and the Listen card's own status pill says Starting, Listening, Stopped, Mic blocked or Problem (see Status pills). The microphone is asked for only after the press, and the card says in one muted sentence that the sound is processed on the device and never recorded or sent. The Try a sound card (sound chips and a side control) stays as the second way in.
 
 Desktop (1440px), a 12-column grid with 24px gaps:
 
@@ -312,8 +341,8 @@ Desktop (1440px), a 12-column grid with 24px gaps:
 ```
 
 Regions in DOM order (the tab order follows it):
-1. Header: brand link, "Band simulator" secondary pill link, the "Settings" secondary pill with a gear glyph (opens the Settings sheet, see Settings), the status pill (Phone vibration fallback when the phone can vibrate and Buzz on is Phone vibration, otherwise Band not connected; Problem when the sound model fails), the Day/Night control.
-2. Title block: the eyebrow, `display` "Listening station" and the lede beside it on the right (under it near 720px). The lede says the sounds are sample clips, no microphone is used and no band is connected.
+1. Header: brand link, "Band simulator" secondary pill link, the "Settings" secondary pill with a gear glyph (opens the Settings sheet, see Settings), the status pill (Band connected when Buzz on is Wristband and the band is connected; Phone vibration fallback when the phone can vibrate and Buzz on is Phone vibration; otherwise Band not connected; Problem when the sound model fails), the Day/Night control.
+2. Title block: the eyebrow, `display` "Listening station" and the lede beside it on the right (under it near 720px). The lede says to start listening or choose a sample clip, that the microphone is used only after the press and the sound stays on the device, and that without a wristband the band is shown on screen.
 3. Listen card, all 12 columns: `heading` "Listen" and the muted sentence on the left; the Start listening primary pill (or Stop) and the Listen status pill on the right; a polite message line under them (the model loading, or the plain reason the microphone could not start). Then the Try a sound card, all 12 columns: heading, the muted simulated-side sentence, the Left/Centre/Right segmented control (default Centre), one secondary pill chip per clip with a 24px low ghost glyph, and a polite message line.
 4. Ghost field card, 7 columns, at least 480px: the canvas (448px on desktop) on thin `accent-tint` sonar rings around the listener mark, "All quiet" over an empty field, the "Now:" list as its DOM text equivalent, and an urgency key (the same ghost at Low, Medium and Urgent). It keeps its own height and sticks inside its grid row while the right column, which grows with every row, scrolls past.
 5. Right column, 5 columns: the Latest alert and Recent sounds card (the `aria-live` region, class in `display`, side and urgency below; up to 10 rows), then the band simulator (two motor cards and the pattern card).
@@ -354,7 +383,7 @@ Desktop (1440px):
 
 ```
 +--------------------------------------------------------------------------------+
-| Banshee Band          [● Listening] [◆ Band connected]            Settings     |
+| Banshee Band          [● Listening] [● Band connected]            Settings     |
 | Pipeline                                                                        |
 | What happens to each sound, step by step                                        |
 |                                                                                |
@@ -373,7 +402,7 @@ Phone (390px): the same four cards stacked in order, full width, with a thin acc
 
 ### Settings
 
-A sheet over the listening station, not a page of its own, so a change can be tried on the next sound (or the next live window) without leaving the station. The **Settings** secondary pill in the station header (a small gear glyph, `aria-haspopup="dialog"`) opens it as a native `<dialog>` with `showModal()`, labelled by its `h2` "Settings". Changes apply at once and are saved on this device (`localStorage`, key `banshee-band.settings.v1`); a missing, corrupt or blocked store gives the defaults (every class on at −50 dB, Phone vibration) and no error. **No primary action** (no Save button, no near-black pill); Done and Escape close it, and the focus goes back to the Settings pill.
+A sheet over the listening station, not a page of its own, so a change can be tried on the next sound (or the next live window) without leaving the station. The **Settings** secondary pill in the station header (a small gear glyph, `aria-haspopup="dialog"`) opens it as a native `<dialog>` with `showModal()`, labelled by its `h2` "Settings". Changes apply at once and are saved on this device (`localStorage`, key `banshee-band.settings.v1`); a missing, corrupt or blocked store gives the defaults (every class on at −50 dB, Phone vibration) and no error. **No primary action** (no Save button); the only near-black pill in the sheet is Connect band, while the wristband is not connected (see Wristband connect control). Done and Escape close it, and the focus goes back to the Settings pill.
 
 Desktop (1440px): a side sheet floating at the right edge, 16px in from the viewport edges, up to 480px wide, `surface` fill, `radius-card`, `shadow-soft`. The page behind is covered by the canvas colour at 80% opacity, so the sheet is the only bright surface. The sheet scrolls inside.
 
@@ -394,7 +423,11 @@ Desktop (1440px): a side sheet floating at the right edge, 16px in from the view
 |                                                  | Buzz on                       | |
 |                                                  | (✓) Phone vibration           | |
 |                                                  | ( ) Screen only               | |
-|                                                  | (:) Wristband  (disabled)     | |
+|                                                  | (✓) Wristband                 | |
+|                                                  | +---------------------------+ | |
+|                                                  | |(b) Wristband [Disconnect] | | |
+|                                                  | | Connected to Banshee Band.| | |
+|                                                  | +---------------------------+ | |
 |                                                  | [Reset to defaults]           | |
 |                                                  +-------------------------------+ |
 +--------------------------------------------------------------------------------+
@@ -404,16 +437,17 @@ Regions, in DOM and tab order:
 
 1. Head: `h2` "Settings", the muted caption "Changes apply right away and stay on this device.", and the **Done** secondary pill (focused when the sheet opens).
 2. **Sounds** (`h3`, then the muted caption "A sound alerts you when it is on and at least as loud as its level. −80 dB is very quiet, −10 dB is very loud."): one `surface-raised` tile (`radius-control`) per class in the order Knock, Doorbell, Alarm, Baby, Vehicle, Voice, Other. Each tile has the class's 24px low ghost glyph in a round `surface` disc (decorative), the class name, and a **switch**: a real `<input type="checkbox" role="switch">` named by the class name, drawn as a pill track with a round thumb and the visible word "On" or "Off" (on: `accent` track, `on-accent` thumb moved right; off: `surface` track with a 2px `border` outline, `text-muted` thumb on the left). Under it, one line: the visible label "Alerts from", the **level slider** (a native `<input type="range" min="-80" max="-10" step="1">` in `accent`, named "‹Class› Alerts from", with `aria-valuetext` like "−50 dB") and the value as text with tabular figures. A class that is off gets a 1px dashed `border` outline, muted name and value, and a disabled slider, so off reads without colour.
-3. **Buzz on**: a `<fieldset>` with that legend and three native radios drawn as option tiles (`surface-raised`, `radius-control`), each with a round check mark, a name and a muted caption: **Phone vibration** ("The phone buzzes the pattern. The screen shows it too."), **Screen only** ("The pattern plays on the band simulator on this screen.") and **Wristband**, disabled until the Bluetooth link, with the caption "Needs the wristband (coming with the Bluetooth link)". The selected tile takes `accent-tint`, `accent-strong` text and a filled check, so selection is more than colour; a disabled tile takes the disabled look of Pills (dashed `border`, `text-muted`). When the browser cannot vibrate, Phone vibration is disabled too with the caption "This browser cannot vibrate.", and Screen only shows as selected. The band simulator on the station always mirrors the pattern; the choice decides whether the phone buzzes as well. The header status pill follows it: "Phone vibration fallback" when the phone is in use, otherwise "Band not connected".
-4. **Reset to defaults**, a secondary pill.
+3. **Buzz on**: a `<fieldset>` with that legend and three native radios drawn as option tiles (`surface-raised`, `radius-control`), each with a round check mark, a name and a muted caption: **Phone vibration** ("The phone buzzes the pattern. The screen shows it too."), **Screen only** ("The pattern plays on the band simulator on this screen.") and **Wristband** ("The band buzzes the pattern, stronger on the side it came from."). The selected tile takes `accent-tint`, `accent-strong` text and a filled check, so selection is more than colour; a disabled tile takes the disabled look of Pills (dashed `border`, `text-muted`). When the browser cannot vibrate, Phone vibration is disabled with the caption "This browser cannot vibrate.", and Screen only shows as selected. When the browser has no Web Bluetooth (Safari, Firefox), Wristband is disabled with the caption "This browser has no Bluetooth. Use Chrome or Edge to connect the band." and the sheet shows no connect row. Where Bluetooth exists, Wristband is enabled and a chosen Wristband stays shown as chosen while the band is not connected (the saved choice is never rewritten); the alerts then use the screen until the band connects. The band simulator on the station always mirrors the pattern; the choice decides whether the phone or the wristband buzzes as well. The header status pill follows the output in use (see Status pills).
+4. **The Wristband connect control** (see Wristband connect control), under the radios inside the Buzz on fieldset, only where the browser has Web Bluetooth. A connect from here also sets Buzz on to Wristband. A lost band leaves Wristband chosen, says so in the status line, and the header pill falls back to Band not connected.
+5. **Reset to defaults**, a secondary pill.
 
-This replaces the earlier per-output switches (simulator, vibration fallback), the "Connect band" pill and the theme control in Settings: until the Bluetooth link (F11) the only output choice is Buzz on, and the theme control stays in the header.
+This replaces the earlier per-output switches (simulator, vibration fallback), the separate "Connect band" pill and the theme control in Settings: Buzz on is the only output choice, the connect control belongs to it, and the theme control stays in the header.
 
-Tab order: Settings pill; in the sheet Done, then per class the switch and then the slider (a disabled slider is skipped), then the radios as one stop (arrow keys move the choice), then Reset to defaults. Every control has the 3px focus ring (on the switch it rings the track) and is at least 44px tall.
+Tab order: Settings pill; in the sheet Done, then per class the switch and then the slider (a disabled slider is skipped), then the radios as one stop (arrow keys move the choice), then the Connect band (or Disconnect) pill, then Reset to defaults. Every control has the 3px focus ring (on the switch it rings the track) and is at least 44px tall.
 
 What a setting does on the station: a class that is off, or a sound quieter than its level, raises no ghost, no Recent sounds row, no Latest alert and no buzz. The pipeline card still shows the run (its Pattern tile says "This sound is switched off" or "Too quiet to buzz"), and Try a sound says why in its message line: "Knock is switched off in Settings, so it raised no alert." or "Knock was quieter than its Settings level (−40 dB), so it raised no alert." A live window that is muted shows nothing extra.
 
-The sheet's colour pairs are all rows of the Contrast table already (text and muted text on card and tile, accent text and muted text on the accent tint, text on the accent fill, the accent mark and the border on the tile, the focus ring on the card).
+The sheet's colour pairs are all rows of the Contrast table (text and muted text on card and tile, accent text and muted text on the accent tint, text on the accent fill, the accent mark and the border on the tile, the focus ring on the card). The connect control adds two: its connected status line (`accent-strong` on the tile) and the Connect band primary pill on the tile.
 
 Phone (390px): a bottom sheet, full width, with rounded top corners, at most the viewport height minus 24px, scrolling inside; the same order. Each tile keeps the name and the switch on the first line and the label, slider and value on the second. No sideways scrolling.
 
@@ -465,7 +499,7 @@ Phone (390px): the card is full width; the two pills stack full width at the bot
 
 ### Band simulator
 
-Shows what the wristband would feel, and lets a new wearer try each pattern before they need it. `band.html`. **No primary action**, so no near-black pill. No band is connected on this page, and no copy says one is: the **Connect band** secondary pill arrives with the BLE feature (`band-ble-protocol`) and is not shown until then.
+Shows what the wristband would feel, and lets a new wearer try each pattern before they need it. `band.html`. The only near-black pill is **Connect band** in the Feel a pattern card (see Wristband connect control), shown while no band is connected and Web Bluetooth exists. A connected band buzzes every pattern pressed here; without one the page is a simulator only.
 
 Desktop (1440px):
 
@@ -475,13 +509,17 @@ Desktop (1440px):
 |                                                                                |
 | Learn the patterns                                                             |
 | Band simulator                                                                 |
-| A simulator of the wrist band. No band is connected. ...                       |
+| A simulator of the wrist band. Each pattern plays here on screen, ...          |
 |                                                                                |
 | +-------------------------------+ +----------------------+ +------------------+ |
 | | Feel a pattern                | | Left motor        L  | | Right motor    R | |
 | | Choose a sound to play ...    | | 75 %                 | | 22 %             | |
-| | Side                          | | [=========      ]    | | [===          ]  | |
-| | ( ✓Left | Centre | Right |    | +----------------------+ +------------------+ |
+| | +---------------------------+ | | [=========      ]    | | [===          ]  | |
+| | |(b) Wristband [Connect band]| | +----------------------+ +------------------+ |
+| | | No band connected.        | |                                               |
+| | +---------------------------+ |                                               |
+| | Side                          |                                               |
+| | ( ✓Left | Centre | Right |    |                                               |
 | |   Unknown )                   | +---------------------------------------------+ |
 | | Sound                         | | Pattern                    2 pulses, 240 ms | |
 | | [Knock] [Doorbell] [Alarm]    | | (←) Knock, left stronger                    | |
@@ -496,14 +534,14 @@ Desktop (1440px):
 Regions, in DOM and reading order:
 
 1. Header: the brand (a link to `index.html`), the phone status pill (see Status pills: "Phone vibration on" with the triangle and accent tint, or "No phone vibration here" with the open circle and neutral tint), and the theme control.
-2. Title block: a short eyebrow, `title` "Band simulator", and a muted lede that says this is a simulator of the wrist band and that no band is connected.
-3. **Feel a pattern** card (left, 5 of 12 columns): `heading`, a muted sentence that a sound plays on the simulator and, when the phone can vibrate, on the phone; the **Side** segmented control (four native radios, Left, Centre, Right, Unknown, default Centre, in a `surface-raised` track; the selected option takes `accent-tint`, an `accent-strong` label and a check glyph, so it differs by more than colour; arrow keys move it, and changing it plays nothing); the **Sound** group of six chips (secondary pills Knock, Doorbell, Alarm, Baby, Vehicle, Voice, three per row, each with a small accent picture of its rhythm, decorative); a polite live region that only ever shows "This pattern could not be played"; and two `surface-raised` tiles that say how to read a pattern (rhythm is the sound, the stronger motor is the side). A chip builds the real command with the haptics engine and plays it on the simulator and, when it can vibrate, the phone.
+2. Title block: a short eyebrow, `title` "Band simulator", and a muted lede: "A simulator of the wrist band. Each pattern plays here on screen, motor by motor, and on the wristband too when you connect one."
+3. **Feel a pattern** card (left, 5 of 12 columns): `heading`, a muted sentence that a sound plays on the simulator, on the phone when it can vibrate, and on the wristband when it is connected; the **Wristband connect control** (Connect band primary pill when idle, Disconnect when connected; without Web Bluetooth only the full status line, no button); the **Side** segmented control (four native radios, Left, Centre, Right, Unknown, default Centre, in a `surface-raised` track; the selected option takes `accent-tint`, an `accent-strong` label and a check glyph, so it differs by more than colour; arrow keys move it, and changing it plays nothing); the **Sound** group of six chips (secondary pills Knock, Doorbell, Alarm, Baby, Vehicle, Voice, three per row, each with a small accent picture of its rhythm, decorative); a polite live region that only ever shows "This pattern could not be played"; and two `surface-raised` tiles that say how to read a pattern (rhythm is the sound, the stronger motor is the side). A chip builds the real command with the haptics engine and plays it on the simulator, on the phone when it can vibrate, and on the wristband when it is connected.
 4. Simulator (right, 7 of 12 columns): the left and right motor cards side by side, each with a `heading`, a small L or R tag (accent tint on the stronger side), the level as a `display` number with tabular figures and a `caption` muted `%`, and a decorative accent bar on a `surface-raised` track. Beneath, the Pattern card: the pattern count and length as a muted caption, the side glyph in a round tile (left arrow, right arrow, centre mark, question mark) beside the pattern name and side text, two lanes L and R as `surface-raised` tiles with one accent mark per pulse (height follows the motor level), and the `0 ms` to total scale. Before the first press it says "No pattern yet". When the side is unknown both motor cards get a 2px dashed `border` outline inside their edge.
 5. Footer: the aid sentence with an info glyph, muted.
 
 The Feel card comes first in the DOM, so a keyboard or screen-reader user reaches the control before the result. On desktop the result sits beside the control, so both are in view at once. Bars, lanes and glyphs are `aria-hidden`; the numbers and the pattern name are the text. The simulator has one polite live region that reads the pattern name once per press.
 
-Tab order: brand link, theme control (Day, Night), side control (one stop; arrows inside), the six chips. The motor cards and the timeline are not interactive.
+Tab order: brand link, theme control (Day, Night), the Connect band (or Disconnect) pill when there is one, side control (one stop; arrows inside), the six chips. The motor cards and the timeline are not interactive.
 
 Phone (390px):
 
@@ -515,6 +553,9 @@ Phone (390px):
 | A simulator of the wrist ... |
 | +--------------------------+ |
 | | Feel a pattern           | |
+| | (b) Wristband            | |
+| | No band connected.       | |
+| | [     Connect band     ] | |
 | | (✓Left|Centre|Right|Unkn)| |
 | | [Knock][Doorbell][Alarm] | |
 | | [Baby][Vehicle][Voice]   | |
@@ -533,7 +574,7 @@ Phone (390px):
 +------------------------------+
 ```
 
-One column, in the same order. The header puts the brand and the theme control on one row and the status pill below. The Feel card is full width; the side control spans it, and the chips sit three per row, each at least 44px tall (the rhythm pictures and the two tips tiles are hidden to save height). The two motor cards stay side by side in two narrow columns, and their numbers are in view without scrolling after a chip press at 390 x 844, so the Feel card stays above them. The timeline card is full width beneath.
+One column, in the same order. The header puts the brand and the theme control on one row and the status pill below. The Feel card is full width; the connect pill takes its own full-width line under the status text, the side control spans the card, and the chips sit three per row, each at least 44px tall (the rhythm pictures and the two tips tiles are hidden to save height). The two motor cards stay side by side in two narrow columns, and their numbers are in view without scrolling after a chip press at 390 x 844, so the Feel card stays above them. The timeline card is full width beneath.
 
 ## Token reference
 

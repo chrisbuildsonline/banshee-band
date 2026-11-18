@@ -90,6 +90,15 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#736C82', '#2D2348')).toBeLessThan(3);
   });
 
+  it('keeps the wristband connect row readable on its tile (surface-raised, Day and Night)', () => {
+    // The connected status line: accent-strong on the tile.
+    expect(contrastRatio('#4A22B5', '#F4F5F8')).toBeCloseTo(8.81, 2);
+    expect(contrastRatio('#D9CCFF', '#241F2E')).toBeCloseTo(10.71, 2);
+    // The Connect band primary pill on the tile: the Day fill, the Night outline.
+    expect(contrastRatio('#111318', '#F4F5F8')).toBeCloseTo(17.04, 2);
+    expect(contrastRatio('#CCC5DB', '#241F2E')).toBeCloseTo(9.6, 2);
+  });
+
   it('is exactly 1 for a colour against itself', () => {
     fc.assert(fc.property(hexColour, (a) => contrastRatio(a, a) === 1));
   });
