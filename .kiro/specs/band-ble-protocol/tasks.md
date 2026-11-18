@@ -39,12 +39,12 @@ Each task ends in a test gate. Write the test first, see it fail for the right r
     - _Requirements: 6.2-6.5_
   - [x] 5.3 In `band.html` and `src/ui/band-page.ts`: the Connect band card, the new lede, and Feel a pattern also plays on the band when connected.
     - _Requirements: 7.1, 7.2_
-  - [ ] 5.4 Look at it: `bun run dev`, Day and Night at 1440 and 390 px, with the mock of task 6 or a real band. No horizontal scroll at 390 px, targets at least 44 px, focus ring visible, the state readable without colour. Add any new colour pair to the contrast table of `design/DESIGN.md` and `tests/ui`.
+  - [x] 5.4 Look at it: `bun run dev`, Day and Night at 1440 and 390 px, with the mock of task 6 or a real band. No horizontal scroll at 390 px, targets at least 44 px, focus ring visible, the state readable without colour. Add any new colour pair to the contrast table of `design/DESIGN.md` and `tests/ui`.
     - _Requirements: 5.4_
   - **Gate:** `styles`, `tests/ui`, `typecheck` and `test` pass; `bun run build` passes.
 
 - [ ] 6. Playwright e2e and screenshots
-  - [ ] 6.1 Write `e2e/band-link.spec.ts` with the mocked `navigator.bluetooth` and the seven cases of `design.md`: connect and buzz, lost, cancelled, unsupported, `band.html`, keyboard, and the four screenshots. Each case fails first on the missing control, then passes after task 5.
+  - [x] 6.1 Write `e2e/band-link.spec.ts` with the mocked `navigator.bluetooth` and the seven cases of `design.md`: connect and buzz, lost, cancelled, unsupported, `band.html`, keyboard, and the four screenshots. Each case fails first on the missing control, then passes after task 5.
     - _Requirements: 3.3-3.7, 6.2-6.6, 7.1, 7.2, 9.2_
   - [x] 6.2 Update `e2e/settings.spec.ts` (the Wristband radio is enabled when Bluetooth exists, disabled with the new caption when it does not) and `e2e/band.spec.ts` (the new lede). Fix what the tests find in the page; do not change a test to fit the code unless the test is wrong.
     - _Requirements: 9.2_
