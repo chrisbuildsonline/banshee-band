@@ -120,9 +120,9 @@ function classTile(cls: SoundClass): Tile {
 /**
  * Mounts the Settings sheet: a native `<dialog>` opened by `trigger` with `showModal()`. It holds the Sounds
  * section (one tile per class with a switch and a level slider), the Buzz on radios (Phone vibration, Screen
- * only, and Wristband, which stays disabled until the Bluetooth link) and Reset to defaults. Every change builds
- * a new settings object, saves it and calls `onChange`; there is no Save button. Done and Escape close the sheet
- * and return the focus to `trigger`.
+ * only, and Wristband, disabled only where the browser has no Web Bluetooth), the connect row under them and
+ * Reset to defaults. Every change builds a new settings object, saves it and calls `onChange`; there is no Save
+ * button. Done and Escape close the sheet and return the focus to `trigger`.
  */
 export function mountSettings(trigger: HTMLElement, options: SettingsOptions): SettingsPanel {
   let current = resolveSettings(options.settings);
