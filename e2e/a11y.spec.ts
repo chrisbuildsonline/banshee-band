@@ -337,3 +337,140 @@ test.describe('keyboard', () => {
     expect(await read()).toEqual({ value: '-51', text: '−51 dB', shown: '−51 dB' });
   });
 });
+
+/**
+ * The elements under `selectors` (each with its descendants) whose computed style still moves: a transition
+ * longer than 0s, or a named animation longer than 0s. Each comma-separated part counts.
+ */
+async function stillMoving(page: Page, selectors: string[]): Promise<string[]> {
+  return page.evaluate((list) => {
+    const moving: string[] = [];
+    const longer = (value: string) => value.split(',').some((part) => parseFloat(part) > 0);
+    for (const selector of list) {
+      const root = document.querySelector(selector);
+      if (!root) {
+        moving.push(`${selector}: not found`);
+        continue;
+      }
+      for (const el of [root, ...root.querySelectorAll('*')]) {
+        const cs = getComputedStyle(el);
+        const animated = cs.animationName.split(',').some((n) => n.trim() !== 'none') && longer(cs.animationDuration);
+        if (animated || longer(cs.transitionDuration)) {
+          const tag = `${el.tagName.toLowerCase()}${el.className && typeof el.className === 'string' ? `.${el.className.trim().split(/\s+/).join('.')}` : ''}`;
+          moving.push(`${selector} ${el === root ? '' : tag}: animation ${cs.animationName} ${cs.animationDuration}, transition ${cs.transitionDuration}`);
+        }
+      }
+    }
+    return moving;
+  }, selectors);
+}
+
+test.describe('reduced motion', () => {
+  test('with a ghost on screen, nothing on the station, the pills, Settings or the intro moves', async ({ page }) => {
+    test.setTimeout(MODEL_TIMEOUT + 60_000);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await runChip(page, 'Knock', 1);
+    await expect(page.locator('.bb-ghost-field__items li[data-class]').first()).toBeAttached();
+    await page.getByRole('button', { name: 'Start listening' }).click();
+    await expect(listenPill(page)).toHaveText('Listening', { timeout: MODEL_TIMEOUT });
+    expect(await stillMoving(page, ['.bb-ghost-field', '#station-status [role="status"]', '[data-card="listen"] [role="status"]'])).toEqual([]);
+    await page.getByRole('button', { name: 'Stop', exact: true }).click();
+
+    await settingsButton(page).click();
+    await expect(settingsSheet(page)).toBeVisible();
+    expect(await stillMoving(page, ['dialog[open]'])).toEqual([]);
+    await settingsSheet(page).getByRole('button', { name: 'Show intro again' }).click();
+    const intro = page.getByRole('dialog', { name: 'Welcome to Banshee Band' });
+    await expect(intro).toBeVisible();
+    expect(await stillMoving(page, ['dialog[open]', 'dialog[open] .bb-intro__step:not([hidden])'])).toEqual([]);
+  });
+
+  test('the check itself sees the motion when motion is allowed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/');
+    await settingsButton(page).click();
+    await expect(settingsSheet(page)).toBeVisible();
+    expect(await stillMoving(page, ['dialog[open]'])).not.toEqual([]);
+  });
+});
+
+test.describe('announcements', () => {
+  const latest = (page: Page) => page.locator('#latest-alert');
+  /** The live regions that speak in normal use, by purpose (Requirement 4.4). */
+  const SPEAKING: Record<string, Record<string, string>> = {
+    '/': {
+      'Latest alert': '#latest-alert',
+      'header status pill': '#station-status [role="status"]',
+      'Listen status pill': '[data-card="listen"] [role="status"]',
+      'Try a sound message': '.bb-station-try__message',
+    },
+    '/band.html': {
+      'band simulator live line': '.bb-sim__live',
+      'Wristband status line': '#band-connect [role="status"]',
+    },
+  };
+  /** The live regions that speak only when something fails (empty in normal use, by design). */
+  const PROBLEMS_ONLY: Record<string, Record<string, string>> = {
+    '/': { 'Listen problem message': '.bb-station-listen__message' },
+    '/band.html': { 'pattern problem message': '.bb-feel__message' },
+  };
+
+  /**
+   * Every live region on the page, each named by the purpose it matches; one that matches none is listed as
+   * "unknown" with its markup, so a new region is a deliberate change to these lists and never an unlabelled duplicate.
+   */
+  const regionPurposes = (page: Page, path: string) =>
+    page.evaluate(
+      (known) =>
+        [...document.querySelectorAll<HTMLElement>('[aria-live], [role="status"], [role="alert"]')].map(
+          (el) => Object.entries(known).find(([, selector]) => el.matches(selector))?.[0] ?? `unknown: ${el.outerHTML.slice(0, 120)}`,
+        ),
+      { ...SPEAKING[path], ...PROBLEMS_ONLY[path] },
+    );
+
+  async function expectRegionsSpeak(page: Page, path: string): Promise<void> {
+    expect((await regionPurposes(page, path)).sort()).toEqual(Object.keys({ ...SPEAKING[path], ...PROBLEMS_ONLY[path] }).sort());
+    for (const [purpose, selector] of Object.entries(SPEAKING[path])) await expect(page.locator(selector), `${purpose} has words`).toHaveText(/\S/);
+  }
+
+  test('a new sound is announced once, politely, with its class, side and urgency in words', async ({ page }) => {
+    test.setTimeout(MODEL_TIMEOUT + 60_000);
+    await page.goto('/');
+    await expect(latest(page)).toHaveAttribute('aria-live', 'polite');
+    await page.getByLabel('Left', { exact: true }).check();
+    await runChip(page, 'Knock', 1);
+    const row = rows(page).first();
+    const words = [
+      await row.locator('.bb-station-row__name').innerText(),
+      (await row.locator('.bb-station-row__side').innerText()).replace(/ side$/i, ''),
+      await row.locator('.bb-status').innerText(),
+    ];
+    expect(words.slice(0, 2)).toEqual(['Knock', 'Left']);
+    const said = (await latest(page).innerText()).toLowerCase();
+    for (const word of words) expect(said, `the Latest alert "${said}" says "${word}"`).toContain(word.toLowerCase());
+    // Once: the Latest alert is the only live region that speaks the event.
+    const speaking = page.locator('[aria-live], [role="status"], [role="alert"]').filter({ hasText: 'Knock' });
+    expect(await speaking.evaluateAll((els) => els.map((el) => el.outerHTML.slice(0, 120)))).toEqual([await latest(page).evaluate((el) => el.outerHTML.slice(0, 120))]);
+
+    // Nothing interrupts: no assertive region and no role="alert" on the station.
+    await expect(page.locator('[aria-live="assertive"], [role="alert"]')).toHaveCount(0);
+    // Every live region in use speaks words: the Listen pill appears with Start listening, and the Try a sound
+    // message speaks when a sound is off (here Doorbell, turned off in Settings).
+    await page.getByRole('button', { name: 'Start listening' }).click();
+    await expect(listenPill(page)).toHaveText('Listening', { timeout: MODEL_TIMEOUT });
+    await page.getByRole('button', { name: 'Stop', exact: true }).click();
+    await settingsButton(page).click();
+    await settingsSheet(page).getByRole('switch', { name: 'Doorbell', exact: true }).uncheck();
+    await page.keyboard.press('Escape');
+    await chip(page, 'Doorbell').click();
+    await expectRegionsSpeak(page, '/');
+  });
+
+  test('band.html: no assertive region, and every live region in use speaks words', async ({ page }) => {
+    await page.goto('/band.html');
+    await page.getByRole('group', { name: 'Sound' }).getByRole('button', { name: 'Knock', exact: true }).click();
+    await expect(page.locator('[aria-live="assertive"], [role="alert"]')).toHaveCount(0);
+    await expectRegionsSpeak(page, '/band.html');
+  });
+});

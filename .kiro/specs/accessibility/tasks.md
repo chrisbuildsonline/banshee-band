@@ -32,10 +32,10 @@ Each task is small steps that end in a test gate. Write the check first, see it 
     - _Requirements: 2.1-2.5_
   - **Gate:** the keyboard checks of `e2e/a11y.spec.ts` pass; `typecheck`, `test` and `bun run e2e` pass.
 
-- [ ] 5. Reduced motion and announcements
-  - [ ] 5.1 In `e2e/a11y.spec.ts` write the reduced-motion check: `emulateMedia({ reducedMotion: 'reduce' })`, a Knock chip so a ghost is on screen, then the computed `animation-name`, `animation-duration` and `transition-duration` of the ghost field, the header pill, the Listen pill, the open Settings sheet and the open intro (with its visible step). Fix any motion that is left in the existing CSS, keeping the state the motion showed as a static change.
+- [x] 5. Reduced motion and announcements
+  - [x] 5.1 In `e2e/a11y.spec.ts` write the reduced-motion check: `emulateMedia({ reducedMotion: 'reduce' })`, a Knock chip so a ghost is on screen, then the computed `animation-name`, `animation-duration` and `transition-duration` of the ghost field, the header pill, the Listen pill, the open Settings sheet and the open intro (with its visible step). Fix any motion that is left in the existing CSS, keeping the state the motion showed as a static change.
     - _Requirements: 3.1, 3.2, 3.3_
-  - [ ] 5.2 Write the announcement checks: the Latest alert live region exists and is `polite`; after the Knock chip with the side Left its text holds the class, side and urgency words (read from the Recent sounds row of the same event); no `aria-live="assertive"` and no `role="alert"` on the station or `band.html`; every live region found has text or a name once in use.
+  - [x] 5.2 Write the announcement checks: the Latest alert live region exists and is `polite`; after the Knock chip with the side Left its text holds the class, side and urgency words (read from the Recent sounds row of the same event); no `aria-live="assertive"` and no `role="alert"` on the station or `band.html`; every live region found has text or a name once in use.
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
   - **Gate:** the reduced-motion and announcement checks of `e2e/a11y.spec.ts` pass; `bun run hooks:colour`, `typecheck`, `test` and `bun run e2e` pass.
 

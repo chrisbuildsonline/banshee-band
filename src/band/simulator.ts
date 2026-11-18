@@ -66,11 +66,12 @@ function motorCard(side: 'left' | 'right') {
 /**
  * Mounts the band simulator into `container`: a left and a right motor card with the level as a number,
  * a pattern timeline card that names the pattern and draws its pulses, and one polite live region that
- * announces each pattern once. It holds no focusable element and plays no sound. Under
- * `prefers-reduced-motion: reduce` the bars change without a transition; numbers and bars still follow
- * every segment.
+ * announces each pattern once. With `announce: false` (the station, where the Latest alert already announces
+ * each event) the same line is plain text and not a live region, so an event is never announced twice. It holds
+ * no focusable element and plays no sound. Under `prefers-reduced-motion: reduce` the bars change without a
+ * transition; numbers and bars still follow every segment.
  */
-export function mountBandSimulator(container: HTMLElement): BandSimulator {
+export function mountBandSimulator(container: HTMLElement, { announce: speaks = true }: { announce?: boolean } = {}): BandSimulator {
   const root = el('div', 'bb-sim');
 
   const motors = el('div', 'bb-sim__motors');
@@ -112,7 +113,7 @@ export function mountBandSimulator(container: HTMLElement): BandSimulator {
   timeline.append(head, name, plot, scale);
 
   const live = el('p', 'bb-sim__live');
-  live.setAttribute('aria-live', 'polite');
+  if (speaks) live.setAttribute('aria-live', 'polite');
 
   root.append(motors, timeline, live);
   container.append(root);

@@ -128,7 +128,8 @@ export function mountStation(root: HTMLElement): void {
   const pipeline = mountPipelineView(pipelineCard);
 
   const list = mountEventList(alertsCard);
-  const simulator = mountBandSimulator(simHost);
+  // The Latest alert announces each event; the simulator's line stays visible text, so nothing is said twice.
+  const simulator = mountBandSimulator(simHost, { announce: false });
   const outputsNow = (): HapticOutput[] => outputsFor(effective(), { simulator: simulator.output, phone, band: band.output });
   let outputs = outputsNow();
   /** The clocks both paths share: a monotonic one for stage times and the wall clock for event times. */
