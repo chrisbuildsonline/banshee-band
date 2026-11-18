@@ -15,6 +15,10 @@ src/band/       haptic outputs: one HapticOutput interface, segment player, phon
   types.ts            HapticOutput interface
   segment-player.ts   timed motor levels from a HapticCommand (injected scheduler)
   phone-output.ts     navigator.vibrate output
+  protocol.ts         byte protocol v1: BAND_SERVICE_UUID, BAND_COMMAND_UUID, BAND_NAME, crc8, encodePlay, encodeStop, decodeFrame (pure)
+  ble-output.ts       createBandLink: Web Bluetooth link, state, problem, serialised writes, the 'band' HapticOutput (the only file that uses `bluetooth`)
+  connect.ts          mountBandConnect: the Wristband row with status line and Connect band, Disconnect
+  connect.css         connect row styles, design tokens only
   labels.ts           plain-word labels: class, side, percent, pattern name, pulse count
   simulator.ts        mountBandSimulator: motor cards, pattern timeline, live region
   simulator.css       simulator styles, design tokens only
@@ -71,9 +75,12 @@ src/ui/         settings, controls, text alerts, layout
   styleguide.ts       styleguide page script: theme control, Ghosts section (field and glyph grid)
 mcp/            banshee-log MCP server (recent_events, event_stats, replay_clip)
 firmware/       ESP32 Arduino C++ for the two-motor band
+  banshee-band/banshee-band.ino  BLE service, frame parser (same rules as decodeFrame), non-blocking two-motor PWM player
+  README.md           parts list, wiring table, how to flash, the byte protocol with a worked example frame
 scripts/        build-time scripts: make-icons.ts (bun run icons) writes public/icons/*.png and public/manifest.webmanifest
 tests/          Vitest unit and property tests
   tests/ghosts/       unit, property, shape raster
+  tests/band/         protocol unit and property, ble-output with a fake BluetoothLike, firmware sync (sketch and README against protocol.ts)
   tests/station/      unit, property, real clip side table, settings unit, property and styles tests
   tests/pwa/          manifest, icons, routes, precache, and the built dist/sw.js check (runs after bun run build)
 e2e/            Playwright tests
@@ -82,6 +89,7 @@ e2e/            Playwright tests
   e2e/live.spec.ts    Start listening with a fake microphone: Knock row, backend, Stop, Mic blocked
   e2e/settings.spec.ts Settings sheet: keyboard, persistence after reload, corrupt or blocked storage, muted Try a sound and live runs, Screen only, screenshots
   e2e/offline.spec.ts offline after one visit, against a production build (vite preview on 5288)
+  e2e/band-link.spec.ts Bluetooth band link with a mocked navigator.bluetooth: connect, written bytes, lost, cancelled, unsupported, band.html, screenshots
 public/         clips/ (CC0 fallback clips with licence notes), models/, icons/ and manifest.webmanifest
 vite.config.ts  banshee-pwa plugin: injects the precache list and cache name into /sw.js, fails over 40 MB or on a missing file
 design/DESIGN.md  UI source of truth
