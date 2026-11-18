@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { alertText, classifyText, dbText, dropText, failureText, formatClock, formatMs, LIVE_FAILURE_TEXT, mutedText, sideWord } from '../../src/station/format';
+import { alertText, classifyText, dbText, dropText, failureText, formatClock, formatMs, LIVE_FAILURE_TEXT, mutedText, outputName, sideWord } from '../../src/station/format';
+
+describe('outputName (band-ble-protocol R6.7)', () => {
+  it('names every output kind for the pipeline Band tile', () => {
+    expect(outputName('simulator')).toBe('Band simulator');
+    expect(outputName('phone')).toBe('Phone vibration');
+    expect(outputName('band')).toBe('Wristband');
+  });
+});
 
 describe('classify and live text', () => {
   it('says the classify time per window and why listening stopped', () => {

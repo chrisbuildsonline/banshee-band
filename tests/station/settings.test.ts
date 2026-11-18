@@ -268,4 +268,13 @@ describe('effectiveOutput and outputsFor (R5.1, R5.2)', () => {
     expect(outputsFor('band', { simulator, phone })).toEqual([simulator]);
     expect(outputsFor('phone', { simulator, phone })).not.toBe(outputsFor('phone', { simulator, phone }));
   });
+
+  it('gives the simulator and the band for band, so the screen mirrors the wristband', () => {
+    const simulator = { kind: 'simulator' as const, available: () => true, play: () => undefined, stop: () => undefined };
+    const phone = { ...simulator, kind: 'phone' as const };
+    const band = { ...simulator, kind: 'band' as const };
+    expect(outputsFor('band', { simulator, phone, band })).toEqual([simulator, band]);
+    expect(outputsFor('phone', { simulator, phone, band })).toEqual([simulator, phone]);
+    expect(outputsFor('simulator', { simulator, phone, band })).toEqual([simulator]);
+  });
 });

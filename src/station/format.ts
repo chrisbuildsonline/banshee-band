@@ -1,7 +1,15 @@
 import type { SoundClass, Urgency } from '../events';
 import { CLASS_NAMES, URGENCY_STYLE } from '../ghosts';
 import type { DropReason, Side } from '../haptics';
+import type { HapticOutput } from '../band';
 import type { RunFailure } from './types';
+
+const OUTPUT_NAMES: Readonly<Record<HapticOutput['kind'], string>> = Object.freeze({ simulator: 'Band simulator', phone: 'Phone vibration', band: 'Wristband' });
+
+/** The name of an output in the pipeline's Band tile: "Band simulator", "Phone vibration" or "Wristband". */
+export function outputName(kind: HapticOutput['kind']): string {
+  return OUTPUT_NAMES[kind];
+}
 
 /** A stage time: one decimal below 10 ("3.5 ms"), whole from 10 ("13 ms"), "—" for a non-finite or negative value. */
 export function formatMs(ms: number): string {

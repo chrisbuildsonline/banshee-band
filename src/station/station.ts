@@ -1,5 +1,5 @@
 import { createCapture, fetchClip, loadManifest, type ClipInfo } from '../audio';
-import { createPhoneOutput, mountBandSimulator, type HapticOutput } from '../band';
+import { createBandLink, createPhoneOutput, mountBandSimulator, type HapticOutput } from '../band';
 import { createBearingWindow } from '../bearing';
 import { createClassifier, type Classifier } from '../classify';
 import { createGlyph, mountGhostField } from '../ghosts';
@@ -85,9 +85,11 @@ export function mountStation(root: HTMLElement): void {
   const vibrates = phone.available(); // read once at load
   // The saved settings, read once; the Settings sheet sends every later change to apply().
   let settings: StationSettings = loadSettings(browserStorage());
-  const effective = () => effectiveOutput(settings.output, { phone: vibrates, band: false });
+  // The wristband: in use only while connected; every link change re-applies the outputs (see below).
+  const band = createBandLink();
+  const effective = () => effectiveOutput(settings.output, { phone: vibrates, band: band.state() === 'connected' });
   const status = mountStatusPill(document.getElementById('station-status') ?? root, vibrates);
-  status.setFallback(effective() === 'phone');
+  status.setOutput(effective());
 
   const controls = document.createElement('div');
   controls.className = 'bb-station-controls';
@@ -125,7 +127,7 @@ export function mountStation(root: HTMLElement): void {
 
   const list = mountEventList(alertsCard);
   const simulator = mountBandSimulator(simHost);
-  const outputsNow = (): HapticOutput[] => outputsFor(effective(), { simulator: simulator.output, phone });
+  const outputsNow = (): HapticOutput[] => outputsFor(effective(), { simulator: simulator.output, phone, band: band.output });
   let outputs = outputsNow();
   /** The clocks both paths share: a monotonic one for stage times and the wall clock for event times. */
   const clocks = { now: () => performance.now(), epoch: () => Date.now() };
@@ -152,8 +154,10 @@ export function mountStation(root: HTMLElement): void {
       liveDeps.engine = createSettingsEngine(next);
       liveDeps.outputs = outputs;
     }
-    status.setFallback(effective() === 'phone');
+    status.setOutput(effective());
   }
+  // A connect or a lost band changes the output in use at once.
+  band.subscribe(() => apply(settings));
 
   /** The page's one classifier, shared by Try a sound and Listen; a failed load can be tried again. */
   async function loadClassifier(): Promise<Classifier> {
@@ -259,7 +263,7 @@ export function mountStation(root: HTMLElement): void {
   const trySound = mountTrySound(tryCard, { onPick: (clip, chosen) => void pick(clip, chosen) });
 
   const settingsTrigger = document.getElementById('settings-open');
-  if (settingsTrigger) mountSettings(settingsTrigger, { settings, phoneAvailable: vibrates, onChange: apply });
+  if (settingsTrigger) mountSettings(settingsTrigger, { settings, phoneAvailable: vibrates, band, onChange: apply });
 
   loadManifest().then(
     (clips) => trySound.setClips(clips),

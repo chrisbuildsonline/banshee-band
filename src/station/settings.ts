@@ -162,8 +162,10 @@ export function effectiveOutput(choice: OutputChoice, available: { phone: boolea
 
 /**
  * The outputs to play on, as a new array: the simulator first, always (it mirrors the pattern on screen), then the
- * phone when the effective output is `phone`. `band` adds nothing until the Bluetooth link exists.
+ * phone when the effective output is `phone`, or the wristband when it is `band` and a band output is given.
  */
-export function outputsFor(effective: OutputChoice, outputs: { simulator: HapticOutput; phone: HapticOutput }): HapticOutput[] {
-  return effective === 'phone' ? [outputs.simulator, outputs.phone] : [outputs.simulator];
+export function outputsFor(effective: OutputChoice, outputs: { simulator: HapticOutput; phone: HapticOutput; band?: HapticOutput }): HapticOutput[] {
+  if (effective === 'phone') return [outputs.simulator, outputs.phone];
+  if (effective === 'band' && outputs.band) return [outputs.simulator, outputs.band];
+  return [outputs.simulator];
 }

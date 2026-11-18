@@ -2,7 +2,7 @@ import { patternName, percentOf, pulseCount } from '../band';
 import { CLASS_NAMES } from '../ghosts';
 import { sideOf, type Side } from '../haptics';
 import { STAGES } from './constants';
-import { classifyText, dropText, formatMs } from './format';
+import { classifyText, dropText, formatMs, outputName } from './format';
 import type { RunResultOk as Run, StageName } from './types';
 
 /** What `mountPipelineView` returns. */
@@ -128,7 +128,7 @@ export function mountPipelineView(card: HTMLElement): PipelineView {
       } else {
         fill('pattern', r.times.pattern, line(`No buzz: ${dropText(r.decision.reason)}`, true));
       }
-      const played = r.played.map((k) => (k === 'phone' ? 'Phone vibration' : 'Band simulator'));
+      const played = r.played.map(outputName);
       fill('band', r.times.band, ...(played.length > 0 ? played.map((p, i) => line(p, i === 0)) : [line('No buzz', true)]));
     },
     failed() {

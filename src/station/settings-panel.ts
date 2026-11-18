@@ -1,3 +1,4 @@
+import { mountBandConnect, type BandLink } from '../band';
 import { SOUND_CLASSES, type SoundClass } from '../events';
 import { CLASS_NAMES, createGlyph } from '../ghosts';
 import { dbText } from './format';
@@ -18,6 +19,8 @@ export interface SettingsOptions {
   settings: StationSettings;
   /** Whether `navigator.vibrate` exists; without it Phone vibration is disabled. */
   phoneAvailable: boolean;
+  /** The wristband link; without Web Bluetooth (state `unsupported`) the Wristband option is disabled. */
+  band: BandLink;
   /** Called with a new settings object after every change, once it is saved (or failed to save). */
   onChange(s: StationSettings): void;
 }
@@ -40,11 +43,12 @@ export function browserStorage(): SettingsStorage | null {
 const SVG = 'http://www.w3.org/2000/svg';
 const SOUNDS_NOTE = 'A sound alerts you when it is on and at least as loud as its level. −80 dB is very quiet, −10 dB is very loud.';
 const PHONE_OFF = 'This browser cannot vibrate.';
+const BAND_OFF = 'This browser has no Bluetooth. Use Chrome or Edge to connect the band.';
 
 const OPTIONS: readonly { value: OutputChoice; name: string; caption: string }[] = [
   { value: 'phone', name: 'Phone vibration', caption: 'The phone buzzes the pattern. The screen shows it too.' },
   { value: 'simulator', name: 'Screen only', caption: 'The pattern plays on the band simulator on this screen.' },
-  { value: 'band', name: 'Wristband', caption: 'Needs the wristband (coming with the Bluetooth link)' },
+  { value: 'band', name: 'Wristband', caption: 'The band buzzes the pattern, stronger on the side it came from.' },
 ];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] {
@@ -122,6 +126,7 @@ function classTile(cls: SoundClass): Tile {
  */
 export function mountSettings(trigger: HTMLElement, options: SettingsOptions): SettingsPanel {
   let current = resolveSettings(options.settings);
+  const bandSupported = options.band.state() !== 'unsupported';
 
   const dialog = el('dialog', 'bb-settings');
   dialog.setAttribute('aria-labelledby', 'settings-title');
@@ -163,14 +168,14 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
     radio.type = 'radio';
     radio.name = 'output';
     radio.value = o.value;
-    const caption = el('span', 'bb-option__caption', o.value === 'phone' && !options.phoneAvailable ? PHONE_OFF : o.caption);
+    const caption = el('span', 'bb-option__caption', o.value === 'phone' && !options.phoneAvailable ? PHONE_OFF : o.value === 'band' && !bandSupported ? BAND_OFF : o.caption);
     caption.id = `settings-output-${o.value}`;
     const name = el('span', 'bb-option__name', o.name);
     name.id = `settings-output-name-${o.value}`;
     // Named by the option name alone, with the caption as its description.
     radio.setAttribute('aria-labelledby', name.id);
     radio.setAttribute('aria-describedby', caption.id);
-    radio.disabled = o.value === 'band' || (o.value === 'phone' && !options.phoneAvailable);
+    radio.disabled = (o.value === 'band' && !bandSupported) || (o.value === 'phone' && !options.phoneAvailable);
     const text = el('span', 'bb-option__text');
     text.append(name, caption);
     label.append(radio, checkGlyph(), text);
@@ -181,6 +186,9 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
     });
   }
   output.append(optionList);
+  // The connect row, where the browser has Bluetooth (else the Wristband caption already says why not).
+  // A connect from here also makes the wristband the output.
+  if (bandSupported) mountBandConnect(output, options.band, { onConnected: () => commit({ ...current, output: 'band' }) });
 
   const foot = el('div', 'bb-settings__foot');
   const reset = el('button', 'bb-pill bb-pill--secondary', 'Reset to defaults');
@@ -203,7 +211,8 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
       t.level.setAttribute('aria-valuetext', dbText(s.minDb));
       t.value.textContent = dbText(s.minDb);
     }
-    const shown = effectiveOutput(current.output, { phone: options.phoneAvailable, band: false });
+    // A chosen Wristband stays shown while it is not connected (the connect row says the screen is in use).
+    const shown = current.output === 'band' && bandSupported ? 'band' : effectiveOutput(current.output, { phone: options.phoneAvailable, band: false });
     for (const [value, radio] of radios) radio.checked = value === shown;
   }
 
