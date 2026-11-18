@@ -131,12 +131,13 @@ test.describe('listening station', () => {
     await expect(page.locator('footer')).toContainText(AID);
     await expect(page.locator('footer').getByRole('link')).toHaveAttribute('href', '/styleguide.html');
     await expect(page.locator('main')).toContainText('sample clips');
-    await expect(page.locator('main')).toContainText('No band is connected');
+    await expect(page.locator('main')).toContainText('Without a wristband, the band is shown on screen.');
     await expect(page.locator('main')).toContainText('microphone');
 
     // One primary pill (Start listening), and nothing loads the model before a chip or Start is used.
-    await expect(page.locator('.bb-pill--primary')).toHaveCount(1);
-    await expect(page.locator('.bb-pill--primary')).toHaveText('Start listening');
+    // (The Settings sheet, closed, holds the Connect band pill; it is not on the page until opened.)
+    await expect(page.locator('main .bb-pill--primary')).toHaveCount(1);
+    await expect(page.locator('main .bb-pill--primary')).toHaveText('Start listening');
     expect(requests.filter((p) => p.startsWith('/models/'))).toEqual([]);
   });
 

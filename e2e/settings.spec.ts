@@ -7,7 +7,7 @@ const KNOCK_WAV = resolve(import.meta.dirname, '../public/clips/knock-01.wav');
 const MODEL_TIMEOUT = 120_000;
 const KEY = 'banshee-band.settings.v1';
 const CLASS_NAMES = ['Knock', 'Doorbell', 'Alarm', 'Baby', 'Vehicle', 'Voice', 'Other'];
-const WRISTBAND = 'Needs the wristband (coming with the Bluetooth link)';
+const WRISTBAND = 'This browser has no Bluetooth. Use Chrome or Edge to connect the band.';
 /** Chromium's GPU driver note when TF.js WebGL reads scores back (see e2e/station.spec.ts). */
 const WEBGL_READPIXELS = /GL Driver Message \(OpenGL, Performance, GL_CLOSE_PATH_NV, High\): GPU stall due to ReadPixels/;
 
@@ -76,8 +76,8 @@ test.describe('settings sheet', () => {
     await expect(sheet(page).getByRole('button', { name: 'Done' })).toBeFocused();
     await expect(sheet(page).getByRole('heading', { level: 2 })).toHaveText('Settings');
     await expect(sheet(page)).toContainText('Changes apply right away and stay on this device.');
-    // No Save button and no primary pill in the sheet; the page keeps its one primary pill.
-    await expect(sheet(page).locator('.bb-pill--primary')).toHaveCount(0);
+    // No Save button: the only primary pill the sheet may have is Connect band (when the browser has Bluetooth).
+    await expect(sheet(page).locator('.bb-pill--primary').filter({ hasNotText: 'Connect band' })).toHaveCount(0);
     await expect(sheet(page).getByRole('button', { name: /save/i })).toHaveCount(0);
     await expectDefaults(page);
     await expect(sheet(page).getByRole('listitem')).toHaveText(CLASS_NAMES.map((n) => new RegExp(`^${n}`)));
@@ -203,7 +203,10 @@ test.describe('settings sheet', () => {
     expect(problems, problems.join('\n')).toEqual([]);
   });
 
-  test('the Wristband option is shown but disabled, with its honest caption', async ({ page }) => {
+  test('without Web Bluetooth the Wristband option is shown but disabled, with its honest caption', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(Navigator.prototype, 'bluetooth', { configurable: true, get: () => undefined });
+    });
     await page.goto('/');
     await openSheet(page);
     await expect(radio(page, 'Wristband')).toBeDisabled();

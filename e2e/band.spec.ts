@@ -101,11 +101,12 @@ test.describe('band simulator page', () => {
       'Banshee Band is an aid, not a safety device. It can miss or misread sounds, so keep your smoke alarms and other certified alerting devices.',
     );
     await expect(page.locator('.bb-title-block')).toContainText('simulator of the wrist band');
-    await expect(page.locator('.bb-title-block')).toContainText('No band is connected.');
+    await expect(page.locator('.bb-title-block')).toContainText('on the wristband too when you connect one.');
     await expect(page.getByRole('heading', { name: 'Feel a pattern' })).toBeVisible();
-    await expect(page.locator('.bb-pill--primary')).toHaveCount(0);
-    await expect(page.getByText(/connect band/i)).toHaveCount(0);
-    await expect(page.getByText(/band connected|band is connected(?<!no band is connected)/i)).toHaveCount(0);
+    // The only primary action is Connect band, and only where the browser has Bluetooth (e2e/band-link.spec.ts).
+    await expect(page.locator('.bb-pill--primary').filter({ hasNotText: 'Connect band' })).toHaveCount(0);
+    // Nothing says a band is connected before one is.
+    await expect(page.getByText(/band connected\b(?!\.)|connected to/i)).toHaveCount(0);
     await expect(page.locator('a.bb-brand')).toHaveAttribute('href', /index\.html$/);
   });
 
@@ -268,7 +269,9 @@ test.describe('band simulator page', () => {
     const announced = () => page.evaluate(() => (window as unknown as { __live: string[] }).__live.filter((t) => t !== ''));
 
     await expect(page.locator('.bb-sim__live')).toHaveAttribute('aria-live', 'polite');
-    await expect(page.locator('[aria-live]')).toHaveCount(2);
+    // The simulator, the Feel a pattern message and the Wristband status line; only the first speaks per choice.
+    await expect(page.locator('[aria-live]')).toHaveCount(3);
+    await expect(page.locator('.bb-connect [aria-live]')).toHaveCount(1);
     await choose(page, 'Left', 'Knock');
     await expect.poll(announced).toEqual(['Knock, left stronger']);
     await page.clock.runFor(KNOCK_TOTAL_MS + 500);
