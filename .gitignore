@@ -9,6 +9,7 @@ CLAUDE.md
 .claude/
 design/refs/
 .backups/
+.banshee/
 # never ignore .kiro/: the hackathon requires it in the repo
 .claude/settings.local.json
 e2e/screenshots/*.png

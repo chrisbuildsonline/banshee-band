@@ -25,6 +25,8 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "4.22.0"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@tensorflow/tfjs": "4.22.0",
+    "zod": "^4.6.7"
   }
 }

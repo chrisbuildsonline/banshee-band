@@ -15,5 +15,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "tests", "e2e", "scripts", "*.config.ts"]
+  "include": ["src", "tests", "e2e", "scripts", "mcp", "*.config.ts"]
 }
