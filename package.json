@@ -23,6 +23,7 @@
     "hooks:fixtures": "bun scripts/hooks/fixtures.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
     "fast-check": "^4.10.2",
