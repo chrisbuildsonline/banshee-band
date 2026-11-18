@@ -1,6 +1,6 @@
 import { createGlyph } from '../ghosts';
 import { INTRO_STEPS, micStepView, type IntroStep, type MicSupport } from './onboarding';
-import { mountOutputOptions } from './output-options';
+import { keepTabInside, mountOutputOptions } from './output-options';
 import type { OutputChoice, StationSettings } from './settings';
 import { GLYPHS, renderPill } from './status';
 import type { ListenState } from './types';
@@ -244,6 +244,7 @@ export function mountOnboarding(options: OnboardingOptions): Onboarding {
     });
     done.addEventListener('click', () => dialog.close());
     skip.addEventListener('click', () => dialog.close());
+    keepTabInside(dialog);
     // Escape fires `cancel` and the dialog closes by itself: the same close as Skip intro.
     dialog.addEventListener('close', () => {
       unsubscribe?.();

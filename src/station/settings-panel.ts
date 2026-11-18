@@ -2,7 +2,7 @@ import { mountBandConnect, type BandLink } from '../band';
 import { SOUND_CLASSES, type SoundClass } from '../events';
 import { CLASS_NAMES, createGlyph } from '../ghosts';
 import { dbText } from './format';
-import { mountOutputOptions } from './output-options';
+import { keepTabInside, mountOutputOptions } from './output-options';
 import {
   MIN_DB_CEILING,
   MIN_DB_FLOOR,
@@ -203,6 +203,7 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
   }
 
   done.addEventListener('click', () => dialog.close());
+  keepTabInside(dialog);
   reset.addEventListener('click', () => commit(resolveSettings(undefined)));
   dialog.addEventListener('close', () => {
     if (skipFocusReturn) skipFocusReturn = false;

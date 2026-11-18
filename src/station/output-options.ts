@@ -21,6 +21,30 @@ export function shownOutput(choice: OutputChoice, phoneAvailable: boolean, bandS
   return choice === 'band' && bandSupported ? 'band' : effectiveOutput(choice, { phone: phoneAvailable, band: false });
 }
 
+/**
+ * Keeps Tab and Shift+Tab inside a modal sheet (the Settings sheet and the intro, the two users of this module):
+ * Tab past the last stop goes to the first, Shift+Tab before the first goes to the last. A native modal
+ * `<dialog>` keeps the page inert but lets Tab leave for the browser's own controls. The stops are the shown,
+ * enabled buttons, links and inputs, one radio per group (the checked one); a focused title (tabindex -1) is
+ * placed by its position, so Tab from it still reaches the next stop.
+ */
+export function keepTabInside(dialog: HTMLDialogElement): void {
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const active = document.activeElement;
+    if (!active) return;
+    const stops = [...dialog.querySelectorAll<HTMLElement>('button, a[href], input')].filter(
+      (s) => !s.matches(':disabled') && !(s instanceof HTMLInputElement && s.type === 'radio' && !s.checked) && s.checkVisibility(),
+    );
+    const before = (s: Node) => Boolean(s.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const after = (s: Node) => Boolean(s.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_PRECEDING);
+    const to = e.shiftKey ? (stops.some(before) ? undefined : stops.at(-1)) : stops.some(after) ? undefined : stops[0];
+    if (!to) return;
+    e.preventDefault();
+    to.focus();
+  });
+}
+
 /** Options of `mountOutputOptions`. */
 export interface OutputOptionsConfig {
   /** The radio group name. */

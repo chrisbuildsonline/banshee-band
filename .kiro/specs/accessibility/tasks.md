@@ -14,21 +14,21 @@ Each task is small steps that end in a test gate. Write the check first, see it 
     - _Requirements: 1.2, 1.3, 1.4_
   - **Gate:** the new audits run; failures are real violations or a wait that is too short (fix the wait); `typecheck` passes.
 
-- [ ] 3. Fix every violation
-  - [ ] 3.1 Go through the failures of tasks 1 and 2 one rule at a time. Fix each in the smallest existing file that owns it (CSS, token, markup, accessible name, role, focus), keeping the look of `design/DESIGN.md`. Do not disable a rule and do not exclude an element unless it is decorative and `aria-hidden`; name any exclusion and its reason in `e2e/a11y.spec.ts`.
+- [x] 3. Fix every violation
+  - [x] 3.1 Go through the failures of tasks 1 and 2 one rule at a time. Fix each in the smallest existing file that owns it (CSS, token, markup, accessible name, role, focus), keeping the look of `design/DESIGN.md`. Do not disable a rule and do not exclude an element unless it is decorative and `aria-hidden`; name any exclusion and its reason in `e2e/a11y.spec.ts`.
     - _Requirements: 1.5, 1.6_
-  - [ ] 3.2 When a token colour changes, update its row in the Contrast table of `design/DESIGN.md` in the same change and run `tests/ui`. Check that no state loses the word, glyph or shape that tells it from another.
+  - [x] 3.2 When a token colour changes, update its row in the Contrast table of `design/DESIGN.md` in the same change and run `tests/ui`. Check that no state loses the word, glyph or shape that tells it from another.
     - _Requirements: 1.7, 5.2_
-  - [ ] 3.3 Run `bun run hooks:colour`; it must pass with no change to the hook or its test `tests/scripts/hooks/colour-alerts.test.ts`.
+  - [x] 3.3 Run `bun run hooks:colour`; it must pass with no change to the hook or its test `tests/scripts/hooks/colour-alerts.test.ts`.
     - _Requirements: 5.1, 5.2_
   - **Gate:** `e2e/a11y.spec.ts` audits all pass in Day and Night; `tests/ui`, `tests/scripts/hooks/colour-alerts.test.ts`, `typecheck`, `test` and `bun run build` pass; `bun run e2e` shows no regression in the other specs.
 
-- [ ] 4. Keyboard flow
-  - [ ] 4.1 In `e2e/a11y.spec.ts` write the Tab-order check (a literal list of `role:name`), the focus-ring check on every stop of the station, and the Settings and intro checks: the focus stays inside the open dialog with Tab and Shift+Tab, Escape closes, the focus is back on the Settings pill.
+- [x] 4. Keyboard flow
+  - [x] 4.1 In `e2e/a11y.spec.ts` write the Tab-order check (a literal list of `role:name`), the focus-ring check on every stop of the station, and the Settings and intro checks: the focus stays inside the open dialog with Tab and Shift+Tab, Escape closes, the focus is back on the Settings pill.
     - _Requirements: 2.1, 2.2, 2.3_
-  - [ ] 4.2 Add the Start listening checks with the fake-microphone launch arguments (Enter, then Stop, then Space; the Listen pill reads "Listening") and the Settings checks (Space flips a switch's `aria-checked`; ArrowRight and ArrowLeft move the slider and its value text follows).
+  - [x] 4.2 Add the Start listening checks with the fake-microphone launch arguments (Enter, then Stop, then Space; the Listen pill reads "Listening") and the Settings checks (Space flips a switch's `aria-checked`; ArrowRight and ArrowLeft move the slider and its value text follows).
     - _Requirements: 2.4, 2.5_
-  - [ ] 4.3 Fix what fails in the existing files (a missing ring, a skipped control, a focus that escapes or is lost). Do not change a check to fit the code unless the check is wrong.
+  - [x] 4.3 Fix what fails in the existing files (a missing ring, a skipped control, a focus that escapes or is lost). Do not change a check to fit the code unless the check is wrong.
     - _Requirements: 2.1-2.5_
   - **Gate:** the keyboard checks of `e2e/a11y.spec.ts` pass; `typecheck`, `test` and `bun run e2e` pass.
 

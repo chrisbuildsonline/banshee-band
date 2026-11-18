@@ -1,6 +1,15 @@
+import { resolve } from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+
+// A fake microphone that plays the knock clip, for Start listening by keyboard (as e2e/live.spec.ts).
+const KNOCK_WAV = resolve(import.meta.dirname, '../public/clips/knock-01.wav');
+test.use({
+  launchOptions: {
+    args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', `--use-file-for-fake-audio-capture=${KNOCK_WAV}`],
+  },
+});
 
 /** The first run loads the sound model in the browser, which can take a while. */
 const MODEL_TIMEOUT = 120_000;
@@ -173,4 +182,158 @@ test.describe('axe: no WCAG 2.1 A/AA violations', () => {
       await expectNoViolations(page, `styleguide.html, ${theme}`);
     });
   }
+});
+
+/** What has the focus: `role:name`, whether it shows a focus ring, is shown and enabled, and is inside an open dialog. */
+type Stop = { id: string; ring: boolean; usable: boolean; inDialog: boolean };
+
+async function focusStop(page: Page): Promise<Stop | null> {
+  return page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    if (!el || el === document.body) return null;
+    const implicit: Record<string, string> = { a: 'link', button: 'button', radio: 'radio', checkbox: 'checkbox', range: 'slider', h2: 'heading' };
+    const role = el.getAttribute('role') ?? implicit[el instanceof HTMLInputElement ? el.type : el.tagName.toLowerCase()] ?? el.tagName.toLowerCase();
+    const text = (node: Element | null | undefined) => node?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+    const labelled = el.getAttribute('aria-labelledby');
+    const name =
+      el.getAttribute('aria-label') ??
+      (labelled ? labelled.split(' ').map((id) => text(document.getElementById(id))).join(' ') : el instanceof HTMLInputElement ? text(el.labels?.[0]) : text(el));
+    // A focus ring (requirements.md): an outline that is drawn, or a box shadow.
+    const cs = getComputedStyle(el);
+    const ring = (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) || cs.boxShadow !== 'none';
+    const usable = el.checkVisibility() && !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true';
+    return { id: `${role}:${name}`, ring, usable, inDialog: Boolean(el.closest('dialog[open]')) };
+  });
+}
+
+/** Presses `key` up to `times` times; every stop must be inside the open dialog, shown, enabled and ringed. */
+async function expectTrapped(page: Page, key: 'Tab' | 'Shift+Tab', times: number, label: string): Promise<string[]> {
+  const seen: string[] = [];
+  for (let i = 0; i < times; i++) {
+    await page.keyboard.press(key);
+    const stop = await focusStop(page);
+    const where = stop ? { id: stop.id, inDialog: stop.inDialog, ring: stop.ring, usable: stop.usable } : { id: 'body (the focus left the dialog)' };
+    expect(where, `${label}: ${key} ${i + 1}, after ${seen.join(', ')}`).toEqual({ id: where.id, inDialog: true, ring: true, usable: true });
+    seen.push(stop!.id);
+  }
+  return seen;
+}
+
+const listenPill = (page: Page) => page.locator('[data-card="listen"] [role="status"]');
+
+test.describe('keyboard', () => {
+  test('Tab reaches every station control once, in reading order, each with a focus ring', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await expect(chip(page, 'Voice')).toBeVisible();
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    const stops: Stop[] = [];
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.press('Tab');
+      const stop = await focusStop(page);
+      if (!stop || stop.id === stops[0]?.id) break;
+      stops.push(stop);
+    }
+    expect(stops.map((s) => s.id)).toEqual([
+      'link:Banshee Band',
+      'link:Band simulator',
+      'button:Settings',
+      'button:Day',
+      'button:Night',
+      'button:Start listening',
+      'radio:Centre',
+      'button:Doorbell',
+      'button:Knock',
+      'button:Alarm',
+      'button:Baby',
+      'button:Vehicle',
+      'button:Voice',
+      'link:Styleguide',
+    ]);
+    expect(stops.filter((s) => !s.ring).map((s) => s.id), 'stops without a focus ring').toEqual([]);
+    expect(stops.filter((s) => !s.usable).map((s) => s.id), 'hidden or disabled stops').toEqual([]);
+  });
+
+  test('the Settings sheet keeps the focus, Escape closes it and the focus is back on the Settings pill', async ({ page }) => {
+    await page.goto('/');
+    await settingsButton(page).click();
+    await expect(settingsSheet(page)).toBeVisible();
+    const forward = await expectTrapped(page, 'Tab', 24, 'Settings, Tab');
+    expect(forward).toContain('button:Done');
+    expect(forward).toContain('switch:Knock');
+    await expectTrapped(page, 'Shift+Tab', 24, 'Settings, Shift+Tab');
+    await page.keyboard.press('Escape');
+    await expect(settingsSheet(page)).toBeHidden();
+    await expect(settingsButton(page)).toBeFocused();
+  });
+
+  test('the intro keeps the focus on each step, Escape closes it and the focus is back on the Settings pill', async ({ page }) => {
+    await page.goto('/');
+    await settingsButton(page).click();
+    await settingsSheet(page).getByRole('button', { name: 'Show intro again' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toHaveAccessibleName('Welcome to Banshee Band');
+    for (const [step, next] of [
+      ['Welcome to Banshee Band', 'Next'],
+      ['Turn on the microphone', 'Not now'],
+      ['Where should alerts buzz?', null],
+    ] as const) {
+      await expect(dialog).toHaveAccessibleName(step);
+      await expectTrapped(page, 'Tab', 10, `intro "${step}", Tab`);
+      await expectTrapped(page, 'Shift+Tab', 10, `intro "${step}", Shift+Tab`);
+      if (next) {
+        const button: Locator = dialog.getByRole('button', { name: next });
+        await button.focus();
+        await page.keyboard.press('Enter');
+      }
+    }
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(settingsButton(page)).toBeFocused();
+  });
+
+  test('Start listening by Tab, then Enter, Stop, then Space: the Listen pill reads Listening', async ({ page }) => {
+    test.setTimeout(MODEL_TIMEOUT + 60_000);
+    await page.goto('/');
+    await expect(chip(page, 'Voice')).toBeVisible();
+    const start = page.getByRole('button', { name: 'Start listening' });
+    for (let i = 0; i < 10 && !(await start.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press('Tab');
+    await expect(start).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(listenPill(page)).toHaveText('Listening', { timeout: MODEL_TIMEOUT });
+    const stop = page.getByRole('button', { name: 'Stop', exact: true });
+    await expect(stop).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(listenPill(page)).toHaveText('Stopped');
+    await expect(start).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(listenPill(page)).toHaveText('Listening', { timeout: MODEL_TIMEOUT });
+    await stop.click();
+  });
+
+  test('in Settings, Space flips a switch and the arrow keys move the slider with its value text', async ({ page }) => {
+    await page.goto('/');
+    await settingsButton(page).click();
+    const toggle = settingsSheet(page).getByRole('switch', { name: 'Knock', exact: true });
+    // The switch is a native checkbox with role="switch": its checked state is the switch's aria-checked (an
+    // explicit attribute would be redundant), and toBeChecked reads that accessible state.
+    await toggle.focus();
+    await expect(toggle).toBeChecked();
+    await page.keyboard.press('Space');
+    await expect(toggle).not.toBeChecked();
+    await page.keyboard.press('Space');
+    await expect(toggle).toBeChecked();
+
+    const slider = settingsSheet(page).getByRole('slider', { name: 'Knock Alerts from' });
+    const shown = settingsSheet(page).locator('.bb-settings-tile[data-class="knock"] .bb-settings-tile__value');
+    const read = async () => ({ value: await slider.inputValue(), text: await slider.getAttribute('aria-valuetext'), shown: (await shown.textContent())?.trim() });
+    await slider.focus();
+    const before = await read();
+    expect(before).toEqual({ value: '-50', text: '−50 dB', shown: '−50 dB' });
+    await page.keyboard.press('ArrowRight');
+    expect(await read()).toEqual({ value: '-49', text: '−49 dB', shown: '−49 dB' });
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    expect(await read()).toEqual({ value: '-51', text: '−51 dB', shown: '−51 dB' });
+  });
 });
