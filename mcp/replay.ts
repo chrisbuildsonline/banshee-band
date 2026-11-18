@@ -95,8 +95,7 @@ export async function replayClip(id: string, side: TrySide): Promise<ReplayOutco
       classifier: loaded,
       engine: createHapticEngine({ rateLimitMs: 0 }),
       outputs: [],
-      // Epoch ms with sub-ms steps, so the event's `t` is wall-clock time as the log expects.
-      now: () => performance.timeOrigin + performance.now(),
+      now: () => performance.now(),
       epoch: () => Date.now(),
     },
     clip.id,
@@ -104,7 +103,10 @@ export async function replayClip(id: string, side: TrySide): Promise<ReplayOutco
   );
   if (!result.ok) return result;
 
-  const { event, decision, bearingConfidence, frames, backend, times } = result;
+  const { decision, bearingConfidence, frames, backend, times } = result;
+  // The run's `t` is monotonic (as in the station); the log wants wall-clock epoch ms, so move it to the wall clock
+  // here. (performance.timeOrigin + now() drifts from Date.now() on some machines, by seconds under load.)
+  const event: SoundEvent = { ...result.event, t: Math.max(0, Date.now() - (performance.now() - result.event.t)) };
   return {
     ok: true,
     replay: {
