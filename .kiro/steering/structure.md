@@ -11,15 +11,15 @@ src/audio/      microphone and clip input, stereo capture, framing
 src/classify/   YAMNet loading and inference, label-to-class mapping
 src/bearing/    GCC-PHAT bearing estimation
 src/haptics/    priority engine and vibration pattern language
-src/band/       haptic outputs: one HapticOutput interface, segment player, phone vibrate, band simulator
+src/band/       haptic outputs: one HapticOutput interface, segment player, phone vibrate, band simulator, Bluetooth wristband link
   types.ts            HapticOutput interface
   segment-player.ts   timed motor levels from a HapticCommand (injected scheduler)
   phone-output.ts     navigator.vibrate output
   protocol.ts         byte protocol v1: BAND_SERVICE_UUID, BAND_COMMAND_UUID, BAND_NAME, crc8, encodePlay, encodeStop, decodeFrame (pure)
   ble-output.ts       createBandLink: Web Bluetooth link, state, problem, serialised writes, the 'band' HapticOutput (the only file that uses `bluetooth`)
-  connect.ts          mountBandConnect: the Wristband row with status line and Connect band, Disconnect
+  connect.ts          mountBandConnect: the Wristband row: glyph, heading, polite status line and one pill (Connect band when idle, a disabled Connecting… while connecting, Disconnect when connected, no button without Web Bluetooth); onConnected fires after a press here
   connect.css         connect row styles, design tokens only
-  labels.ts           plain-word labels: class, side, percent, pattern name, pulse count
+  labels.ts           plain-word labels: class, side, percent, pattern name, pulse count, bandStatusText (the wristband status line for each link state and problem)
   simulator.ts        mountBandSimulator: motor cards, pattern timeline, live region
   simulator.css       simulator styles, design tokens only
   index.ts            public exports
@@ -44,21 +44,21 @@ src/station/    listening station (index.html): microphone or sample clip to gho
   summary.ts          summariseClassifications, rmsDb, loudestRmsDb (pure)
   waveform.ts         peak buckets for the waveform bars (pure)
   stereo.ts           simulated stereo pair for a chosen side, toStereoFrames (pure)
-  format.ts           formatMs, formatClock, alertText, sideWord, dropText, failureText, classifyText, liveFailureText, dbText, mutedText (pure)
+  format.ts           formatMs, formatClock, alertText, sideWord, dropText, failureText, classifyText, liveFailureText, dbText, mutedText, outputName (the output's name in the pipeline's Band tile: Band simulator, Phone vibration or Wristband) (pure)
   pipeline.ts         buildEvent and processEvent: classification and bearing to a SoundEvent (pure)
   runner.ts           runSound: load, classify, bearing, event, pattern, outputs, stage times
   live-gate.ts        createLiveGate: per-class 3000 ms cooldown for live events (pure)
   live.ts             createLive: microphone windows to classify, bearing, event, pattern, outputs; newest window wins (deps injected, pure)
   listen-status.ts    LISTEN_STATES and listenStateFor: capture state to Listen pill word, glyph and tint (pure)
   listen.ts           mountListenCard: Start and Stop listening, Listen status pill, note and message line
-  status.ts           mountStatusPill: output state pill; renderPill and GLYPHS shared by both pills; setFallback: the pill follows the output in use
+  status.ts           mountStatusPill: output state pill; renderPill and GLYPHS shared by both pills; setOutput: the pill follows the output in use (Band connected, Phone vibration fallback or Band not connected)
   try-sound.ts        mountTrySound: sound chips, side control, busy state, messages
   list.ts             mountEventList: Latest alert and Recent sounds
   pipeline-view.ts    mountPipelineView: five stage tiles with times; Label tile shows backend and classify ms
   settings.ts         StationSettings: per-class on/off and level (-80 to -10 dB), Buzz on output; resolveSettings, parseSettings, load and save with injected storage (key `banshee-band.settings.v1`), settingsVerdict, createSettingsEngine, isMuted, effectiveOutput, outputsFor (pure)
-  settings-panel.ts   mountSettings: the Settings sheet (native dialog) with a switch and level slider per class, Buzz on radios (Wristband disabled until the Bluetooth link) and Reset; browserStorage
+  settings-panel.ts   mountSettings: the Settings sheet (native dialog) with a switch and level slider per class, Buzz on radios (Wristband enabled when the browser has Web Bluetooth, disabled with an honest caption when not; the connect row sits under the radios and a connect from there sets the output to the wristband) and Reset; browserStorage
   settings.css        Settings sheet styles: side sheet from 720px, bottom sheet below, design tokens only
-  station.ts          mountStation: builds the page, applies the saved settings (new settings engines and outputs on each change), runs a pick and starts or stops listening
+  station.ts          mountStation: builds the page, applies the saved settings (new settings engines and outputs on each change), runs a pick and starts or stops listening; creates the wristband link and re-applies the outputs on every link change
   station.css         station layout and card styles, design tokens only
   index.ts            public exports
 src/pwa/        offline install: web manifest, generated icons, service worker
@@ -71,7 +71,7 @@ src/pwa/        offline install: web manifest, generated icons, service worker
   register.ts         registerServiceWorker: production only, sets data-offline-ready
 src/ui/         settings, controls, text alerts, layout
   theme.ts            shared Day and Night theme control
-  band-page.ts        band simulator page script: status pill, Feel a pattern card
+  band-page.ts        band simulator page script: status pill, Connect band card, Feel a pattern card (also plays on the wristband when it is connected)
   styleguide.ts       styleguide page script: theme control, Ghosts section (field and glyph grid)
 mcp/            banshee-log MCP server (recent_events, event_stats, replay_clip)
 firmware/       ESP32 Arduino C++ for the two-motor band
@@ -89,6 +89,7 @@ e2e/            Playwright tests
   e2e/live.spec.ts    Start listening with a fake microphone: Knock row, backend, Stop, Mic blocked
   e2e/settings.spec.ts Settings sheet: keyboard, persistence after reload, corrupt or blocked storage, muted Try a sound and live runs, Screen only, screenshots
   e2e/offline.spec.ts offline after one visit, against a production build (vite preview on 5288)
+  e2e/band.spec.ts    band simulator page e2e and screenshots
   e2e/band-link.spec.ts Bluetooth band link with a mocked navigator.bluetooth: connect, written bytes, lost, cancelled, unsupported, band.html, screenshots
 public/         clips/ (CC0 fallback clips with licence notes), models/, icons/ and manifest.webmanifest
 vite.config.ts  banshee-pwa plugin: injects the precache list and cache name into /sw.js, fails over 40 MB or on a missing file
