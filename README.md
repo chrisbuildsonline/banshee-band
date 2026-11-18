@@ -10,7 +10,7 @@ Banshee Band listens through the device microphones, classifies the sound in the
 
 ## Stack
 
-TypeScript, Vite, Web Audio API, TensorFlow.js with YAMNet, custom GCC-PHAT DSP module, Web Bluetooth, ESP32 firmware (Arduino C++) with two vibration motors, canvas/WebGL for ghosts, Node.js MCP server, Vitest, static hosting. Open-source license (MIT) with the .kiro folder at the repo root.
+TypeScript, Vite, Web Audio API, TensorFlow.js with YAMNet, custom GCC-PHAT DSP module, Web Bluetooth, ESP32 firmware (Arduino C++) with two vibration motors, canvas/WebGL for ghosts, an MCP server (Bun, stdio), Vitest, static hosting. Open-source license (MIT) with the .kiro folder at the repo root.
 
 ## Development
 
@@ -23,6 +23,8 @@ Needs [bun](https://bun.sh). Install with `bun install`, then:
 | `bun run test` | Vitest unit and property tests, once |
 | `bun run e2e` | Playwright tests: starts the dev server on port 5287 and a production build with `vite preview` on port 5288; screenshots go to `e2e/screenshots/` |
 | `bun run typecheck` | `tsc --noEmit` (strict) |
+| `bun run mcp:banshee-log` | Starts the `banshee-log` MCP server on stdio (see [MCP server](#mcp-server)) |
+| `bun run log:seed` | Replays every sample clip from the left, centre and right through the real pipeline and appends the 18 events to the sound log |
 | `bun run icons` | Regenerates `public/icons/*.png` and `public/manifest.webmanifest` from code (same bytes every run; the output is committed) |
 
 ### Install and offline
@@ -64,6 +66,24 @@ What onset means:
 Output is the moment the last output's `play()` returned: the band simulator and phone vibration start then; for the wristband the frame has been queued for the Bluetooth write.
 
 Not counted: the model load; the microphone, operating system and Web Audio buffering before a window reaches the page; the time the sound sat inside its window before the window ended (up to 0.975 s); the screen paint; the Bluetooth radio time and the motor spin-up. When nothing buzzed (the sound was muted in Settings or has no pattern) the card says so and shows no number.
+
+## MCP server
+
+`banshee-log` lets an agent such as Kiro or Claude Code ask what was heard and try a sound, offline, with no key. It runs with Bun over stdio (`mcp/banshee-log.ts`, built on `@modelcontextprotocol/sdk` with zod input schemas).
+
+**The log.** The station is a browser app: it saves only its settings and never writes events to disk. So the server reads its own local log, a JSONL file at `BANSHEE_LOG`, by default `.banshee/events.jsonl` in the folder it runs from (gitignored). Each line is one event in the same shape as `src/events` (class, label, confidence, bearing, bearing source, loudness, urgency, with `t` in epoch ms), plus the `clip` and `side` it came from. Lines that are not valid events are skipped and counted. `bun run log:seed` fills it from the sample clips; `replay_clip` with `append: true` adds one event. The log holds event data only, never audio.
+
+| Tool | What it does |
+|---|---|
+| `recent_events` | Newest events first. Optional `limit` (1 to 100, default 10), `class` (knock, doorbell, alarm, baby, vehicle, voice, other) and `since` (epoch ms). |
+| `event_stats` | Counts per class, urgency and bearing source, mean confidence per class, first and last time and the loudest event. Optional `since`. |
+| `replay_clip` | Runs a sample clip (`knock-01`, `doorbell-01`, `alarm-smoke-01`, `baby-cry-01`, `vehicle-horn-01`, `voice-speech-01`) through the same code as Try a sound: YAMNet on the TensorFlow.js CPU backend, the GCC-PHAT side estimate on a simulated stereo pair for `side` (left, centre or right), and the haptic engine. Returns the event, the pattern it would buzz, the bearing and the stage times. Nothing buzzes. The first call loads the model (a few seconds). `append: true` also writes the event to the log. |
+
+Bad input (a `limit` of 0, an unknown class, an unknown clip) comes back as an error result, not a crash; an unknown clip lists the known ones.
+
+Run it with `bun run mcp:banshee-log`. In Kiro it is already registered in `.kiro/settings/mcp.json`, so opening this repo in Kiro starts it (`recent_events` and `event_stats` are auto-approved; `replay_clip` asks, because it can write). To add it to another client, use the command `bun` with the arguments `run mcp:banshee-log`, run from the repo root, and set `BANSHEE_LOG` to point at another log file if you like.
+
+`tests/mcp/banshee-log.test.ts` spawns the server over stdio and calls every tool, including the bad-input cases; `tests/mcp/log.test.ts` covers the log file itself.
 
 ## License
 
