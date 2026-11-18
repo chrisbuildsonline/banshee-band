@@ -1,4 +1,25 @@
 import type { HapticClass, HapticCommand, Segment, Side } from '../haptics';
+import type { BandProblem, BandState } from './types';
+
+const PROBLEM_TEXT: Readonly<Record<BandProblem, string>> = Object.freeze({
+  cancelled: 'No band was chosen.',
+  failed: 'Could not connect. Check the band is on and close, then try again.',
+  lost: 'The band disconnected. Alerts use the phone or the screen until it is back.',
+});
+
+/** The status line of the wristband: what the link is doing, and which fallback is in use when there is no band. */
+export function bandStatusText(state: BandState, problem: BandProblem | null, name: string | null): string {
+  switch (state) {
+    case 'unsupported':
+      return 'This browser has no Bluetooth link (Safari and Firefox do not have Web Bluetooth). Alerts use the phone or the screen. Chrome or Edge can connect the band.';
+    case 'connecting':
+      return 'Connecting…';
+    case 'connected':
+      return `Connected to ${name ?? 'Banshee Band'}.`;
+    default:
+      return problem === null ? 'No band connected.' : PROBLEM_TEXT[problem];
+  }
+}
 
 const SIDE_TEXT: Readonly<Record<Side, string>> = Object.freeze({
   left: 'left stronger',

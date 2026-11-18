@@ -13,7 +13,10 @@ const HAPTICS = fileURLToPath(new URL('../../src/haptics/', import.meta.url));
 const bandFiles = read(BAND);
 const hapticsFiles = read(HAPTICS);
 
-const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+/** Files that touch no browser global at all (R1.1). */
+const PURE = ['protocol.ts', 'labels.ts'];
+
+const stripComments =(s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 /** Every module specifier a file imports or re-exports, static or dynamic. */
 function specifiersOf(text: string): string[] {
@@ -56,8 +59,21 @@ describe('src/band boundaries (R1)', () => {
     for (const f of bandFiles) expect(importViolations(f.text), f.name).toEqual([]);
   });
 
-  it('uses no network, Bluetooth, console, random source or clock', () => {
-    for (const f of bandFiles) expect(forbiddenUses(f.text), f.name).toEqual([]);
+  it('uses no network, console, random source or clock, and Bluetooth only in ble-output.ts', () => {
+    for (const f of bandFiles) expect(forbiddenUses(f.text).filter((w) => !(w === 'bluetooth' && f.name === 'ble-output.ts')), f.name).toEqual([]);
+    expect(forbiddenUses(bandFiles.find((f) => f.name === 'ble-output.ts')?.text ?? ''), 'ble-output.ts').toEqual(['bluetooth']);
+  });
+
+  it('keeps the pure files pure: no document, window or navigator, type-only imports of src/haptics', () => {
+    for (const name of PURE) {
+      const f = bandFiles.find((b) => b.name === name);
+      expect(f, name).toBeDefined();
+      const code = stripComments(f!.text);
+      expect(code, name).not.toMatch(/\b(document|window|navigator|globalThis)\b/);
+      expect(forbiddenUses(f!.text), name).toEqual([]);
+      const valueImports = [...code.matchAll(/\bimport\s+(type\s+)?[^'";]*?\bfrom\s+['"]([^'"]+)['"]/g)].filter((m) => m[1] === undefined).map((m) => m[2]);
+      expect(valueImports, `${name} value imports`).toEqual([]);
+    }
   });
 
   it('src/haptics imports nothing from src/band', () => {
