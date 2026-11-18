@@ -2,8 +2,8 @@ import { mountBandConnect, type BandLink } from '../band';
 import { SOUND_CLASSES, type SoundClass } from '../events';
 import { CLASS_NAMES, createGlyph } from '../ghosts';
 import { dbText } from './format';
+import { mountOutputOptions } from './output-options';
 import {
-  effectiveOutput,
   MIN_DB_CEILING,
   MIN_DB_FLOOR,
   resolveSettings,
@@ -23,12 +23,18 @@ export interface SettingsOptions {
   band: BandLink;
   /** Called with a new settings object after every change, once it is saved (or failed to save). */
   onChange(s: StationSettings): void;
+  /** Show intro again: called after the sheet has closed itself. Without it the sheet has no Show intro again pill. */
+  onShowIntro?(): void;
 }
 
 /** What `mountSettings` returns. */
 export interface SettingsPanel {
   open(): void;
   close(): void;
+  /** The settings in force. */
+  settings(): StationSettings;
+  /** Sets Buzz on, the same way a press on its radio does: save, show, `onChange`. */
+  setOutput(choice: OutputChoice): void;
 }
 
 /** `window.localStorage`, or null when the browser blocks it (a throwing getter). */
@@ -40,33 +46,13 @@ export function browserStorage(): SettingsStorage | null {
   }
 }
 
-const SVG = 'http://www.w3.org/2000/svg';
 const SOUNDS_NOTE = 'A sound alerts you when it is on and at least as loud as its level. −80 dB is very quiet, −10 dB is very loud.';
-const PHONE_OFF = 'This browser cannot vibrate.';
-const BAND_OFF = 'This browser has no Bluetooth. Use Chrome or Edge to connect the band.';
-
-const OPTIONS: readonly { value: OutputChoice; name: string; caption: string }[] = [
-  { value: 'phone', name: 'Phone vibration', caption: 'The phone buzzes the pattern. The screen shows it too.' },
-  { value: 'simulator', name: 'Screen only', caption: 'The pattern plays on the band simulator on this screen.' },
-  { value: 'band', name: 'Wristband', caption: 'The band buzzes the pattern, stronger on the side it came from.' },
-];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
-}
-
-function checkGlyph(): SVGSVGElement {
-  const svg = document.createElementNS(SVG, 'svg');
-  svg.setAttribute('class', 'bb-option__check');
-  svg.setAttribute('viewBox', '0 0 16 16');
-  svg.setAttribute('aria-hidden', 'true');
-  const path = document.createElementNS(SVG, 'path');
-  path.setAttribute('d', 'M3.5 8.5 6.5 11.5 12.5 4.5');
-  svg.append(path);
-  return svg;
 }
 
 /** The controls of one class tile. */
@@ -159,33 +145,13 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
 
   const output = el('fieldset', 'bb-settings__section bb-settings__output');
   output.append(el('legend', 'bb-settings__h3', 'Buzz on'));
-  const optionList = el('div', 'bb-settings__options');
-  const radios = new Map<OutputChoice, HTMLInputElement>();
-  for (const o of OPTIONS) {
-    const label = el('label', 'bb-option');
-    label.dataset.output = o.value;
-    const radio = el('input', 'bb-option__input');
-    radio.type = 'radio';
-    radio.name = 'output';
-    radio.value = o.value;
-    const caption = el('span', 'bb-option__caption', o.value === 'phone' && !options.phoneAvailable ? PHONE_OFF : o.value === 'band' && !bandSupported ? BAND_OFF : o.caption);
-    caption.id = `settings-output-${o.value}`;
-    const name = el('span', 'bb-option__name', o.name);
-    name.id = `settings-output-name-${o.value}`;
-    // Named by the option name alone, with the caption as its description.
-    radio.setAttribute('aria-labelledby', name.id);
-    radio.setAttribute('aria-describedby', caption.id);
-    radio.disabled = (o.value === 'band' && !bandSupported) || (o.value === 'phone' && !options.phoneAvailable);
-    const text = el('span', 'bb-option__text');
-    text.append(name, caption);
-    label.append(radio, checkGlyph(), text);
-    optionList.append(label);
-    radios.set(o.value, radio);
-    radio.addEventListener('change', () => {
-      if (radio.checked) commit({ ...current, output: o.value });
-    });
-  }
-  output.append(optionList);
+  const radios = mountOutputOptions(output, {
+    name: 'output',
+    idPrefix: 'settings-output',
+    phoneAvailable: options.phoneAvailable,
+    bandSupported,
+    onPick: (choice) => commit({ ...current, output: choice }),
+  });
   // The connect row, where the browser has Bluetooth (else the Wristband caption already says why not).
   // A connect from here also makes the wristband the output.
   if (bandSupported) mountBandConnect(output, options.band, { onConnected: () => commit({ ...current, output: 'band' }) });
@@ -195,6 +161,20 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
   reset.type = 'button';
   reset.dataset.settings = 'reset';
   foot.append(reset);
+  let skipFocusReturn = false;
+  if (options.onShowIntro) {
+    const showIntro = options.onShowIntro;
+    const intro = el('button', 'bb-pill bb-pill--secondary', 'Show intro again');
+    intro.type = 'button';
+    intro.dataset.settings = 'intro';
+    foot.append(intro);
+    intro.addEventListener('click', () => {
+      // Close first, so the intro is the only modal; it returns the focus to the Settings pill when it closes.
+      skipFocusReturn = true;
+      dialog.close();
+      showIntro();
+    });
+  }
 
   dialog.append(head, sounds, output, foot);
   document.body.append(dialog);
@@ -212,8 +192,7 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
       t.value.textContent = dbText(s.minDb);
     }
     // A chosen Wristband stays shown while it is not connected (the connect row says the screen is in use).
-    const shown = current.output === 'band' && bandSupported ? 'band' : effectiveOutput(current.output, { phone: options.phoneAvailable, band: false });
-    for (const [value, radio] of radios) radio.checked = value === shown;
+    radios.set(current.output);
   }
 
   function commit(next: StationSettings): void {
@@ -225,7 +204,10 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
 
   done.addEventListener('click', () => dialog.close());
   reset.addEventListener('click', () => commit(resolveSettings(undefined)));
-  dialog.addEventListener('close', () => trigger.focus());
+  dialog.addEventListener('close', () => {
+    if (skipFocusReturn) skipFocusReturn = false;
+    else trigger.focus();
+  });
   trigger.addEventListener('click', () => {
     if (!dialog.open) dialog.showModal();
   });
@@ -236,5 +218,7 @@ export function mountSettings(trigger: HTMLElement, options: SettingsOptions): S
       if (!dialog.open) dialog.showModal();
     },
     close: () => dialog.close(),
+    settings: () => current,
+    setOutput: (choice) => commit({ ...current, output: choice }),
   };
 }

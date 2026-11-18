@@ -348,7 +348,9 @@
 
 .bb-settings__foot {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
+  gap: var(--bb-space-3);
   padding-bottom: var(--bb-space-2);
 }
 
