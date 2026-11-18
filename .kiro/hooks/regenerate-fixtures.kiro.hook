@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Regenerate fixtures",
+  "description": "When a clip, the clip manifest, the classifier or the bearing code changes, reruns classify:report, bearing:report and log:seed in order to regenerate tests/classify/clip-results.json, tests/bearing/accuracy.json, docs/bearing.md and the sound log. Stops at the first step that fails.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "public/clips/*.wav",
+      "public/clips/manifest.json",
+      "src/classify/*.ts",
+      "src/bearing/*.ts"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bun run hooks:fixtures"
+  }
+}

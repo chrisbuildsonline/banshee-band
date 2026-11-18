@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "No colour-only alerts",
+  "description": "The station pill, the Listen pill, the ghost urgencies and the wristband row must never tell two states apart by colour alone. Each state needs a word, and two states with different colours also need a different word and, where the table has shapes, a different shape.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/station/status.ts",
+      "src/station/listen-status.ts",
+      "src/ghosts/constants.ts",
+      "src/band/labels.ts",
+      "src/band/connect.ts",
+      "src/band/connect.css"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bun run hooks:colour"
+  }
+}

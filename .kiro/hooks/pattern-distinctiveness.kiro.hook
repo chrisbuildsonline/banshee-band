@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Pattern distinctiveness on save",
+  "description": "Checks every vibration pattern in src/haptics/patterns.json against the pattern language limits and checkDistinctiveness. A failure names the broken limit or the two patterns that feel too alike.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/haptics/patterns.json",
+      "src/haptics/patterns.ts",
+      "src/haptics/distinct.ts"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bun run hooks:patterns"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "name": "Every spec requirement has a test",
+  "description": "Every ### Requirement N of each spec must be listed by a task of its tasks.md that names an existing test file, or be a known gap with its reason in scripts/hooks/spec-gaps.json. A failure names the requirement with no test, or a known gap that is gone.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/*/requirements.md",
+      ".kiro/specs/*/tasks.md",
+      "scripts/hooks/spec-gaps.json",
+      "tests/**/*.test.ts",
+      "e2e/*.spec.ts"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bun run hooks:spec-tests"
+  }
+}
