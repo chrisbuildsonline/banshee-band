@@ -366,14 +366,16 @@ The record is a regression check on six clips. It says nothing about other recor
 
 ## Risks
 
-- **Model source and format not yet confirmed.** I could not download the files while writing this spec. The TF.js YAMNet package, its input shape, its output order and its licence text must be confirmed in task 1. If the model's TF.js ops are not available on `cpu`, the integration test cannot run in Node as written. Task 1 is a spike for this, and the design is changed before any other code is written.
-- **CPU backend speed.** YAMNet computes a log-mel spectrogram and then a MobileNet-like network. On the TF.js `cpu` backend that is slow but finite. Measured in task 1.
-- **A clip may not reach its class with a fair label map.** This is the main schedule risk. The knock clip and the baby clip are the likeliest to be mislabelled (knock sounds are close to `Thump`, `Tap` and `Door`; a cry overlaps `Speech`). The allowed fixes are in Requirement 7.11. If no fair fix passes, the Results file reports the failure, the spec is not marked done, and the user is told.
-- **License text for the class map.** If the AudioSet ontology licence differs from the model licence, `LICENSE.txt` says so. This is a correctness issue for the submission, and is checked in task 1.
-- **Large files in git.** The YAMNet TF.js weights are a few megabytes (YAMNet has about 3.7 million parameters, so roughly 15 MB as float32; the exact size is known after download). That is acceptable in a repository. Git LFS is not used. If the files are over 50 MB, stop and ask.
-- **TF.js version.** Newer TF.js releases may drop or change node-less CPU behaviour. The version is pinned, and the integration test is the check.
-- **Browser backend differences** (WebGL float precision on mobile GPUs) can move a score by a few thousandths. The comparison tolerance and the threshold margin are the guard, and the e2e feature repeats the clip check in Chromium.
-- **`import.meta.env` in Node tests.** `BASE_URL` is only a default. Node tests always pass full URLs, so `createClassifier` must not read `import.meta.env` when both URLs are given. Under Vitest, Vite defines `import.meta.env.BASE_URL` as `/`, so this is only a risk under `bun run` for the report script. The report script passes full URLs too.
+- **Model source and format not yet confirmed.** Confirmed in task 1: Kaggle Models `google/yamnet/tfJs/tfjs/1`, input `waveform` with shape `[-1]`, outputs in the order scores, embeddings, spectrogram. The model has no FFT op, so every op runs on the `cpu` backend (see Measured values). Closed.
+- **CPU backend speed.** Measured: about 150 to 170 ms per Frame on the Node `cpu` backend, and about 30 ms to load the model, so the integration test and the report script run in Node. Closed for tests. Speed on a phone is not measured.
+- **A clip may not reach its class with a fair label map.** All 6 of 6 clips pass at threshold 0.15 with no rule, clip or expected class changed. Two pass narrowly: `knock-01` 6 to 5 (knock to other) and `alarm-smoke-01` 5 to 4 (alarm to voice). Still open as a regression risk. A pass is not an accuracy figure, and the six clips are one recording each.
+- **License text for the class map.** Resolved. `public/models/yamnet/LICENSE.txt` gives Apache 2.0 for the model and for the CSV file, and the CC BY-SA 4.0 notice for the AudioSet names and ids. Closed.
+- **Large files in git.** The model files, class map, licence and checksums are about 16.2 MB. Git LFS is not used. Closed.
+- **TF.js version.** Pinned to 4.22.0 in `package.json`, and the integration test is the check on an upgrade. Kept as a watch item.
+- **Browser backend differences** (WebGL float precision on mobile GPUs) can move a score by a few thousandths. In headless Chromium TF.js uses `webgl` (README, Latency section), and `e2e/station.spec.ts` checks that every Try a sound chip gives its manifest class in the browser. That test checks the class of each whole clip, not frame counts or scores, so a score near the threshold is not covered. Phone GPUs are not tested. Still open.
+- **`import.meta.env` in Node tests.** Closed. `createClassifier` reads `import.meta.env.BASE_URL` only for a URL the caller did not pass, and `tests/classify/report.ts` passes full `modelUrl` and `classMapUrl` values.
+- **No phone or real-room testing.** All checks use six short clips and a fake microphone in Chromium. Real rooms, phone microphones and sounds that are not in the clips are untested. Open.
+- **The threshold was chosen from six clips.** 0.15 sits between 0.074 (highest target-class score on a frame without the sound) and 0.208 (lowest on a frame with it) across 70 frames. Other recordings may put those values elsewhere. Open.
 
 ## Measured values
 
