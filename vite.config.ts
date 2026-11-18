@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { buildPrecacheList, cacheNameFor } from './src/pwa/precache.ts';
@@ -18,7 +18,7 @@ function walk(dir: string): string[] {
 /**
  * Builds `/sw.js` (entry `src/pwa/sw.ts`, unhashed) and injects the precache list and the cache name: every
  * bundle file plus the public files (`buildPrecacheList`), with the cache name hashed over `path?size` so a
- * changed file gives a new cache. Fails the build when the list is over 40 MB.
+ * changed file gives a new cache. Fails the build on a URL with no file or when the list is over 40 MB.
  */
 function pwa(): Plugin {
   return {
@@ -32,8 +32,10 @@ function pwa(): Plugin {
       const list = buildPrecacheList({ bundleFiles: Object.keys(bundle), publicFiles: walk(PUBLIC), clipNames });
       const sizeOf = (url: string): number => {
         const out = bundle[url.slice(1)];
-        if (out) return out.type === 'chunk' ? out.code.length : typeof out.source === 'string' ? out.source.length : out.source.byteLength;
-        return statSync(join(PUBLIC, url.slice(1))).size;
+        if (out) return out.type === 'chunk' ? Buffer.byteLength(out.code) : typeof out.source === 'string' ? Buffer.byteLength(out.source) : out.source.byteLength;
+        const file = join(PUBLIC, url.slice(1));
+        if (!existsSync(file)) this.error(`precache URL ${url} is not in the bundle or public/`);
+        return statSync(file).size;
       };
       const sizes = list.map(sizeOf);
       const total = sizes.reduce((a, b) => a + b, 0);

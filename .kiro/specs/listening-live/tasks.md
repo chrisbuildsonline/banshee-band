@@ -41,14 +41,14 @@ Each task is small steps that end in a test gate. Write the test first, see it f
     - _Requirements: 2.1, 2.13_
   - **Gate:** `e2e/live.spec.ts` and the updated station specs pass; `tests/ui`, `typecheck` and `test` pass; `bun run build` passes.
 
-- [ ] 4. Service worker, registration and build plugin
+- [x] 4. Service worker, registration and build plugin
   - [x] 4.1 Add `<link rel="manifest" href="/manifest.webmanifest">` and `<meta name="theme-color">` (the Day accent value from `tokens.css`) to `index.html`, `band.html` and `styleguide.html`, and the muted `[data-offline-note]` line to the title block of `index.html` (hidden until `data-offline-ready`; CSS in `station.css`).
     - _Requirements: 5.2, 7.3_
   - [x] 4.2 Write `src/pwa/sw.ts` by design.md: sequential precache with `cache: 'reload'` and an `ok` check, all-or-nothing, `skipWaiting`, delete old `banshee-` caches, `clients.claim`, `routeFor` in the fetch handler, every `match` with `{ ignoreVary: true }`, navigations answered with cached `index.html` first, `postMessage` of `precache-complete` to clients and on a `status` request. Check the worker types compile in `bun run typecheck` (use `src/pwa/tsconfig.sw.json` and extend the `typecheck` script if the root config cannot hold the WebWorker lib).
     - _Requirements: 6.1-6.10_
   - [x] 4.3 Write `src/pwa/register.ts` and `index.ts`: production only, `'serviceWorker' in navigator`, register on `load`, handle the message, set `window.__bbOffline` and `data-offline-ready`, swallow a rejected registration without `console`. Call it from `src/main.ts`.
     - _Requirements: 6.1, 6.9, 7.3, 7.7_
-  - [ ] 4.4 Add the `banshee-pwa` plugin to `vite.config.ts` (list from the bundle, `public/` and `clips/manifest.json`; emit `/sw.js` with the list and cache name injected; fail the build on a missing URL or a list over 40 MB) and `preview: { port: 5288, strictPort: true }`. Write `tests/pwa/build.test.ts` (reads `dist/sw.js`: every URL exists in `dist/`, total size from 17 to 40 MB, contains no `LICENSE.txt`; skipped with a message when `dist/` is missing). Run `bun run build` and then `bun run test`.
+  - [x] 4.4 Add the `banshee-pwa` plugin to `vite.config.ts` (list from the bundle, `public/` and `clips/manifest.json`; emit `/sw.js` with the list and cache name injected; fail the build on a missing URL or a list over 40 MB) and `preview: { port: 5288, strictPort: true }`. Write `tests/pwa/build.test.ts` (reads `dist/sw.js`: every URL exists in `dist/`, total size from 17 to 40 MB, contains no `LICENSE.txt`; skipped with a message when `dist/` is missing). Run `bun run build` and then `bun run test`.
     - _Requirements: 7.5, 7.6_
   - **Gate:** `bun run build` writes `dist/sw.js`, `dist/manifest.webmanifest`, `dist/icons/`; `tests/pwa` (including `build.test.ts` after the build), `typecheck` and `test` pass; the dev server still does not register a worker.
 
