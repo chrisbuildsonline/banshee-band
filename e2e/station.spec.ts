@@ -235,7 +235,7 @@ test.describe('listening station', () => {
     await page.goto('/');
     await expect(chip(page, 'Voice')).toBeVisible();
     const names: string[] = [];
-    for (let i = 0; i < 13; i++) {
+    for (let i = 0; i < 14; i++) {
       await page.keyboard.press('Tab');
       names.push(
         await page.evaluate(() => {
@@ -248,6 +248,7 @@ test.describe('listening station', () => {
     expect(names).toEqual([
       'a:Banshee Band',
       'a:Band simulator',
+      'button:Settings',
       'button:Day',
       'button:Night',
       'button:Start listening',
