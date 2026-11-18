@@ -1,0 +1,15 @@
+{
+  "design-system#1": "Project scaffold: the scaffold task is checked by running the scripts themselves and names no test file",
+  "design-system#2": "DESIGN.md as source of truth: the task writes the document; tests/ui reads it, but the task does not name that file",
+  "integration-event-contract#3": "Real CC0 clips: the sourcing task runs 'the manifest test' of task 7 (tests/clips/manifest.test.ts) by name, not by path",
+  "integration-event-contract#4": "Manifest: the same sourcing task as Requirement 3",
+  "listening-station#3": "Status pill: task 6 lists it (6.2) and checks it with 'the e2e cases of task 5' (6.5), by number, not by file",
+  "listening-station#12": "Latest alert and ghost field: the same as Requirement 3",
+  "ghost-renderer#15": "Privacy and wording: a review step that names no test file",
+  "ghost-renderer#16": "Gates: the gate commands (typecheck, test, e2e, build), not a test file",
+  "haptic-outputs#11": "Privacy and wording: a review step that names no test file",
+  "haptic-outputs#12": "Gates: the gate commands (typecheck, test, e2e, build), not a test file",
+  "haptic-priority-engine#12": "Mutation check: run by bun run haptics:mutate (tests/haptics/mutate.ts), a script, not a test file",
+  "haptic-priority-engine#14": "Gates: the gate commands (typecheck, test, e2e, build), not a test file",
+  "gcc-phat-bearing#12": "Mutation check: run by bun run bearing:mutate (tests/bearing/mutate.ts), a script, not a test file"
+}
