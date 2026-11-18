@@ -232,7 +232,7 @@ Choices of this design inside those decisions, which need a yes or no:
 
 | Layer | What | Where |
 |---|---|---|
-| Unit: timer | `latencyMs(100, 141.5)` is `141.5`; equal gives `0`; output before onset, `NaN`, `Infinity`, `-Infinity`, `undefined`, `null` and a string in either place give `null`; written first against a throwing stub | `tests/station/latency.test.ts` |
+| Unit: timer | `latencyMs(100, 141.5)` is `41.5`; equal gives `0`; output before onset, `NaN`, `Infinity`, `-Infinity`, `undefined`, `null` and a string in either place give `null`; written first against a throwing stub | `tests/station/latency.test.ts` |
 | Property | fast-check, fixed seed, 200 runs: for any two values the result is `null` or a finite number >= 0; for finite `a <= b` it is `b - a`; never throws | `tests/station/latency.property.test.ts` |
 | Unit: runner | the scripted clock gives `latencyMs: 40.5`, `onset: 'clip'` and still 10 reads; a disabled class (drop) and a run with no available output give `null` | `tests/station/runner.test.ts` |
 | Unit: live | injected clock: latency is the band-stage end read minus the window's arrival read, including a held classification; the newest waiting window's own arrival is used; a drop gives `null`; `onset: 'live'` | `tests/station/live.test.ts` |

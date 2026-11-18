@@ -39,22 +39,23 @@ src/ghosts/     canvas ghost renderer: shape = class, position = bearing, glow =
   index.ts            public exports
 src/station/    listening station (index.html): microphone or sample clip to ghost, row, pattern and pipeline view
   constants.ts        PEAK_BUCKETS, MAX_ROWS
-  types.ts            TrySide, StageName, StageTimes, RunnerDeps, RunFailure, RunResult
+  types.ts            TrySide, StageName, StageTimes, RunnerDeps, RunFailure, RunResult (the ok run result carries `latencyMs` and `onset`, clip or live)
   wav.ts              decodePcm16kWav: 16 kHz mono 16-bit WAV to samples (pure)
   summary.ts          summariseClassifications, rmsDb, loudestRmsDb (pure)
   waveform.ts         peak buckets for the waveform bars (pure)
   stereo.ts           simulated stereo pair for a chosen side, toStereoFrames (pure)
-  format.ts           formatMs, formatClock, alertText, sideWord, dropText, failureText, classifyText, liveFailureText, dbText, mutedText, outputName (the output's name in the pipeline's Band tile: Band simulator, Phone vibration or Wristband) (pure)
+  format.ts           formatMs, formatClock, alertText, sideWord, dropText, failureText, classifyText, latencyNumber, latencyText ("Onset to output: 41 ms"), liveFailureText, dbText, mutedText, outputName (the output's name in the pipeline's Band tile: Band simulator, Phone vibration or Wristband) (pure)
   pipeline.ts         buildEvent and processEvent: classification and bearing to a SoundEvent (pure)
-  runner.ts           runSound: load, classify, bearing, event, pattern, outputs, stage times
+  runner.ts           runSound: load, classify, bearing, event, pattern, outputs, stage times; the latency is the run's first clock read (onset) to its last (after the outputs were handed the pattern)
   live-gate.ts        createLiveGate: per-class 3000 ms cooldown for live events (pure)
-  live.ts             createLive: microphone windows to classify, bearing, event, pattern, outputs; newest window wins (deps injected, pure)
+  live.ts             createLive: microphone windows to classify, bearing, event, pattern, outputs; newest window wins; each window's arrival time is its onset, so a wait behind a running classification is counted (deps injected, pure)
+  latency.ts          latencyMs: onset to output in ms from two clock reads, null for a missing, non-finite or backwards value (pure)
   listen-status.ts    LISTEN_STATES and listenStateFor: capture state to Listen pill word, glyph and tint (pure)
   listen.ts           mountListenCard: Start and Stop listening, Listen status pill, note and message line
   status.ts           mountStatusPill: output state pill; renderPill and GLYPHS shared by both pills; setOutput: the pill follows the output in use (Band connected, Phone vibration fallback or Band not connected)
   try-sound.ts        mountTrySound: sound chips, side control, busy state, messages
   list.ts             mountEventList: Latest alert and Recent sounds
-  pipeline-view.ts    mountPipelineView: five stage tiles with times; Label tile shows backend and classify ms
+  pipeline-view.ts    mountPipelineView: five stage tiles with times; Label tile shows backend and classify ms; the latency figure ("Onset to output" number with a note on what is and is not counted, `data-latency-ms`, `data-latency-source`)
   settings.ts         StationSettings: per-class on/off and level (-80 to -10 dB), Buzz on output; resolveSettings, parseSettings, load and save with injected storage (key `banshee-band.settings.v1`), settingsVerdict, createSettingsEngine, isMuted, effectiveOutput, outputsFor (pure)
   settings-panel.ts   mountSettings: the Settings sheet (native dialog) with a switch and level slider per class, Buzz on radios (Wristband enabled when the browser has Web Bluetooth, disabled with an honest caption when not; the connect row sits under the radios and a connect from there sets the output to the wristband) and Reset; browserStorage
   settings.css        Settings sheet styles: side sheet from 720px, bottom sheet below, design tokens only
@@ -91,6 +92,7 @@ e2e/            Playwright tests
   e2e/offline.spec.ts offline after one visit, against a production build (vite preview on 5288)
   e2e/band.spec.ts    band simulator page e2e and screenshots
   e2e/band-link.spec.ts Bluetooth band link with a mocked navigator.bluetooth: connect, written bytes, lost, cancelled, unsupported, band.html, screenshots
+  e2e/latency.spec.ts  onset to output figure: Try a sound (1440 Day) and fake-microphone live run (390 Night) read a measured number, a muted run shows none, screenshots
 public/         clips/ (CC0 fallback clips with licence notes), models/, icons/ and manifest.webmanifest
 vite.config.ts  banshee-pwa plugin: injects the precache list and cache name into /sw.js, fails over 40 MB or on a missing file
 design/DESIGN.md  UI source of truth
@@ -106,4 +108,4 @@ design/DESIGN.md  UI source of truth
 - `mcp/` has no imports from `src/` except shared event types.
 - `src/station` sits with `ui` at the top of the flow: it may import the other modules, and nothing but `src/main.ts` imports it.
 - `src/pwa/` imports nothing from the other project modules. Only `src/main.ts` imports `src/pwa/register.ts`.
-- The pure files of `src/station` and `src/pwa` (`live-gate.ts`, `live.ts`, `settings.ts`, `precache.ts`, `routes.ts`, `manifest.ts`, `icons.ts`) use no `document`, `window`, `navigator`, `localStorage`, `fetch`, `caches`, `console`, `Math.random` or `Date`; `tests/station/boundaries.test.ts` checks this.
+- The pure files of `src/station` and `src/pwa` (`live-gate.ts`, `live.ts`, `latency.ts`, `settings.ts`, `precache.ts`, `routes.ts`, `manifest.ts`, `icons.ts`) use no `document`, `window`, `navigator`, `localStorage`, `fetch`, `caches`, `console`, `Math.random` or `Date`; `tests/station/boundaries.test.ts` checks this.
