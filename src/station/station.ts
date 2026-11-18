@@ -3,16 +3,18 @@ import { createPhoneOutput, mountBandSimulator, type HapticOutput } from '../ban
 import { createBearingWindow } from '../bearing';
 import { createClassifier, type Classifier } from '../classify';
 import { createGlyph, mountGhostField } from '../ghosts';
-import { createHapticEngine, sideOf } from '../haptics';
-import { failureText, LIVE_FAILURE_TEXT } from './format';
+import { sideOf } from '../haptics';
+import { failureText, LIVE_FAILURE_TEXT, mutedText } from './format';
 import { mountEventList } from './list';
 import { mountListenCard } from './listen';
 import { createLive, type Live } from './live';
 import { mountPipelineView } from './pipeline-view';
 import { runSound } from './runner';
+import { createSettingsEngine, effectiveOutput, isMuted, loadSettings, outputsFor, type StationSettings } from './settings';
+import { browserStorage, mountSettings } from './settings-panel';
 import { mountStatusPill } from './status';
 import { mountTrySound } from './try-sound';
-import type { RunnerDeps, RunResultOk, TrySide } from './types';
+import type { LiveDeps, RunnerDeps, RunResultOk, TrySide } from './types';
 
 const LOADING_MODEL = 'Loading the sound model';
 const LISTENING = 'Listening to the clip';
@@ -81,7 +83,11 @@ function urgencyKey(): HTMLElement {
 export function mountStation(root: HTMLElement): void {
   const phone = createPhoneOutput();
   const vibrates = phone.available(); // read once at load
+  // The saved settings, read once; the Settings sheet sends every later change to apply().
+  let settings: StationSettings = loadSettings(browserStorage());
+  const effective = () => effectiveOutput(settings.output, { phone: vibrates, band: false });
   const status = mountStatusPill(document.getElementById('station-status') ?? root, vibrates);
+  status.setFallback(effective() === 'phone');
 
   const controls = document.createElement('div');
   controls.className = 'bb-station-controls';
@@ -119,15 +125,35 @@ export function mountStation(root: HTMLElement): void {
 
   const list = mountEventList(alertsCard);
   const simulator = mountBandSimulator(simHost);
-  const outputs: HapticOutput[] = vibrates ? [simulator.output, phone] : [simulator.output];
-  const engine = createHapticEngine({ rateLimitMs: 0 });
+  const outputsNow = (): HapticOutput[] => outputsFor(effective(), { simulator: simulator.output, phone });
+  let outputs = outputsNow();
   /** The clocks both paths share: a monotonic one for stage times and the wall clock for event times. */
   const clocks = { now: () => performance.now(), epoch: () => Date.now() };
 
   let classifier: Classifier | null = null;
   let loading: Promise<Classifier> | null = null;
+  // Built once each and changed in place by apply(): the runner numbers its events per deps object, and the
+  // live loop keeps the object it was given.
   let deps: RunnerDeps | null = null;
+  let liveDeps: LiveDeps | null = null;
   let busy = false;
+
+  /** Makes new settings take effect at once: new engines (they read settings once), outputs and the status pill. */
+  function apply(next: StationSettings): void {
+    settings = next;
+    const before = outputs;
+    outputs = outputsNow();
+    for (const o of before) if (!outputs.includes(o)) o.stop();
+    if (deps) {
+      deps.engine = createSettingsEngine(next, { rateLimitMs: 0 });
+      deps.outputs = outputs;
+    }
+    if (liveDeps) {
+      liveDeps.engine = createSettingsEngine(next);
+      liveDeps.outputs = outputs;
+    }
+    status.setFallback(effective() === 'phone');
+  }
 
   /** The page's one classifier, shared by Try a sound and Listen; a failed load can be tried again. */
   async function loadClassifier(): Promise<Classifier> {
@@ -145,12 +171,20 @@ export function mountStation(root: HTMLElement): void {
     return c;
   }
 
-  /** Shows a run, from a clip or a live window, as a ghost, a row and the pipeline view. */
-  function show(result: RunResultOk): void {
+  /**
+   * Shows a run, from a clip or a live window, as a ghost, a row and the pipeline view. A run the settings muted
+   * (class off or under its level) fills the pipeline view only and raises no alert; then this returns false.
+   */
+  function show(result: RunResultOk): boolean {
+    if (isMuted(result.decision)) {
+      pipeline.show(result);
+      return false;
+    }
     const bearingConfidence = result.bearingConfidence;
     field.show({ event: result.event, bearingConfidence });
     list.add({ cls: result.event.class, side: sideOf(result.event, bearingConfidence), urgency: result.event.urgency, at: result.at });
     pipeline.show(result);
+    return true;
   }
 
   async function pick(clip: ClipInfo, chosen: TrySide): Promise<void> {
@@ -168,7 +202,7 @@ export function mountStation(root: HTMLElement): void {
       }
       trySound.setBusy(LISTENING, clip.id);
       // One deps object for the page, so the runner numbers its events station-1, station-2, ...
-      deps ??= { loadClip: (id) => fetchClip(id), classifier: c, engine, outputs, ...clocks };
+      deps ??= { loadClip: (id) => fetchClip(id), classifier: c, engine: createSettingsEngine(settings, { rateLimitMs: 0 }), outputs, ...clocks };
       const result = await runSound(deps, clip.id, chosen);
       trySound.setBusy(null);
       if (!result.ok) {
@@ -176,13 +210,16 @@ export function mountStation(root: HTMLElement): void {
         trySound.setMessage(failureText(result.code));
         return;
       }
-      show(result);
+      if (!show(result) && result.decision.action === 'drop') {
+        const cls = result.event.class;
+        trySound.setMessage(mutedText(cls, result.decision.reason === 'disabled-class' ? 'off' : 'too-quiet', settings.sounds[cls].minDb));
+      }
     } finally {
       busy = false;
     }
   }
 
-  // Live listening: its own engine with the default rate limit, the shared classifier and outputs.
+  // Live listening: its own settings engine with the default rate limit, the shared classifier and outputs.
   let live: Live | null = null;
   let starting = false;
 
@@ -198,8 +235,9 @@ export function mountStation(root: HTMLElement): void {
         listen.setState('problem', MODEL_FAILED);
         return;
       }
+      liveDeps ??= { capture: createCapture(), classifier: c, bearing: createBearingWindow(), engine: createSettingsEngine(settings), outputs, ...clocks };
       live ??= createLive(
-        { capture: createCapture(), classifier: c, bearing: createBearingWindow(), engine: createHapticEngine(), outputs, ...clocks },
+        liveDeps,
         (u) => {
           if (u.kind === 'event') show(u.result);
           else if (u.kind === 'failure') listen.setState('problem', LIVE_FAILURE_TEXT);
@@ -219,6 +257,9 @@ export function mountStation(root: HTMLElement): void {
   const listen = mountListenCard(listenCard, { onStart: () => void startListening(), onStop: () => void live?.stop() });
 
   const trySound = mountTrySound(tryCard, { onPick: (clip, chosen) => void pick(clip, chosen) });
+
+  const settingsTrigger = document.getElementById('settings-open');
+  if (settingsTrigger) mountSettings(settingsTrigger, { settings, phoneAvailable: vibrates, onChange: apply });
 
   loadManifest().then(
     (clips) => trySound.setClips(clips),
