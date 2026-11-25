@@ -61,7 +61,7 @@ export function mountTrySound(card: HTMLElement, options: TrySoundOptions): TryS
   const title = el('h2', 'bb-heading', 'Try a sound');
   title.id = 'try-title';
   card.setAttribute('aria-labelledby', title.id);
-  const note = el('p', 'bb-station-try__note', 'The side is simulated: the clip is copied to two channels with a small delay, as if the sound came from that side.');
+  const note = el('p', 'bb-station-try__note', 'The side is simulated: the clip is copied to two channels with a small delay.');
   head.append(title, note);
 
   const side = el('fieldset', 'bb-station-side');

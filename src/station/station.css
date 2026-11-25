@@ -13,6 +13,8 @@
     "brand theme"
     "meta meta";
   row-gap: var(--bb-space-2);
+  /* Phone: a tighter header, so the whole ghost field canvas fits above the bottom bar at 390 x 844. */
+  padding-block: var(--bb-space-3) var(--bb-space-2);
 }
 
 .bb-station-topbar__brand {
@@ -59,11 +61,20 @@
 }
 
 /* Title block */
-/* Phone: tight, and the eyebrow (the bar's heading says it) is left out, so the field is in the first view. */
+/*
+ * Phone: visually hidden (it stays for screen readers; the brand in the header names the app), so the whole
+ * ghost field canvas is above the bottom bar at 390 x 844.
+ */
 .bb-station-title {
   display: grid;
   gap: var(--bb-space-2);
   padding-block: var(--bb-space-2);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .bb-station-title .bb-eyebrow {
@@ -442,6 +453,7 @@ html:not([data-offline-ready]) .bb-station-title__offline {
 }
 
 .bb-station-ghosts__note,
+.bb-station-ghosts__unknown,
 .bb-station-pipeline__note {
   color: var(--bb-color-text-muted);
   font-size: var(--bb-type-caption-size);
@@ -748,6 +760,7 @@ html:not([data-offline-ready]) .bb-station-title__offline {
 @media (min-width: 720px) {
   .bb-station-topbar {
     display: flex;
+    padding-block: var(--bb-space-5);
   }
 
   .bb-station-topbar__brand {
@@ -789,6 +802,12 @@ html:not([data-offline-ready]) .bb-station-title__offline {
    * short so the ghost of a run is in the first view at 1440 x 900.
    */
   .bb-station-title {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;

@@ -4,6 +4,7 @@ import { createBearingWindow } from '../bearing';
 import { createClassifier, type Classifier } from '../classify';
 import { createGlyph, mountGhostField } from '../ghosts';
 import { sideOf } from '../haptics';
+import { GHOST_TRAIL_MS, SIDE_UNKNOWN_NOTE } from './constants';
 import { failureText, LIVE_FAILURE_TEXT, mutedText } from './format';
 import { mountEventList } from './list';
 import { mountListenCard } from './listen';
@@ -116,9 +117,12 @@ export function mountStation(root: HTMLElement): void {
   ghostHead.append(heading('Ghost field', 'ghosts-title'), ghostNote);
   ghostCard.setAttribute('aria-labelledby', 'ghosts-title');
   ghostCard.append(ghostHead);
-  const field = mountGhostField(ghostCard);
+  const field = mountGhostField(ghostCard, { ttlMs: GHOST_TRAIL_MS, trail: true });
   ghostCard.querySelector('.bb-ghost-field')?.append(idleHint());
-  ghostCard.append(urgencyKey());
+  const unknownNote = document.createElement('p');
+  unknownNote.className = 'bb-station-ghosts__unknown';
+  unknownNote.textContent = SIDE_UNKNOWN_NOTE;
+  ghostCard.append(urgencyKey(), unknownNote);
 
   pipelineCard.setAttribute('aria-labelledby', 'pipeline-title');
   const pipelineNote = document.createElement('p');
