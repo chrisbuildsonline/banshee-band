@@ -6,6 +6,20 @@ Built for [Kiroween 2026](https://kiroween.devpost.com/), Frankenstein category:
 
 **Banshee Band is an aid, not a safety device.** It can miss a sound or name it wrongly. Keep your smoke alarms and any certified alerting devices.
 
+![The ghost field in Night after three sample clips: a knock ghost on the left, a doorbell in the centre and an urgent crying baby on the right, with the same three in the Recent sounds list and the baby's right-stronger vibration pattern](docs/screenshots/station-1440-night.png)
+
+Screenshots of the production build served by the Docker image (`docker run -p 4173:4173 banshee-band`), Chromium at 1440 px and 390 px, after pressing Doorbell (Centre), Knock (Left) and Baby (Right) in **Try a sound**.
+
+| | Day | Night |
+|---|---|---|
+| Ghost field | ![Ghost field in Day: knock on the left, doorbell in the centre, crying baby on the right, marked urgent](docs/screenshots/station-1440-day.png) | ![Ghost field in Night: the same three ghosts](docs/screenshots/station-1440-night.png) |
+| Band simulator | ![Band simulator in Day playing Knock from the left: left motor 75%, right motor 22%, and the two-pulse pattern timeline](docs/screenshots/band-1440-day.png) | ![Band simulator in Night playing Knock from the left](docs/screenshots/band-1440-night.png) |
+| Pipeline | ![Pipeline card in Day for the baby clip: waveform, label Crying, sobbing 80%, bearing dial pointing right, pattern Baby right stronger, band simulator, and the onset-to-output time](docs/screenshots/pipeline-1440-day.png) | ![Pipeline card in Night for the same run](docs/screenshots/pipeline-1440-night.png) |
+
+On a 390 px phone in Night the ghost field comes first and Start listening and the sample chips sit in a bar at the bottom of the screen within thumb reach.
+
+![The station on a 390 px phone in Night: the crying baby ghost on the right, the knock ghost on the left, and the listen and sample bar at the bottom](docs/screenshots/station-390-night.png)
+
 ## What it is
 
 A listening station that runs in the browser, for people who are Deaf or hard of hearing. It listens through the device microphones, names the sound with the YAMNet model, estimates which side it came from, and tells you two ways:
