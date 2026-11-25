@@ -45,13 +45,22 @@ Open http://localhost:5173, press a **Try a sound** chip, or **Start listening**
 
 ### Run in Docker
 
-The `Dockerfile` runs the whole gate in a clean Linux box: it installs from `bun.lock`, then runs `bun run typecheck`, `bun run build`, `bun run test` and `bun run e2e` (Chromium from the Playwright image), and stops at the first failure. Needs only Docker:
+Needs only Docker. The `Dockerfile` installs from `bun.lock` in a clean Linux box and has two targets.
+
+**Serve the app** (the default target): it builds the production app and serves it with `vite preview` on `0.0.0.0`, port 4173 (set `PORT` to change it). No key, no account; the YAMNet model and the six sample clips are in the image.
 
 ```sh
-bun run docker:test
-# or, without bun:
-docker build -t banshee-band-test .
-docker run --rm --ipc=host banshee-band-test
+docker build -t banshee-band . && docker run --rm -p 4173:4173 banshee-band
+# or: bun run docker:serve
+```
+
+Then open http://localhost:4173 and press a **Try a sound** chip. The band simulator is at http://localhost:4173/band.html. The microphone needs `localhost` or HTTPS, so open it on the same machine (or put HTTPS in front of it).
+
+**Run the tests** (the `test` target): `bun run typecheck`, `bun run build`, `bun run test` and `bun run e2e` (Chromium from the Playwright image). It stops at the first failure, prints every e2e result as a list and ends with `GATE PASSED` or `GATE FAILED`.
+
+```sh
+docker build --target test -t banshee-band-test . && docker run --rm --ipc=host banshee-band-test
+# or: bun run docker:test
 ```
 
 ## How it works
