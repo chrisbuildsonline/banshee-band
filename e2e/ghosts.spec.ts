@@ -54,7 +54,7 @@ interface Ev {
 }
 
 /** Mounts a fresh 600 px test field through the dev server's module graph, as `window.__field`. */
-async function mountTestField(page: Page, options?: { ttlMs?: number }): Promise<void> {
+async function mountTestField(page: Page, options?: { ttlMs?: number; trail?: boolean }): Promise<void> {
   await page.evaluate(
     async ({ url, options }) => {
       const { mountGhostField } = await import(url);
@@ -227,6 +227,8 @@ test.describe('ghost field', () => {
   test('clicking Night redraws the canvas in the Night ghost colours', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' });
     await page.goto('/styleguide.html');
+    // Night is the default; start from Day so the click is a change.
+    await page.getByRole('button', { name: 'Day' }).click();
     await mountTestField(page);
     await show(page, { bearingDeg: -60 });
     expect((await accentThirds(page))[0]).toBeGreaterThan(0);
@@ -299,6 +301,38 @@ test.describe('life', () => {
     await page.clock.runFor(1);
     await expect(items(page)).toHaveText(['No sounds yet']);
     await expect(canvas(page)).toHaveAttribute('aria-label', 'No sounds yet');
+  });
+
+  test('trail: the latest ghost stays and dims after ttl, an older one leaves ttl after its show, under Recent:', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.clock.install({ time: START });
+    await page.goto('/styleguide.html');
+    await page.clock.pauseAt(PAUSED);
+    await mountTestField(page, { ttlMs: 30000, trail: true });
+    await expect(page.locator('#test-field .bb-ghost-field__now')).toHaveText('Recent:');
+    await show(page, { class: 'knock' });
+    await page.clock.runFor(29000);
+    const fresh = await canvas(page).evaluate((c: HTMLCanvasElement) => c.toDataURL());
+    await page.clock.runFor(2000);
+    await expect(items(page)).toHaveCount(1);
+    await expect(canvas(page)).toHaveAttribute('aria-label', 'Sound field. Recent: Knock, left, medium');
+    // Past its ttl the lone latest ghost is redrawn dimmer, by a timer, under reduced motion.
+    expect(await canvas(page).evaluate((c: HTMLCanvasElement) => c.toDataURL())).not.toBe(fresh);
+    await page.clock.runFor(60000);
+    await expect(items(page)).toHaveCount(1);
+
+    // A newer ghost: the knock (shown long ago) leaves at once; the alarm leaves 30 s after its own show.
+    await show(page, { class: 'alarm', label: 'Alarm', urgency: 'high', bearingDeg: 60 });
+    await expect(items(page)).toHaveCount(1);
+    await expect(items(page).first()).toHaveAttribute('data-class', 'alarm');
+    await page.clock.runFor(1000);
+    await show(page, { class: 'vehicle', label: 'Vehicle', bearingDeg: 0 });
+    await expect(items(page)).toHaveCount(2);
+    await page.clock.runFor(28999);
+    await expect(items(page)).toHaveCount(2);
+    await page.clock.runFor(1);
+    await expect(items(page)).toHaveCount(1);
+    await expect(items(page).first()).toHaveAttribute('data-class', 'vehicle');
   });
 
   test('ttlMs 1000 leaves at 1000 ms; a second ghost keeps its own expiry', async ({ page }) => {

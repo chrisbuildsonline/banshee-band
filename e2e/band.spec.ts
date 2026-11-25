@@ -414,11 +414,11 @@ test.describe('band simulator page', () => {
     expect(problems, problems.join('\n')).toEqual([]);
   });
 
-  test('the theme control sets data-theme and the OS dark setting is the default', async ({ browser, baseURL }) => {
-    const context = await browser.newContext({ baseURL, colorScheme: 'dark' });
+  test('the theme control sets data-theme and Night is the default, even with a light OS setting', async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ baseURL, colorScheme: 'light' });
     const page = await context.newPage();
     await page.goto('/band.html');
-    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBeUndefined();
+    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('night');
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(14, 11, 20)');
     await expect(page.getByRole('button', { name: 'Night', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Day', exact: true }).click();

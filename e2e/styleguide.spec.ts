@@ -143,13 +143,13 @@ test('runs no animation under prefers-reduced-motion', async ({ page }) => {
   }
 });
 
-test('shows all static content in the Day theme without JavaScript', async ({ browser, baseURL }) => {
+test('shows all static content in the Night theme without JavaScript', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, baseURL, colorScheme: 'light' });
   const page = await context.newPage();
   await page.goto('/styleguide.html');
   await expect(page.locator('h1')).toBeVisible();
   await expect(page.locator('.bb-event').first()).toBeVisible();
   await expect(page.getByText('Banshee Band is an aid, not a safety device.')).toBeVisible();
-  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(238, 240, 244)');
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(14, 11, 20)');
   await context.close();
 });

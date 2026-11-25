@@ -197,6 +197,22 @@ test.describe('listening station', () => {
     await page.screenshot({ path: resolve(SCREENSHOTS, 'station-390-night.png') });
   });
 
+  test('the ghost stays: the ghost of a run is still on the field after the old 8 s life, under Recent:, with the side-unknown caption', async ({ page }) => {
+    test.setTimeout(MODEL_TIMEOUT + 60_000);
+    await page.goto('/');
+    await expect(page.locator('[data-card="ghosts"]')).toContainText(
+      'Side unknown means both microphones heard the sound alike: steady tones such as an alarm, or a device that records the same sound on both channels.',
+    );
+    await pickSide(page, 'Left');
+    await runChip(page, 'Knock');
+    await expect(ghostItems(page)).toHaveCount(1);
+    await expect(page.locator('.bb-ghost-field__now')).toHaveText('Recent:');
+    await page.waitForTimeout(9000);
+    await expect(ghostItems(page)).toHaveCount(1);
+    await expect(ghostItems(page).first()).toHaveAttribute('data-class', 'knock');
+    await expect(page.locator('[data-card="ghosts"] canvas')).toHaveAttribute('aria-label', 'Sound field. Recent: Knock, left, medium');
+  });
+
   test('every chip classifies to its manifest class in the browser (one page, the model loaded once)', async ({ page, request }) => {
     test.setTimeout(MODEL_TIMEOUT + 180_000);
     const modelLoads: string[] = [];
@@ -324,12 +340,10 @@ test.describe('listening station', () => {
     const { scrollWidth, innerWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth }));
     expect(scrollWidth, 'page scrolls horizontally').toBeLessThanOrEqual(innerWidth);
 
-    const title = await box(page, 'h1');
     const ghosts = await box(page, '[data-card="ghosts"]');
     const alerts = await box(page, '[data-card="alerts"]');
     const sim = await box(page, '[data-card="simulator"]');
     const pipeline = await box(page, '[data-card="pipeline"]');
-    expect(ghosts.y).toBeGreaterThan(title.y);
     expect(ghosts.y + ghosts.height).toBeLessThanOrEqual(alerts.y);
     expect(alerts.y + alerts.height).toBeLessThanOrEqual(sim.y);
     expect(sim.y + sim.height).toBeLessThanOrEqual(pipeline.y);
@@ -341,9 +355,11 @@ test.describe('listening station', () => {
     expect(await page.locator('.bb-station-controls').evaluate((b) => b.scrollWidth - b.clientWidth), 'the bar overflows sideways').toBeLessThanOrEqual(0);
     const chipTops = await Promise.all(CHIP_NAMES.map(async (n) => Math.round((await chip(page, n).boundingBox())!.y)));
     expect(new Set(chipTops).size, `chip rows at ${chipTops.join(', ')}`).toBe(1);
-    // First view: a lone ghost and its label sit in the top 240 px of the 360 px field (urgent block 8 + (312 - 138) / 2 + 138 = 233).
+    // First view: the whole ghost field canvas (every ghost of the trail and its label) is above the bar.
     const canvas = await box(page, '[data-card="ghosts"] canvas');
-    expect(canvas.y + 240).toBeLessThanOrEqual(bar0.y);
+    expect(canvas.y + canvas.height).toBeLessThanOrEqual(bar0.y);
+    // The title block is visually hidden on the phone but stays for screen readers.
+    await expect(page.getByRole('heading', { level: 1, name: 'Listening station' })).toBeAttached();
 
     const lowest45 = 844 * 0.55;
     const targets = [...CHIP_NAMES.map((n) => chip(page, n)), ...['Left', 'Centre', 'Right'].map((n) => page.locator('label', { has: page.getByLabel(n, { exact: true }) }))];

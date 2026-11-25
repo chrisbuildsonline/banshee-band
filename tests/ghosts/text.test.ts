@@ -19,6 +19,7 @@ describe('text equivalents (R8)', () => {
         { cls: 'knock', side: 'left', urgency: 'medium' },
       ]),
     ).toBe('Sound field. Now: Alarm, right, urgent; Knock, left, medium');
+    expect(canvasSummary([{ cls: 'knock', side: 'left', urgency: 'medium' }], 'Recent:')).toBe('Sound field. Recent: Knock, left, medium');
     expect(canvasSummary([])).toBe('No sounds yet');
     expect(EMPTY_TEXT).toBe('No sounds yet');
   });

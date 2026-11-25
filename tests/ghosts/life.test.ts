@@ -68,3 +68,41 @@ describe('createGhostSet (R7.2-R7.7)', () => {
     expect(s.items()[0].seq).toBeGreaterThan(b.seq);
   });
 });
+
+describe('createGhostSet with trail (R7.11-R7.13)', () => {
+  it('keeps the latest ghost past its ttl, and expires it ttl after its show once a newer one arrives', () => {
+    const s = createGhostSet(30000, true);
+    s.add(at(0, { label: 'A' }), 0);
+    expect(s.items()[0].expiresAt).toBe(Number.POSITIVE_INFINITY);
+    expect(s.nextExpiry()).toBeNull();
+    expect(s.prune(1e9)).toBe(false);
+    expect(label(s)).toEqual(['A']);
+
+    s.add(at(0, { label: 'B' }), 10000);
+    expect(label(s)).toEqual(['B', 'A']);
+    expect(s.items()[1].expiresAt).toBe(30000);
+    expect(s.nextExpiry()).toBe(30000);
+    expect(s.prune(29999)).toBe(false);
+    expect(s.prune(30000)).toBe(true);
+    expect(label(s)).toEqual(['B']);
+  });
+
+  it('drops an older ghost whose time has passed when a newer one arrives', () => {
+    const s = createGhostSet(30000, true);
+    s.add(at(0, { label: 'A' }), 0);
+    s.add(at(0, { label: 'B' }), 60000);
+    expect(label(s)).toEqual(['B']);
+  });
+
+  it('still caps the trail at four, newest first', () => {
+    const s = createGhostSet(30000, true);
+    for (const [i, l] of ['A', 'B', 'C', 'D', 'E'].entries()) s.add(at(0, { label: l }), i * 1000);
+    expect(label(s)).toEqual(['E', 'D', 'C', 'B']);
+  });
+
+  it('without trail a lone ghost still expires at ttl', () => {
+    const s = createGhostSet(30000);
+    s.add(at(0), 0);
+    expect(s.prune(30000)).toBe(true);
+  });
+});
