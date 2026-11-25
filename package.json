@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "e2e": "playwright test",
+    "docker:test": "docker build -t banshee-band-test . && docker run --rm --ipc=host banshee-band-test",
     "typecheck": "tsc --noEmit",
     "icons": "bun run scripts/make-icons.ts",
     "classify:report": "bun run tests/classify/report.ts",

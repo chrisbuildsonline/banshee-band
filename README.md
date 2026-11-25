@@ -43,6 +43,17 @@ Open http://localhost:5173, press a **Try a sound** chip, or **Start listening**
 | `bun run hooks:patterns`, `bun run hooks:spec-tests`, `bun run hooks:colour`, `bun run hooks:fixtures` | The four checks behind the Kiro hooks (see [Kiro hooks](#kiro-hooks)) |
 | `bun run icons` | Regenerates `public/icons/*.png` and `public/manifest.webmanifest` from code (same bytes every run; the output is committed) |
 
+### Run in Docker
+
+The `Dockerfile` runs the whole gate in a clean Linux box: it installs from `bun.lock`, then runs `bun run typecheck`, `bun run test`, `bun run build` and `bun run e2e` (Chromium from the Playwright image), and stops at the first failure. Needs only Docker:
+
+```sh
+bun run docker:test
+# or, without bun:
+docker build -t banshee-band-test .
+docker run --rm --ipc=host banshee-band-test
+```
+
 ## How it works
 
 ```
