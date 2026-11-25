@@ -1,0 +1,19 @@
+# Local installs and builds: the image installs from bun.lock and builds its own.
+**/node_modules
+dist
+test-results
+playwright-report
+e2e/screenshots/*.png
+
+# Local state, history and secrets. Keep .kiro: the README test reads it.
+.git
+.env
+.env.*
+.banshee
+.backups
+.omc
+.claude
+.DS_Store
+PLAN.md
+CLAUDE.md
+design/refs
