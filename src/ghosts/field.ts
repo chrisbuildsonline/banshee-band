@@ -1,8 +1,9 @@
 import { drawField, parseDurationMs, type FieldColours } from './draw';
 import { acceptInput } from './input';
 import { layoutGhosts } from './layout';
-import { createGhostSet } from './life';
+import { createGhostSet, resolveTtl } from './life';
 import { canvasSummary, dataX, EMPTY_TEXT, listItemText } from './text';
+import { trailAlpha } from './trail';
 import type { FieldSize, GhostField, GhostFieldOptions, GhostLayout } from './types';
 import './field.css';
 
@@ -36,11 +37,15 @@ function readColours(canvas: HTMLCanvasElement): FieldColours {
 /**
  * Mounts a ghost field into `container`: a transparent canvas (`role="img"`, labelled with a summary of
  * the live ghosts) and, under it, a "Now:" list with one item per ghost. Up to four ghosts, newest on the
- * top row; each lives `ttlMs` (default 8000). Under reduced motion nothing animates and no animation
- * frame is requested. Holds no focusable element and no live region.
+ * top row; each lives `ttlMs` (default 8000). With `trail` the latest ghost stays, older ones dim by age and the
+ * list says "Recent:". Under reduced motion nothing animates and no animation frame is requested. Holds no
+ * focusable element and no live region.
  */
 export function mountGhostField(container: HTMLElement, options: GhostFieldOptions = {}): GhostField {
-  const set = createGhostSet(options.ttlMs as number);
+  const trail = options.trail === true;
+  const ttl = resolveTtl(options.ttlMs);
+  const heading = trail ? 'Recent:' : 'Now:';
+  const set = createGhostSet(ttl, trail);
   const id = `bb-ghost-now-${++fieldCount}`;
 
   const root = el('div', 'bb-ghost-field');
@@ -48,7 +53,7 @@ export function mountGhostField(container: HTMLElement, options: GhostFieldOptio
   canvas.setAttribute('role', 'img');
   canvas.setAttribute('aria-label', EMPTY_TEXT);
   const listBox = el('div', 'bb-ghost-field__list');
-  const now = el('p', 'bb-ghost-field__now', 'Now:');
+  const now = el('p', 'bb-ghost-field__now', heading);
   now.id = id;
   const list = el('ul', 'bb-ghost-field__items');
   list.setAttribute('aria-labelledby', id);
@@ -89,7 +94,13 @@ export function mountGhostField(container: HTMLElement, options: GhostFieldOptio
       size,
       dpr,
       colours,
-      ghosts: layouts.map((layout, i) => ({ layout, shownAt: items[i].shownAt, expiresAt: items[i].expiresAt, seq: items[i].seq })),
+      ghosts: layouts.map((layout, i) => ({
+        layout,
+        shownAt: items[i].shownAt,
+        expiresAt: items[i].expiresAt,
+        seq: items[i].seq,
+        bodyAlpha: trail ? trailAlpha(i, at - items[i].shownAt, ttl) : 1,
+      })),
       now: at,
       motion: motionAllowed(),
       paths,
@@ -106,7 +117,7 @@ export function mountGhostField(container: HTMLElement, options: GhostFieldOptio
   function updateText(): void {
     const items = set.items();
     const texts = items.map((g, i) => ({ cls: g.input.event.class, side: layouts[i].side, urgency: g.input.event.urgency }));
-    canvas.setAttribute('aria-label', canvasSummary(texts));
+    canvas.setAttribute('aria-label', canvasSummary(texts, heading));
     if (texts.length === 0) {
       list.replaceChildren(el('li', 'bb-ghost-field__item bb-ghost-field__item--empty', EMPTY_TEXT));
       return;
@@ -144,8 +155,12 @@ export function mountGhostField(container: HTMLElement, options: GhostFieldOptio
   function scheduleExpiry(): void {
     if (timer !== undefined) clearTimeout(timer);
     timer = undefined;
-    const next = set.nextExpiry();
-    if (next !== null) timer = setTimeout(onExpiry, Math.max(0, next - performance.now()));
+    const nowMs = performance.now();
+    let next = set.nextExpiry();
+    // Trail: one more wake-up when the latest ghost turns old, to redraw it at the faintest step.
+    const latest = set.items()[0];
+    if (trail && latest && latest.shownAt + ttl > nowMs) next = Math.min(next ?? Infinity, latest.shownAt + ttl + 1);
+    if (next !== null && Number.isFinite(next)) timer = setTimeout(onExpiry, Math.max(0, next - nowMs));
   }
 
   function onSetChange(): void {
@@ -160,7 +175,10 @@ export function mountGhostField(container: HTMLElement, options: GhostFieldOptio
   function onExpiry(): void {
     timer = undefined;
     if (set.prune(performance.now())) onSetChange();
-    else scheduleExpiry();
+    else {
+      draw();
+      scheduleExpiry();
+    }
   }
 
   function onResize(): void {

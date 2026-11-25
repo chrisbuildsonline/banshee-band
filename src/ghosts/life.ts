@@ -28,14 +28,19 @@ export function resolveTtl(ttlMs: unknown): number {
   return typeof ttlMs === 'number' && ttlMs > 0 ? ttlMs : DEFAULT_TTL_MS;
 }
 
-/** Creates an empty ghost set whose ghosts live `ttlMs` (validated once). */
-export function createGhostSet(ttlMs: number): GhostSet {
+/**
+ * Creates an empty ghost set whose ghosts live `ttlMs` (validated once). With `trail`, the newest ghost never
+ * expires; once a newer one arrives it expires `ttlMs` after its own show (at once if that has passed).
+ */
+export function createGhostSet(ttlMs: number, trail = false): GhostSet {
   const ttl = resolveTtl(ttlMs);
   let list: LiveGhost[] = [];
   let seq = 0;
   return {
     add(input, now) {
-      list = [{ input, shownAt: now, expiresAt: now + ttl, seq: seq++ }, ...list].slice(0, MAX_GHOSTS);
+      if (trail) list = list.map((g) => ({ ...g, expiresAt: g.shownAt + ttl })).filter((g) => g.expiresAt > now);
+      const expiresAt = trail ? Number.POSITIVE_INFINITY : now + ttl;
+      list = [{ input, shownAt: now, expiresAt, seq: seq++ }, ...list].slice(0, MAX_GHOSTS);
     },
     prune(now) {
       const kept = list.filter((g) => g.expiresAt > now);

@@ -60,6 +60,11 @@ export interface Block {
 export interface GhostFieldOptions {
   /** Life of a ghost in ms. Default 8000. `Infinity` keeps ghosts until `clear`. A non-positive or non-number value gives the default. */
   ttlMs?: number;
+  /**
+   * Trail mode: the latest ghost stays until a newer one arrives, older ones leave `ttlMs` after their show, and
+   * ghosts dim by age (`TRAIL_ALPHA`). The list and canvas label say "Recent:" instead of "Now:". Default false.
+   */
+  trail?: boolean;
 }
 
 /** The mounted ghost field. */

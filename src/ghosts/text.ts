@@ -21,9 +21,9 @@ export function listItemText(cls: SoundClass, side: Side, urgency: Urgency): str
 }
 
 /** The canvas label: "Sound field. Now: Alarm, right, urgent; Knock, left, medium", or "No sounds yet". */
-export function canvasSummary(items: readonly GhostText[]): string {
+export function canvasSummary(items: readonly GhostText[], heading = 'Now:'): string {
   if (items.length === 0) return EMPTY_TEXT;
-  return `Sound field. Now: ${items.map((i) => listItemText(i.cls, i.side, i.urgency)).join('; ')}`;
+  return `Sound field. ${heading} ${items.map((i) => listItemText(i.cls, i.side, i.urgency)).join('; ')}`;
 }
 
 /** `x / width` as a decimal with at most four decimals and no trailing zeros. */

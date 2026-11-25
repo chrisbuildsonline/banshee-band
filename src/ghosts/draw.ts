@@ -24,6 +24,8 @@ export interface DrawnGhost {
   shownAt: number;
   expiresAt: number;
   seq: number;
+  /** Alpha of the body, glow and outline (trail dimming); the label ignores it. Default 1. */
+  bodyAlpha?: number;
 }
 
 /** Everything `drawField` needs. The path cache belongs to the field. */
@@ -128,10 +130,12 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   const { layout: l } = g;
   const { colours, size, now, motion } = state;
   const remaining = g.expiresAt - now;
-  const alpha = motion ? Math.max(0, Math.min(1, (now - g.shownAt) / FADE_MS, remaining / FADE_MS)) : 1;
-  if (alpha <= 0) return;
+  const fade = motion ? Math.max(0, Math.min(1, (now - g.shownAt) / FADE_MS, remaining / FADE_MS)) : 1;
+  if (fade <= 0) return;
   const dy = motion && colours.driftMs > 0 ? DRIFT_PX * Math.sin(2 * Math.PI * (now / colours.driftMs + g.seq * 0.37)) : 0;
 
+  const labelAlpha = fade;
+  const alpha = fade * (g.bodyAlpha ?? 1);
   ctx.save();
   ctx.globalAlpha = alpha;
   if (l.uncertain) uncertainArc(ctx, size.width, l.y, colours.border);
@@ -195,6 +199,7 @@ function ghost(ctx: CanvasRenderingContext2D, state: DrawState, g: DrawnGhost): 
   }
   ctx.restore();
 
+  ctx.globalAlpha = labelAlpha;
   ctx.font = `500 13px ${colours.font}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';

@@ -30,6 +30,8 @@ export const LABEL_BLOCK_PX = URGENCY_STYLE.high.glowBlur + GLOW_GAP_PX + LABEL_
 export const MAX_GHOSTS = 4;
 /** Life of a ghost, ms. */
 export const DEFAULT_TTL_MS = 8000;
+/** Trail mode: alpha of a ghost's body, glow and outline by rank, newest first (the label stays at full strength). */
+export const TRAIL_ALPHA: readonly number[] = Object.freeze([1, 0.8, 0.65, 0.55]);
 /** Fade in and fade out, ms (the value of `--bb-motion-slow`). */
 export const FADE_MS = 400;
 /** Vertical drift amplitude, px. */
