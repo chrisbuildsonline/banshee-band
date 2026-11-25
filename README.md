@@ -10,13 +10,13 @@ Built for [Kiroween 2026](https://kiroween.devpost.com/), Frankenstein category:
 
 Screenshots of the production build served by the Docker image (`docker run -p 4173:4173 banshee-band`), Chromium at 1440 px and 390 px, after pressing Doorbell (Centre), Knock (Left) and Baby (Right) in **Try a sound**.
 
-| | Day | Night |
+| | Night (the default) | Day |
 |---|---|---|
-| Ghost field | ![Ghost field in Day: knock on the left, doorbell in the centre, crying baby on the right, marked urgent](docs/screenshots/station-1440-day.png) | ![Ghost field in Night: the same three ghosts](docs/screenshots/station-1440-night.png) |
-| Band simulator | ![Band simulator in Day playing Knock from the left: left motor 75%, right motor 22%, and the two-pulse pattern timeline](docs/screenshots/band-1440-day.png) | ![Band simulator in Night playing Knock from the left](docs/screenshots/band-1440-night.png) |
-| Pipeline | ![Pipeline card in Day for the baby clip: waveform, label Crying, sobbing 80%, bearing dial pointing right, pattern Baby right stronger, band simulator, and the onset-to-output time](docs/screenshots/pipeline-1440-day.png) | ![Pipeline card in Night for the same run](docs/screenshots/pipeline-1440-night.png) |
+| Ghost field | ![Ghost field in Night: the crying baby on the right at full strength, the knock on the left and the doorbell in the centre dimmed as they age](docs/screenshots/station-1440-night.png) | ![Ghost field in Day: the same three ghosts](docs/screenshots/station-1440-day.png) |
+| Band simulator | ![Band simulator in Night playing Knock from the left: left motor 75%, right motor 22%, and the two-pulse pattern timeline](docs/screenshots/band-1440-night.png) | ![Band simulator in Day playing Knock from the left](docs/screenshots/band-1440-day.png) |
+| Pipeline | ![Pipeline card in Night for the baby clip: waveform, label Crying, sobbing, bearing dial pointing right, pattern Baby right stronger, band simulator, and the onset-to-output time](docs/screenshots/pipeline-1440-night.png) | ![Pipeline card in Day for the same run](docs/screenshots/pipeline-1440-day.png) |
 
-On a 390 px phone in Night the ghost field comes first and Start listening and the sample chips sit in a bar at the bottom of the screen within thumb reach.
+Every page opens in Night; Day is one press away and the choice is remembered. Ghosts stay: the latest one stays on the field until a newer sound arrives, and older ones stay for 30 seconds, dimmer the older they are. On a 390 px phone the whole ghost field is in the first view, above the bar with Start listening and the sample chips.
 
 ![The station on a 390 px phone in Night: the crying baby ghost on the right, the knock ghost on the left, and the listen and sample bar at the bottom](docs/screenshots/station-390-night.png)
 
@@ -24,7 +24,7 @@ On a 390 px phone in Night the ghost field comes first and Start listening and t
 
 A listening station that runs in the browser, for people who are Deaf or hard of hearing. It listens through the device microphones, names the sound with the YAMNet model, estimates which side it came from, and tells you two ways:
 
-- **On screen**, each sound appears as a ghost. Its shape shows the class, its place shows the side and its glow shows the urgency. A "Now:" list and a Latest alert say the same in words.
+- **On screen**, each sound appears as a ghost. Its shape shows the class, its place shows the side and its glow shows the urgency. A "Recent:" list and a Latest alert say the same in words.
 - **On the wrist**, each class has its own vibration rhythm, stronger on the side the sound came from. It plays on phone vibration, on the on-screen band simulator, or on a DIY two-motor ESP32 wristband over Web Bluetooth (Chrome and Edge only).
 
 There are seven sound classes, the same as the event contract in `src/events`: `knock`, `doorbell`, `alarm`, `baby`, `vehicle`, `voice` and `other`. Six of them have a vibration pattern; `other` (music, silence, anything else) shows a ghost but never buzzes. You choose which classes alert and how loud they must be. All audio stays on the device: nothing is uploaded, and no audio is stored.
@@ -99,7 +99,7 @@ microphone (stereo, getUserMedia, no echo cancel / noise suppression / AGC)
                        priority, 3 s rate limit per class
                           /                |                     \
                ghost field (canvas)   phone vibration     wristband frame over Web Bluetooth
-               + "Now:" list           or band simulator   (ESP32, two motors)
+               + "Recent:" list        or band simulator   (ESP32, two motors)
 ```
 
 - `src/audio` captures the microphone or a clip and frames it. `src/classify` loads YAMNet once and maps its 521 AudioSet labels to the seven classes by exact name (`src/classify/rules.ts`). `src/bearing` estimates the side with GCC-PHAT and falls back to the loudness difference, or reports "unknown" when both microphones carry the same signal. `src/haptics` turns an event into a vibration command. `src/band` plays it on one of three outputs behind one interface. `src/ghosts` draws the ghosts on a 2D canvas. `src/station` wires it into the page.
@@ -126,7 +126,7 @@ Every number here comes from a script or test in this repo, run on the developme
 
 **Latency** (`e2e/latency.spec.ts`, headless Chromium, TF.js `webgl` backend): onset to output median **814 ms** for Try a sound on the 6.3 s knock clip (whole-clip processing, 11 windows), and **70 ms** for listening on a fake microphone. See [Latency](#latency) for what is and is not counted.
 
-**Tests**: 1294 Vitest unit and property tests in 104 files, and 131 Playwright end-to-end tests in Chromium (one of them against the production build, offline), all passing when this was written. `tests/readme.test.ts` checks this README against the code: the seven classes, the commands, the credits for every clip and the files under `.kiro`.
+**Tests**: 1303 Vitest unit and property tests in 106 files, and 138 Playwright end-to-end tests in Chromium (one of them against the production build, offline), all passing when this was written. `tests/readme.test.ts` checks this README against the code: the seven classes, the commands, the credits for every clip and the files under `.kiro`.
 
 **Size**: the YAMNet model is about 16 MB; the service worker caches about 18 MB in all at the first visit.
 
@@ -165,7 +165,7 @@ The people this is for are Deaf and hard of hearing, so accessibility is checked
 
 `bun run hooks:colour` checks that no state is told apart by colour alone. Run everything with `bun run e2e`, or only these checks with `bunx playwright test e2e/a11y.spec.ts`.
 
-Limits, honestly: axe finds only part of the WCAG problems, and a passing audit is not a claim of WCAG conformance or of any certification. There has been no testing with screen-reader users yet, and no testing with Deaf or hard-of-hearing users. The ghosts are drawn on a canvas, so axe checks only the canvas's name; a screen reader gets them through the "Now:" list and the canvas label instead.
+Limits, honestly: axe finds only part of the WCAG problems, and a passing audit is not a claim of WCAG conformance or of any certification. There has been no testing with screen-reader users yet, and no testing with Deaf or hard-of-hearing users. The ghosts are drawn on a canvas, so axe checks only the canvas's name; a screen reader gets them through the "Recent:" list and the canvas label instead.
 
 ## Latency
 
@@ -238,7 +238,7 @@ Four agent hooks in `.kiro/hooks/` run a check when a matching file is saved in 
 | Hook | Runs on save of | Command | What it checks |
 |---|---|---|---|
 | Pattern distinctiveness on save | `src/haptics/patterns.json`, `patterns.ts`, `distinct.ts` | `bun run hooks:patterns` | Every vibration pattern keeps the pattern language limits, and no two patterns feel too alike (`checkDistinctiveness`). Takes an optional file path. |
-| Every spec requirement has a test | spec `requirements.md` and `tasks.md`, `scripts/hooks/spec-gaps.json`, test files | `bun run hooks:spec-tests` | Every `### Requirement N` of each spec in `.kiro/specs/` is listed by a task that names a test file that exists. The 13 known gaps (review steps, gate commands, mutation scripts) are listed with their reasons in `scripts/hooks/spec-gaps.json`. A known gap that later gets a test also fails the check, so the list stays accurate. |
+| Every spec requirement has a test | spec `requirements.md` and `tasks.md`, `scripts/hooks/spec-gaps.json`, test files | `bun run hooks:spec-tests` | Every `### Requirement N` of each spec in `.kiro/specs/` is listed by a task that names a test file that exists. The 10 known gaps (review steps, gate commands, mutation scripts) are listed with their reasons in `scripts/hooks/spec-gaps.json`. A known gap that later gets a test also fails the check, so the list stays accurate. |
 | No colour-only alerts | `src/station/status.ts`, `listen-status.ts`, `src/ghosts/constants.ts`, `src/band/labels.ts`, `connect.ts`, `connect.css` | `bun run hooks:colour` | The station pill, the Listen pill, the ghost urgencies and the wristband row never tell two states apart by colour alone. Each state has a word, and two states with different colours also differ in word and, where they have one, in shape. |
 | Regenerate fixtures | `public/clips/*.wav`, `public/clips/manifest.json`, `src/classify/*.ts`, `src/bearing/*.ts` | `bun run hooks:fixtures` | Reruns `classify:report`, `bearing:report` and `log:seed` in order, and stops at the first one that fails. |
 
