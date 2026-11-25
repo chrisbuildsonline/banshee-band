@@ -32,7 +32,7 @@
       <section class="bb-hero" aria-labelledby="page-title">
         <p class="bb-eyebrow">Styleguide</p>
         <h1 id="page-title" class="bb-display">Design system</h1>
-        <p class="bb-lede">Tokens and building blocks for every Banshee Band screen. One accent, soft floating surfaces, and a word beside every colour.</p>
+        <p class="bb-lede">Every Banshee Band page is built from these tokens and parts, this one included. There's one accent colour (violet), and no state relies on colour alone: each one has a word too.</p>
         <p class="bb-statusrow">
           <span class="bb-status bb-status--accent bb-status--listening"><svg class="bb-status__glyph" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4" /></svg>Listening</span>
           <span class="bb-status bb-status--accent"><svg class="bb-status__glyph" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.25 10.75 6 6 10.75 1.25 6z" /></svg>Band connected</span>
@@ -42,7 +42,7 @@
       <div class="bb-grid">
         <section class="bb-card bb-span-8" aria-labelledby="type-title">
           <h2 id="type-title" class="bb-heading">Type scale</h2>
-          <p class="bb-caption bb-muted">System font stack, no web fonts. Large text means title and display only.</p>
+          <p class="bb-caption bb-muted">We use the system font stack and load no web fonts. Only the title and display steps count as large text when we check contrast.</p>
           <ul class="bb-typescale">
             <li>
               <p class="bb-typescale__meta"><code>--bb-type-display-size</code><span>40–64px · 1.05 · 700</span></p>
@@ -92,7 +92,7 @@
 
         <section class="bb-card" aria-labelledby="pills-title">
           <h2 id="pills-title" class="bb-heading">Pill buttons</h2>
-          <p class="bb-caption bb-muted">One near-black primary per screen. Secondary for everything else.</p>
+          <p class="bb-caption bb-muted">A screen gets at most one near-black primary pill (on the station it's Start listening). Every other button is secondary.</p>
           <div class="bb-row">
             <button type="button" class="bb-pill bb-pill--primary">Start listening</button>
             <button type="button" class="bb-pill bb-pill--secondary">Use sample clips</button>
@@ -103,7 +103,7 @@
 
         <section class="bb-card bb-span-5" aria-labelledby="status-title">
           <h2 id="status-title" class="bb-heading">Status pills</h2>
-          <p class="bb-caption bb-muted">Every state has a word and a shape, never colour alone.</p>
+          <p class="bb-caption bb-muted">Each state below has its own word and its own glyph, so you can tell them apart without seeing the colour.</p>
           <ul class="bb-row bb-plainlist">
             <li><span class="bb-status bb-status--accent bb-status--listening"><svg class="bb-status__glyph" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4" /></svg>Listening</span></li>
             <li><span class="bb-status bb-status--neutral"><svg class="bb-status__glyph" viewBox="0 0 12 12" aria-hidden="true"><rect x="2.25" y="2" width="2.75" height="8" rx="0.75" /><rect x="7" y="2" width="2.75" height="8" rx="0.75" /></svg>Paused</span></li>
@@ -149,7 +149,7 @@
 
         <section class="bb-card bb-span-12" aria-labelledby="colour-title">
           <h2 id="colour-title" class="bb-heading">Colour</h2>
-          <p class="bb-caption bb-muted">Neutrals plus one violet accent for links, selection, charts and ghosts.</p>
+          <p class="bb-caption bb-muted">Greys for almost everything, and one violet for links, the selected option, the waveform bars and the ghosts.</p>
           <ul class="bb-swatches bb-plainlist">
             <li><span class="bb-swatch bb-swatch--canvas"></span><code>canvas</code></li>
             <li><span class="bb-swatch bb-swatch--surface"></span><code>surface</code></li>
@@ -165,7 +165,7 @@
         <div class="bb-ghosts__intro">
           <p class="bb-eyebrow">Drawings of sounds</p>
           <h2 id="ghosts-title" class="bb-title">Ghosts</h2>
-          <p class="bb-lede">Each sound is a ghost. Its shape is the kind of sound, its place is the side it came from, and its glow is how urgent it is. Nothing else carries meaning.</p>
+          <p class="bb-lede">Each sound shows up as a ghost. Its shape tells you what the sound was and where it sits tells you the side. The more urgent it is, the bigger the glow. Nothing else carries meaning.</p>
         </div>
         <div class="bb-grid">
           <section class="bb-card bb-span-12 bb-ghosts__fieldcard" aria-labelledby="ghost-field-title">
@@ -173,7 +173,7 @@
               <h3 id="ghost-field-title" class="bb-heading">Ghost field</h3>
               <span class="bb-caption bb-muted">Newest on top, at most four</span>
             </div>
-            <p class="bb-caption bb-muted">A fixed example set. A ghost whose side is not known sits in the middle with a dashed outline, an arrow to both sides and the words "Side unknown".</p>
+            <p class="bb-caption bb-muted">These four ghosts are a fixed example set (no microphone is used on this page). When the side isn't known, the ghost sits in the middle with a dashed outline and a two-headed arrow behind it, and its label says "Side unknown".</p>
             <div id="ghost-field" class="bb-ghosts__field"></div>
           </section>
           <section class="bb-card bb-span-12" aria-labelledby="ghost-glyphs-title">
