@@ -126,7 +126,7 @@ Every number here comes from a script or test in this repo, run on the developme
 
 **Latency** (`e2e/latency.spec.ts`, headless Chromium, TF.js `webgl` backend): onset to output median **814 ms** for Try a sound on the 6.3 s knock clip (whole-clip processing, 11 windows), and **70 ms** for listening on a fake microphone. See [Latency](#latency) for what is and is not counted.
 
-**Tests**: 1286 Vitest unit and property tests in 102 files, and 131 Playwright end-to-end tests in Chromium (one of them against the production build, offline), all passing when this was written. `tests/readme.test.ts` checks this README against the code: the seven classes, the commands, the credits for every clip and the files under `.kiro`.
+**Tests**: 1294 Vitest unit and property tests in 104 files, and 131 Playwright end-to-end tests in Chromium (one of them against the production build, offline), all passing when this was written. `tests/readme.test.ts` checks this README against the code: the seven classes, the commands, the credits for every clip and the files under `.kiro`.
 
 **Size**: the YAMNet model is about 16 MB; the service worker caches about 18 MB in all at the first visit.
 
