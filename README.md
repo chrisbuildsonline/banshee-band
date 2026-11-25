@@ -45,7 +45,7 @@ Open http://localhost:5173, press a **Try a sound** chip, or **Start listening**
 
 ### Run in Docker
 
-The `Dockerfile` runs the whole gate in a clean Linux box: it installs from `bun.lock`, then runs `bun run typecheck`, `bun run test`, `bun run build` and `bun run e2e` (Chromium from the Playwright image), and stops at the first failure. Needs only Docker:
+The `Dockerfile` runs the whole gate in a clean Linux box: it installs from `bun.lock`, then runs `bun run typecheck`, `bun run build`, `bun run test` and `bun run e2e` (Chromium from the Playwright image), and stops at the first failure. Needs only Docker:
 
 ```sh
 bun run docker:test

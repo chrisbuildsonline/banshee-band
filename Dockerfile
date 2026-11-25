@@ -17,5 +17,5 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY . .
 
-# Same order as the local gate; stops at the first red step.
-CMD ["sh", "-c", "bun run typecheck && bun run test && bun run build && bun run e2e"]
+# Build before the tests so tests/pwa/build.test.ts has dist/sw.js to check. Stops at the first red step.
+CMD ["sh", "-c", "bun run typecheck && bun run build && bun run test && bun run e2e"]
