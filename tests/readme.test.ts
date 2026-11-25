@@ -50,6 +50,22 @@ describe('README', () => {
     for (const p of paths) expect(existsSync(p), p).toBe(true);
   });
 
+  it('shows committed screenshots of the ghost field, band simulator and pipeline, Day and Night, before Quick start', () => {
+    const top = readme.split('## Quick start')[0];
+    const shots = [...top.matchAll(/!\[[^\]]+\]\((docs\/screenshots\/[\w-]+\.png)\)/g)].map((m) => m[1]);
+    for (const view of ['station', 'band', 'pipeline']) {
+      for (const theme of ['day', 'night']) expect(shots, `${view} 1440 ${theme}`).toContain(`docs/screenshots/${view}-1440-${theme}.png`);
+    }
+    expect(shots.some((s) => /-390-/.test(s)), 'one 390 px phone shot').toBe(true);
+    for (const shot of shots) {
+      expect(existsSync(shot), shot).toBe(true);
+      const png = readFileSync(shot);
+      expect(png.subarray(1, 4).toString('latin1'), shot).toBe('PNG');
+      // The width in the IHDR chunk matches the width in the name.
+      expect(png.readUInt32BE(16), shot).toBe(Number(/-(\d+)-/.exec(shot)![1]));
+    }
+  });
+
   it('is honest about the firmware, the Kiro IDE and safety, and names the licence', () => {
     expect(readme).toMatch(/never been compiled/i);
     expect(readme).toMatch(/not a safety device/i);
