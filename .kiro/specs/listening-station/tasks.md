@@ -92,3 +92,14 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
   - [x] 8.5 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green. Then write the commit summary: what is built, the measured side table, the decisions of design.md that need the owner's yes or no (no primary pill, centre dither, rate limit 0), and the Out of scope list.
     - _Requirements: 18.5_
   - **Gate:** `typecheck`, `test`, `e2e` and `build` exit 0; the diff matches 8.2.
+
+- [x] 9. Haunting by default (feature F21)
+  - [x] 9.1 In `src/station/station.ts` mount the field with `{ ttlMs: 30000, trail: true }` (after task 12 of `ghost-renderer`). Add the side-unknown caption under the urgency key with the exact text of Requirement 12.5. Add the cases to `e2e/station.spec.ts`: after two runs the first ghost is still listed and drawn after 30 s with `page.clock`; the list heading reads "Recent:"; the caption text is on the page under the key and is not a live region.
+    - _Requirements: 12.1, 12.5_
+  - [x] 9.2 Hide the title block visually below 720 px in `src/station/station.css` (clip rule, not `display: none`; it stays in the DOM). Add to `e2e/station.spec.ts`, at 390 x 844 at scroll 0 in Night: the title block is in the accessibility tree and its box is 1 px; the bottom of the whole ghost field canvas is at or above the top of the fixed bottom bar; at 1440 the title block is visible.
+    - _Requirements: 2.5_
+  - [x] 9.3 Write `e2e/theme.spec.ts`: `index.html`, `band.html` and `styleguide.html` open in Night with `colorScheme: 'light'` and with JavaScript disabled; Day is one press away and survives a reload and a visit to another page through `banshee-band.theme.v1`; a saved `night` wins over a light OS setting; a saved `day` wins over a dark OS setting; blocked storage keeps Night on load and keeps a pressed choice for the page only. Update the screenshots and `e2e/a11y.spec.ts` helpers that assumed Day as the first theme (press Day to be explicit).
+    - _Requirements: 2.2, 5a_
+  - [x] 9.4 Update the station section of `design/DESIGN.md` only if it differs from the code, and run `tests/ui`, `bun run typecheck`, `bun run test` and `bun run e2e`.
+    - _Requirements: 2.5, 2.6, 12.1, 12.5_
+  - **Gate:** `typecheck`, `test`, `e2e` and `build` exit 0.

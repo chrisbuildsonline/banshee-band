@@ -34,7 +34,8 @@ src/ghosts/
   outline.ts     shapeParts, pathLength, dashFor (pure; outer/details/eyes split, path length, uncertain dash pattern)
   input.ts       acceptInput(value): GhostInput | null   (validator + shape check, never throws)
   layout.ts      layoutGhost, layoutGhosts, ghostBasePx, ghostBlock
-  life.ts        createGhostSet(ttlMs): add, prune, items, nextExpiry, clear
+  life.ts        createGhostSet(ttlMs, trail?): add, prune, items, nextExpiry, clear
+  trail.ts       trailAlpha(rank, ageMs, ttlMs) (pure; TRAIL_ALPHA lookup and the 0.55 for an old latest ghost)
   text.ts        listItemText, canvasSummary, EMPTY_TEXT, dataX
   glyph.ts       glyphSpec (pure; `path` is the whole shape, `strokePath` is outer + details without the eyes), createGlyph (DOM)
   draw.ts        drawField(ctx, state): furniture, arcs, ghosts, labels (canvas only)
@@ -48,7 +49,7 @@ styleguide.html  Ghosts section (edit)
 design/DESIGN.md  Ghosts section (edit)
 tests/ghosts/
   boundaries.test.ts  constants.test.ts  shapes.test.ts  layout.test.ts  input.test.ts
-  life.test.ts  text.test.ts  glyph.test.ts  contrast.test.ts  properties.test.ts
+  life.test.ts  trail.test.ts  text.test.ts  glyph.test.ts  contrast.test.ts  properties.test.ts
   helpers/raster.ts  helpers/inputs.ts
 e2e/
   ghosts.spec.ts
@@ -67,6 +68,7 @@ All in `constants.ts`, with doc comments:
 | `LABEL_BLOCK_PX` | 30 | Largest glow blur (12) + `GLOW_GAP_PX` + `LABEL_HEIGHT_PX`; derived in the file from those three, not typed |
 | `MAX_GHOSTS` | 4 | Cap on live ghosts and rows |
 | `DEFAULT_TTL_MS` | 8000 | Life of a ghost |
+| `TRAIL_ALPHA` | [1, 0.8, 0.65, 0.55] | Trail mode: alpha of body, glow and outline by rank, newest first; also a latest ghost older than `ttlMs` (0.55) |
 | `FADE_MS` | 400 | Fade in and out (the value of `--bb-motion-slow`) |
 | `DRIFT_PX` | 4 | Vertical drift amplitude |
 | `FIELD_PADDING_X` | 72 | Horizontal padding for the bearing map: half the largest box (108 / 2 = 54) plus the largest glow blur (12) is 66, which fits in 72 |
@@ -274,7 +276,7 @@ destroy: clearTimeout, cancelAnimationFrame, disconnect observers, remove listen
 1. `ctx.clearRect(0, 0, W, H)`.
 2. Furniture: "L" at `(14, H / 2)` and "R" at `(W - 14, H / 2)`, 12 px, weight 600, `muted`, centre/middle alignment. The listener mark: filled circle radius 4 at `(W / 2, H - 10)` in `muted`. The bearing arc: `ctx.arc(W / 2, H - 10, 24, Math.PI, 2 * Math.PI)` stroked 2 px in `border`.
 3. For each ghost, from the bottom row to the top (the order does not matter, rows do not overlap):
-   - `alpha` is 1 under reduce. With motion: `min(1, age / FADE_MS, remaining / FADE_MS)`, with `remaining = Infinity` for an infinite ttl.
+   - `alpha` is the fade value, and the body alpha is separate. Under reduce the fade is 1. With motion the fade is `min(1, age / FADE_MS, remaining / FADE_MS)`, with `remaining = Infinity` for an infinite ttl (a latest ghost in trail mode has no expiry, so no fade out). In trail mode the body, glow and outline use `fade * bodyAlpha` (`TRAIL_ALPHA` by rank, see Trail mode); the label uses `fade` only. Without trail `bodyAlpha` is 1.
    - `dy` is `DRIFT_PX * sin(2 * PI * (now / driftMs + seq * 0.37))` with motion and `driftMs > 0`, else 0. The ghost centre is `(x, y + dy)`. The label and the arc do not drift (only the body moves), so the text stays still and readable.
    - If uncertain: the arc. A quadratic curve from `(24, y)` to `(W - 24, y)` with the control point `(W / 2, y + 12)` (a sag of 6 px), stroked 2 px in `border`, with a filled triangular head (5 px long, 6 px wide) at each end pointing outwards. Drawn first, so the ghost covers the middle.
    - Ghost: `ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y + dy); const k = layout.boxPx / 24; ctx.scale(k, k); ctx.translate(-12, -12);` then take `shapeParts(shape)` and the cached `Path2D` objects (a `Map<string, Path2D>` per field): the whole path, the stroke path (outer + details) and the outer and eyes parts.
@@ -283,7 +285,7 @@ destroy: clearTimeout, cancelAnimationFrame, disconnect observers, remove listen
      3. Shade: clip to the whole path (even-odd), fill it with `outline` at low alpha, then fill the stroke path shifted by a small offset in `fill`, which leaves a thin crescent of `outline` along the lower edge.
      4. Stroke: `lineWidth = outlineWidth`, `lineJoin = 'round'`, `lineCap = 'butt'`, stroke the outer outline and the details only, never the eyes. A certain ghost strokes the stroke path solid. An uncertain ghost strokes the stroke path as a faint solid trace, then dashes only the outer subpath with `setLineDash(dashFor(outlineWidth, pathLength(outer)))` and strokes the details solid. `dashFor` gives `max(DASH_MIN_COUNT, round(length / (DASH_PERIODS_PER_WIDTH * outlineWidth)))` whole periods, a dash of two thirds of a period and a gap of one third; a non-positive or non-finite width or length gives a solid line.
      `shadowBlur` is in device pixels, so it is scaled by `dpr`, and the shadow offset is 0.
-   - Label: `ctx.restore()` first (no transform), font `500 13px <font>`, `text` colour, centre alignment, top baseline at `labelTop`. The text is measured with `measureText`. If wider than `W - 16`, it is cut with an ellipsis until it fits (a binary search on the length). The centre `lx = clamp(x, 8 + w / 2, W - 8 - w / 2)`, so a ghost near an edge keeps its label inside. The label is drawn at full `alpha` of the ghost (the same fade).
+   - Label: `ctx.restore()` first (no transform), font `500 13px <font>`, `text` colour, centre alignment, top baseline at `labelTop`. The text is measured with `measureText`. If wider than `W - 16`, it is cut with an ellipsis until it fits (a binary search on the length). The centre `lx = clamp(x, 8 + w / 2, W - 8 - w / 2)`, so a ghost near an edge keeps its label inside. The label is drawn at the fade alpha only (full strength in trail mode, whatever the rank).
 
 The glow is the canvas shadow of the fill. Its visible reach is about `glowBlur` px, which is why the label starts `glowBlur + GLOW_GAP_PX` below the body. The arc of an uncertain ghost is drawn at the body's mid-height, so it never sits in the label area.
 
@@ -305,6 +307,18 @@ The drift period is read from the token with a small parser: `"6s"` gives 6000, 
 ### Redraw on theme change
 
 `MutationObserver` on `document.documentElement` with `attributeFilter: ['data-theme']`, plus `matchMedia('(prefers-color-scheme: dark)')`'s `change`. Both call `refreshColours(); draw()`. The field does not touch `data-theme` itself.
+
+## Trail mode (R7.11 to R7.14, R8.7, R10.8 to R10.10)
+
+`mountGhostField(container, { ttlMs?, trail? })`, `trail` default `false`. The station passes `{ ttlMs: 30000, trail: true }`; the styleguide showcase passes `{ ttlMs: Infinity }` and sees no change.
+
+- **Life (`life.ts`).** `createGhostSet(ttlMs, trail = false)`. Without trail, an item expires at `shownAt + ttlMs`. With trail, only items that are not the newest expire at `shownAt + ttlMs`; the newest has no expiry. `add` first prunes with the new time, so an older item whose time has passed leaves at once, then pushes the new item and applies the cap of four. `nextExpiry()` ignores the newest item and returns `Infinity` when there is no other item, so the field sets no expiry timer for a lone latest ghost. The pure set carries the whole rule (tests: `tests/ghosts/life.test.ts`, trail cases).
+- **Alpha by rank (`constants.ts`, `trail.ts`).** `TRAIL_ALPHA = [1, 0.8, 0.65, 0.55]` (first is the newest). A pure helper `trailAlpha(rank, ageMs, ttlMs)` returns `TRAIL_ALPHA[rank]` and, for rank 0, `TRAIL_ALPHA[3]` (0.55) when `ageMs > ttlMs`. Without trail the field does not call it and every ghost keeps alpha 1.
+- **Drawing (`draw.ts`).** `state.trail` is an array of per-ghost `bodyAlpha` values (1 when not in trail mode). The body, glow and outline are drawn with `globalAlpha = fade * bodyAlpha`. The label is drawn with `globalAlpha = fade` only, so it stays at full strength; the fade in and out still apply. The glow dims with the body because it is the canvas shadow of the fill, drawn under the same `globalAlpha`.
+- **Age timer (`field.ts`).** In trail mode the field sets one more timer, for `shownAt + ttlMs` of the latest ghost, and redraws when it fires (no layout change, only the alpha). It is cleared when a newer ghost arrives (the new latest restarts it), on `clear` and on `destroy`. It uses `setTimeout`, not a frame, so it runs under reduced motion too, and the 0.55 dimming is a still state that applies there (R10.9).
+- **Reduced motion.** With reduce there is still no `requestAnimationFrame`. Draws happen on show, expiry, the age timer, resize, colour change and motion-preference change. The `alpha` of R10.3 is the rank alpha, not 1.
+- **Heading and label.** `field.ts` and `text.ts` take the heading word from the option: "Recent:" with trail, "Now:" without. `canvasSummary(layouts, heading)` builds "Sound field. Recent: Alarm, right, urgent; ...". The empty text stays "No sounds yet".
+- **Contrast.** The outline at 0.55 alpha is composited over `--bb-color-surface`; `tests/ghosts/trail.test.ts` computes `0.55 * outline + 0.45 * surface` from `src/ui/tokens.css` in Day and Night and fails below 3:1. If a token fails, the builder raises `TRAIL_ALPHA[3]` or the outline token, with the contrast table of `design/DESIGN.md` updated in the same change.
 
 ## Glyph (R12)
 

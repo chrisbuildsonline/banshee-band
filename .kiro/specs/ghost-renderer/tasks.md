@@ -117,3 +117,16 @@ Each task is small and ends in a test gate. Write the test first, see it fail fo
   - [x] 11.1 Run `bun run typecheck`, `bun run test`, `bun run e2e` and `bun run build`. All four must be green.
     - _Requirements: 16.1, 16.2, 16.3, 16.4_
   - **Gate:** `typecheck`, `test`, `e2e` and `build` exit 0, and `.gitkeep` is gone from `src/ghosts/`.
+
+- [ ] 12. Ghost trail (feature F21, "haunting by default")
+  - [x] 12.1 Write the trail cases of `tests/ghosts/life.test.ts` first, with a stub that fails: with `createGhostSet(ttlMs, true)` the latest ghost never expires; after a newer `add` the previous one expires exactly `ttlMs` after it was shown and not before; it is removed at once by the `add` when that time has already passed; `nextExpiry()` ignores the latest ghost and is `Infinity` for a lone one; the cap of four holds; without the flag nothing changes. Then add the `trail` argument to `createGhostSet` in `src/ghosts/life.ts`.
+    - _Requirements: 7.12, 7.13, 14.6_
+  - [x] 12.2 Write `tests/ghosts/trail.test.ts` first: `TRAIL_ALPHA` is `[1, 0.8, 0.65, 0.55]` and strictly decreasing; `trailAlpha` gives 1, 0.8, 0.65 and 0.55 by rank, and 0.55 for the latest ghost when its age is above `ttlMs` (and 1 at exactly `ttlMs`); the outline token at alpha 0.55 over `--bb-color-surface` keeps at least 3:1 in Day and in Night, computed from `src/ui/tokens.css`. Then add `TRAIL_ALPHA` to `src/ghosts/constants.ts` and `src/ghosts/trail.ts`.
+    - _Requirements: 10.8, 14.6a_
+  - [x] 12.3 Add the `trail` option to `mountGhostField` (`src/ghosts/field.ts`, `types.ts`): default `false`; the set is created with it; the age timer for the latest ghost (one more timer, cleared on a newer ghost, `clear` and `destroy`; no `requestAnimationFrame`); the heading and the canvas label say "Recent:" with trail and "Now:" without (`text.ts`, `canvasSummary`); `draw.ts` dims body, glow and outline by `TRAIL_ALPHA`, never the label. Extend `tests/ghosts/text.test.ts` with the two headings.
+    - _Requirements: 7.11, 7.12, 8.7, 9.8, 10.3, 10.8, 10.9, 10.10_
+  - [ ] 12.4 Add the browser checks of Requirement 14.13 to `e2e/ghosts.spec.ts` (the styleguide showcase keeps "Now:" and full strength) and `e2e/station.spec.ts` (with `page.clock`: the latest ghost is in the list long after 30 s; after a newer ghost the older one leaves 30 s after it was shown; "Recent:" heading; the second ghost is dimmer than the newest on the canvas; a latest ghost older than 30 s is redrawn dimmer at that moment; with `reducedMotion: 'reduce'` the dimming applies and no `requestAnimationFrame` callback ran).
+    - _Requirements: 14.11, 14.13_
+  - [ ] 12.5 Update the Ghosts section of `design/DESIGN.md` only if it differs from the code (it already describes the trail), update the `src/ghosts/` entry of `.kiro/steering/structure.md` for `trail.ts`, and run `tests/ui`.
+    - _Requirements: 13.4, 16.5_
+  - **Gate:** `bun run typecheck`, `bun run test` and `bun run e2e` pass; the styleguide showcase screenshots are unchanged.

@@ -32,7 +32,7 @@ Run `bun run typecheck` and `bun run test` after each task that changes code. Ru
 
 - [x] 4. Implement `src/ui/tokens.css`
   - Define every token from the table on `:root`.
-  - Add the Night block under `@media (prefers-color-scheme: dark) { :root:not([data-theme="day"]) { ... } }` and `:root[data-theme="night"]`, with identical declarations.
+  - Add the Night block under `@media (prefers-color-scheme: dark) { :root:not([data-theme="day"]) { ... } }` and `:root[data-theme="night"]`, with identical declarations. The media-query block stays although no page relies on it (every page ships `data-theme="night"`), so the parse test of both Night blocks still holds.
   - Add the `prefers-reduced-motion: reduce` block that zeroes the motion tokens.
   - No remote `@import` or `url()`.
   - _Requirements: 3.1-3.8_
@@ -48,8 +48,10 @@ Run `bun run typecheck` and `bun run test` after each task that changes code. Ru
     - _Requirements: 5.1-5.6, 5.8-5.10_
   - [x] 6.2 Create `src/ui/styleguide.css` using only `var(--bb-*)` values: pills, status pills, cards, event row, focus ring, 44px targets, responsive layout for 390px with no horizontal scroll.
     - _Requirements: 4.2, 4.3, 4.8, 5.3-5.6_
-  - [x] 6.3 Create `src/ui/styleguide.ts` with the theme control: sets `data-theme`, keyboard operable, plain-language label, `aria-pressed` state. Without JavaScript the page stays readable in the Day theme.
+  - [x] 6.3 Create `src/ui/styleguide.ts` with the theme control: sets `data-theme`, keyboard operable, plain-language label, `aria-pressed` state. Without JavaScript the page stays readable in the theme shipped in the HTML.
     - _Requirements: 5.7, 5.11, 4.7_
+  - [x] 6.5 Night by default (feature F21): add `data-theme="night"` to `<html>` in `index.html`, `band.html`, `styleguide.html` and `capture-harness.html`. Make the theme control in `src/ui/theme.ts` read and save `banshee-band.theme.v1` (a saved `day` or `night` wins on load; blocked storage or another value keeps Night; a failed save keeps the choice for the page only). Write `tests/ui/theme.test.ts` first (saved value wins, bad value ignored, throwing storage) and `e2e/theme.spec.ts` (each page opens in Night with a light OS setting and with JavaScript off; Day persists across a reload and to another page; blocked storage keeps the choice for the page only). Leave the `prefers-color-scheme` block of `tokens.css` as it is.
+    - _Requirements: 3.3, 3.4, 5.7, 5.7a, 5.7b, 5.11_
   - [x] 6.4 Check that no hard-coded colour or size literals appear in `styleguide.css` outside `var()` (a grep check is enough, spacing values in `px` for borders and outlines excepted).
     - _Requirements: 2.13, 3.1_
 

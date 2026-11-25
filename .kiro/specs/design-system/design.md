@@ -172,7 +172,7 @@ Styleguide markup uses semantic HTML and class names with the `bb-` prefix. No c
 | Status pill | `<span class="bb-status bb-status--listening"><span aria-hidden="true">●</span> Listening</span>` | glyph is decorative, label carries meaning |
 | Card | `<section class="bb-card">` with a heading | surface, radius card, soft shadow |
 | Event list row | `<li class="bb-event">` inside `<ul>` | ghost glyph (inline SVG, `aria-hidden`), class label, side, urgency word, time in a `<time>` |
-| Theme control | `<button aria-pressed>` or a two-option radio group | sets `document.documentElement.dataset.theme` |
+| Theme control | `<button aria-pressed>` or a two-option radio group | sets `document.documentElement.dataset.theme` and saves it in `localStorage` (`banshee-band.theme.v1`). Night is the default: every HTML page ships `data-theme="night"`, and a saved choice wins on load. Blocked storage keeps the choice for the page only. |
 
 ### Event list row
 
@@ -195,7 +195,9 @@ Reading text: "Knock, left side, urgent, 13:36". Urgency is a word (Low, Medium,
 }
 ```
 
-The Night values are written twice (media query and attribute). The unit test parses both blocks and checks they define the same values, so they cannot drift. This is the cost of supporting both the OS setting and a manual choice without JavaScript.
+The Night values are written twice (media query and attribute). The unit test parses both blocks and checks they define the same values, so they cannot drift. The pages no longer use the media-query block: every HTML page ships `data-theme="night"` on `<html>`, so the OS setting does not pick the default and Night shows without JavaScript. The block stays in the file so the parse test of both Night blocks still holds.
+
+Theme choice at run time: `src/ui/theme.ts` reads `banshee-band.theme.v1` from `localStorage` on load. A saved `day` or `night` replaces the shipped `data-theme`; any other value, or blocked storage, leaves Night. Pressing Day or Night sets `data-theme` and saves it; if saving throws, the choice holds for the page only.
 
 Components apply motion with `transition-duration: var(--bb-motion-fast)`. Under reduced motion this gives a zero duration. Any `@keyframes` animation sits inside `@media (prefers-reduced-motion: no-preference)`. The styleguide has no flashing. Pulse and flicker are limited to the later ghost feature and stay under 3 Hz.
 

@@ -12,8 +12,8 @@ Terms:
 - **DESIGN.md**: `design/DESIGN.md`.
 - **Tokens file**: `src/ui/tokens.css`.
 - **Token**: a CSS custom property named in DESIGN.md. All tokens use the `--bb-` prefix.
-- **Day theme**: the default light theme.
-- **Night theme**: the dark Halloween variant, applied with `data-theme="night"` on the root element.
+- **Day theme**: the light theme, one press away from the default.
+- **Night theme**: the dark Halloween variant and the default theme of every page, applied with `data-theme="night"` on the root element.
 - **Styleguide**: the page served at `/styleguide.html`.
 - **Pill**: a fully rounded button or label.
 
@@ -64,8 +64,8 @@ Terms:
 
 1. THE Tokens file SHALL define every token named in the DESIGN.md Token reference table, on `:root` for the Day theme.
 2. THE Tokens file SHALL override the Night values under `[data-theme="night"]`.
-3. WHERE the user has not chosen a theme and the browser reports `prefers-color-scheme: dark`, THE Tokens file SHALL apply the Night values.
-4. WHEN the user has chosen a theme through `data-theme`, THE explicit choice SHALL win over `prefers-color-scheme`.
+3. THE Tokens file SHALL keep its `@media (prefers-color-scheme: dark)` block with the Night values, with declarations identical to the `[data-theme="night"]` block. No page relies on it, because every HTML page ships `data-theme="night"` on `<html>`; the block stays so the parse test of both Night blocks still holds.
+4. WHEN a page has `data-theme` set to `day` or `night`, THE explicit value SHALL win over `prefers-color-scheme`. The OS setting SHALL NOT pick the default theme of any page.
 5. THE Tokens file SHALL define motion tokens, and WHILE `prefers-reduced-motion: reduce` is active, THE motion tokens SHALL resolve to zero duration and no animation.
 6. THE Tokens file SHALL NOT contain `@import` or `url()` references to remote hosts.
 7. THE Tokens file SHALL NOT define any token that DESIGN.md does not name.
@@ -99,10 +99,12 @@ Terms:
 5. THE Styleguide SHALL show cards with the surface colour, radius and soft shadow.
 6. THE Styleguide SHALL show an event list row with class label, side, urgency text, time and a ghost glyph, styled only with tokens.
 7. THE Styleguide SHALL provide a theme control that switches between Day and Night by setting `data-theme`, operable by keyboard and labelled in plain language.
+7a. THE `index.html`, `band.html`, `styleguide.html` and `capture-harness.html` pages SHALL each ship `data-theme="night"` on `<html>`, so Night is the default on every page, without JavaScript too and whatever `prefers-color-scheme` says. Day SHALL be one press of the theme control away.
+7b. WHEN the user presses Day or Night, THE theme control SHALL save the choice in `localStorage` under `banshee-band.theme.v1`. WHEN a page loads with a saved choice, THE saved choice SHALL win over the shipped default, on every page and every later visit. IF storage is blocked or holds a value other than `day` or `night`, THEN THE page SHALL keep the shipped Night default, and a choice made on the page SHALL hold for that page only.
 8. THE Styleguide SHALL load no scripts or styles from a remote host.
 9. THE Styleguide SHALL use a `<main>` landmark, one `<h1>`, and a logical heading order.
 10. THE Styleguide SHALL include the sentence that Banshee Band is an aid and not a safety device.
-11. IF JavaScript fails to load, THEN THE Styleguide SHALL still show all static content in the Day theme.
+11. IF JavaScript fails to load, THEN THE Styleguide SHALL still show all static content, in the Night theme from `data-theme="night"` in the HTML.
 
 ### Requirement 6: Token coverage unit test
 

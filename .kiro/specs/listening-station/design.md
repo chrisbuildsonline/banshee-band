@@ -189,7 +189,7 @@ title    Listening station / lede (sample clips, no microphone, band shown on sc
 | Try a sound   [g Knock] [g Doorbell] [g Alarm] [g Baby] [g Vehicle] [g Voice]   Side ( Left | Centre | Right ) |
 +--------------------------------------------------------------------------+
 +--------------------------------------+  +--------------------------------+
-| Ghost field (canvas, "Now:" list)    |  | Latest alert  (aria-live)      |
+| Ghost field (canvas, "Recent:" list)  |  | Latest alert  (aria-live)      |
 | 7 of 12 columns, min height 480      |  |   Knock                        |
 |                                      |  |   Left side · Urgent           |
 |                                      |  | Recent sounds  [g] Knock Urgent 13:36 |
@@ -204,8 +204,11 @@ footer: aid sentence, styleguide link
 ```
 
 - The grid is `repeat(12, minmax(0, 1fr))` with `--bb-space-5` (24 px) gaps. Try card `grid-column: 1 / -1`; ghost card `span 7`; side column `span 5` (a flex column with `--bb-space-5` gap); pipeline `1 / -1`. `align-items: stretch` makes the ghost card as tall as the side column (the side column is the taller one, so the canvas grows with `flex: 1 1 auto` as `field.css` already allows; its minimum is 360 px).
-- Phone: `grid-template-columns: 1fr`. DOM order has the Try card second, so on the phone the Try card is moved out of the flow: `position: fixed; inset-inline: 0; bottom: 0`, `surface` fill, `--bb-shadow-soft`, `padding: var(--bb-space-4)`, `z-index` above the content, and `<main>` gets `padding-bottom` equal to the bar height (set from the bar's measured height by one `ResizeObserver` in `station.ts`, as a CSS custom property `--bb-station-bar`). Chips wrap three per row; the side control is a full-width three-option control above them. The bar height is about 190 px, so the chips lie below 844 - 190 = 654 px, inside the lower 45% (from 464 px).
+- Phone: `grid-template-columns: 1fr`. The title block is visually hidden below 720 px (the usual clip rule: `position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap`), so it stays in the DOM and the accessibility tree and takes no space; the brand in the header names the app. With it gone, the whole ghost field canvas sits above the fixed bar at 390 x 844 at scroll 0 (an e2e check compares the canvas bottom with the bar top). DOM order has the Try card second, so on the phone the Try card is moved out of the flow: `position: fixed; inset-inline: 0; bottom: 0`, `surface` fill, `--bb-shadow-soft`, `padding: var(--bb-space-4)`, `z-index` above the content, and `<main>` gets `padding-bottom` equal to the bar height (set from the bar's measured height by one `ResizeObserver` in `station.ts`, as a CSS custom property `--bb-station-bar`). Chips wrap three per row; the side control is a full-width three-option control above them. The bar height is about 190 px, so the chips lie below 844 - 190 = 654 px, inside the lower 45% (from 464 px).
 - The Try card keeps its place in the DOM near the top for keyboard users (the control comes before its result, as on the band page). `design/DESIGN.md` says the phone bar comes last in the DOM; the station departs from that on purpose and the DESIGN.md update says so.
+- Theme: `index.html` ships `<html data-theme="night">`, so the station opens in Night (also without JavaScript, whatever the OS setting). `initThemeControl` applies a theme saved under `banshee-band.theme.v1` on load and saves each press (`design-system` Requirements 5.7a and 5.7b).
+- Ghost field: `mountStation` calls `mountGhostField(container, { ttlMs: 30000, trail: true })`. The list heading reads "Recent:".
+- Side-unknown caption: one muted `caption` paragraph under the urgency key, with the text of Requirement 12.5, in `station.css` tokens only.
 - Header on phone: the brand on the first row, then the "Band simulator" link, the status pill and the theme control wrap onto a second row. There is one "Band simulator" link in the DOM, in the header, at every width.
 
 ## Status pill (R3)
@@ -239,7 +242,7 @@ A failing `fetchClip` throws a `CaptureFailure` (`clip-load-failed` or `clip-not
 </li>
 ```
 
-The tile is a 48 px `surface-raised` circle (the glyph is 24, 32 or 40 px and fits). The urgency pill maps low to `bb-status--neutral`, medium to `bb-status--accent`, high to `bb-status--strong`. The Latest alert block (`<div class="bb-alert" aria-live="polite" aria-atomic="true">`) is above the list in the same card, with the class name in `bb-display` size and the second line in `caption`. Its text is replaced once per run. The ghost field's "Now:" list stays inside the ghost card as the canvas's text equivalent. The two lists differ in purpose: "Now:" shows live ghosts (at most 4, gone after 8 s), "Recent sounds" is the history (at most 10).
+The tile is a 48 px `surface-raised` circle (the glyph is 24, 32 or 40 px and fits). The urgency pill maps low to `bb-status--neutral`, medium to `bb-status--accent`, high to `bb-status--strong`. The Latest alert block (`<div class="bb-alert" aria-live="polite" aria-atomic="true">`) is above the list in the same card, with the class name in `bb-display` size and the second line in `caption`. Its text is replaced once per run. The ghost field's "Recent:" list (headed "Now:" without trail mode) stays inside the ghost card as the canvas's text equivalent. The two lists differ in purpose: "Now:" shows live ghosts (at most 4, gone after 8 s), "Recent sounds" is the history (at most 10).
 
 The simulator keeps its own polite live region ("Knock, left stronger"). A screen reader therefore hears two short announcements per run, one for the alert and one for the pattern. They say different things, so this is accepted for round 1 (see Risks).
 
@@ -305,7 +308,7 @@ Old: `DASH_UNITS = [3, 2]` with butt caps, gap 2 units against an outline of up 
 8. **Two live announcements.** The simulator announces the pattern, the station announces the alert. Accepted. A later spec can merge them.
 9. **TF.js console output.** If TF.js logs a warning in headless Chromium that cannot be avoided, the e2e test allows that exact string (R16.4).
 10. **Phone bar and DOM order (R2).** The bar is early in the DOM and visually last. This follows the band page ("control before result") and not the DESIGN.md line that puts the bar last. DESIGN.md is updated to say so.
-11. **Ghost field "Now:" list and the Recent sounds list both exist.** The first is the canvas's text equivalent and cannot be removed without changing `src/ghosts`.
+11. **Ghost field "Recent:" list and the Recent sounds list both exist.** The first is the canvas's text equivalent and cannot be removed without changing `src/ghosts`.
 
 ### Measured side results (filled in task 1.7)
 
